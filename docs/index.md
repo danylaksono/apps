@@ -44,6 +44,8 @@ toc: false
 
 </style>
 
+<link rel="shortcut icon" href="/images/favicon.png">
+
 <div class="hero">
   <h1>Hello, Observable Framework</h1>
   <h2>Welcome to your new project! Edit&nbsp;<code style="font-size: 90%;">docs/index.md</code> to change this page.</h2>

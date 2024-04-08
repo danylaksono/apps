@@ -1,24 +1,60 @@
 ---
 theme: dashboard
-title: Saujana
+title: Moonsighting
 toc: false
 sidebar: false
 ---
 
 <style>
 
+.grid {
+  margin: 5px;
+}
+
 #map-container {
   width: 100%;
-  height: 400px;// 100vh; // Use vh for viewport height
+  height: 500px;// 100vh; // Use vh for viewport height
+  /* padding: 6px; */
+}
+
+#loading-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 100px;
+}
+
+#progressBar {
+  width: 300px;
+  height: 20px;
+  margin-bottom: 20px;
+}
+
+.spinner {
+  border: 4px solid #f3f3f3;
+  border-top: 4px solid #3498db;
+  border-radius: 50%;
+  width: 30px;
+  height: 30px;
+  animation: spin 2s linear infinite;
+}
+
+@keyframes spin {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
 }
 
 </style>
 
-# Moonsighting 🌛
-
-<!-- Load and transform the data -->
-
+<link rel="shortcut icon" href="/images/favicon.png">
 <link href="https://unpkg.com/maplibre-gl@2.1.9/dist/maplibre-gl.css" rel="stylesheet" />
+
+<!-- Library Preparations -->
 
 ```js
 import { calculate } from "./components/calculate.js";
@@ -26,6 +62,11 @@ import { getMoonImageURLs } from "./components/moon-now.js";
 import * as Astronomy from "npm:astronomy-engine@2.1.19";
 import maplibregl from "npm:maplibre-gl@2.0.0";
 import { Mutable } from "npm:@observablehq/stdlib";
+import { moment } from "npm:moment";
+```
+
+```js
+const grids = FileAttachment("./data/grids_025.geojson").json();
 ```
 
 ```js
@@ -37,71 +78,113 @@ const coordsSetter = (lat, lon) => {
 
 ```js
 const dateInput = Inputs.date({
-  label: "Tanggal: ",
+  label: "Select Date: ",
   submit: true,
   value: new Date(),
 });
 const date = Generators.input(dateInput);
 
-const runInput = Inputs.button("Hitung");
-const run = Generators.input(runInput);
+// Object.assign(dateInput, {
+//   oninput: (event) => event.isTrusted && event.stopImmediatePropagation(),
+//   // oninput: (event) => {
+//   //   console.log("event fired", event);
+//   //   // showLoadingSpinner();
+//   //   //event.currentTarget.dispatchEvent(new Event("input")),
+//   // },
+// });
+```
+
+<!-- INPUTS -->
+
+```js
+const modeInput = Inputs.radio(["Odeh", "Yallop"], {
+  label: "Criteria: ",
+  value: "Yallop",
+  disabled: true,
+});
+const mode = Generators.input(modeInput);
+
+const elevInput = Inputs.text({
+  label: "Elevation (m): ",
+  value: "100",
+});
+const elev = Generators.input(elevInput);
 ```
 
 ```js
-run;
 const calculateDetails = () => {
-  const lat = coords[0];
-  const lon = coords[1];
-  const code = calculate(lat, lon, date, {
-    evening: true,
-    yallop: true,
+  const lat = coords ? coords[0] : -7.983889;
+  const lon = coords ? coords[1] : 110.323125;
+  const elevation = parseFloat(elev);
+  const code = calculate(lat, lon, elevation, date, {
+    yallop: mode == "Yallop" ? true : false,
   });
   return code;
 };
 ```
 
-```js
-run;
-display(calculateDetails().qcode);
-```
+# Moonsighting 🌛
 
-```js
-const grids = FileAttachment("./data/grids_025.geojson").json();
-```
+<div class="grid grid-cols-1" style="max-height:60px;">
+  <div class="card" style="padding:6px;">
+    <div class="grid grid-cols-3">
+    <div>
+    <div>
+    <span> Select date and submit to draw the moon's visibility map. Click on the map to get the visibility calculation for that location. Adjust the elevation if needed. </span>
+    </div>
+    <span>Only Yallop method is available for now. </span>
+    </div>
+    <div>
+    ${modeInput}
+    ${elevInput}
+    ${dateInput}
+    </div>
+    <div>
+    ${coords ? calculateDetails().qcode : ''}
+    </div>
 
-## Calculate
-
-<div class="grid grid-cols-1">
-  <div class="card">
-  ${dateInput}
-
-${runInput}
-
-  <div> 
-  ${coords[0]} | ${coords[1]}
-  </div>
   </div>
 </div>
 
-<div class="grid grid-cols-1" >
-  <div class="card" style="padding:6px">
+<div class="grid grid-cols-4" >
+  <div class="card grid-colspan-3" style="padding:6px;">
+    <div id="loading-container">
+    <span id="loadingSpinner" class="spinner"></span>
+    </div>
+    <!-- maps -->
     <div id="map-container"></div>
+  </div>
+    <div class="card">
+    <figure style="max-width: 100%;">
+      <img id="myImage" width="300" height="300" style="aspect-ratio: 1 / 1; height: auto;" />
+      <figcaption>
+      <div>
+      <i> The moon on: ${date.toLocaleDateString('en-gb',{
+            year: 'numeric',
+            month: 'long',
+            day: 'numeric'
+          }
+        )} </i>
+        </div>
+        <a href="https://svs.gsfc.nasa.gov/4955">Visualizations by Ernie Wright</a> at <a href="https://svs.gsfc.nasa.gov/">NASA Scientific Visualization Studio</a>. Code adapted from @forresto.
+      </figcaption>
+    </figure>
     <div>
-    <i> Hilal visibility on: ${date.toISOString().slice(0, 10)} </i>
+    <span> 
+      <i> Hilal visibility on: ${date.toISOString().slice(0, 10)} </i>
+        <span> ${coords? coords[0]: ''} | ${coords? coords[1]:''} </span>
     </div>
   </div>
 </div>
 
-```js
-run;
-const isrun = run ? true : false;
-display(isrun);
-```
+<!-- Helper Functions -->
 
 ```js
 function getCellColor(qcode) {
   let color;
-
+  if (!isLoadingSpinnerVisible()) {
+    showLoadingSpinner();
+  }
   if (qcode === "A") color = "rgba(62, 255, 0, 255)";
   else if (qcode === "B") color = "rgba(62, 255, 109, 255)";
   else if (qcode === "C") color = "rgba(0, 255, 158, 255)";
@@ -119,19 +202,44 @@ function getCellColor(qcode) {
 ```
 
 ```js
+// Function to show the loading spinner
+function showLoadingSpinner() {
+  const loadingSpinner = document.getElementById("loading-container");
+  loadingSpinner.style.display = "block";
+}
+
+// Function to hide the loading spinner
+function hideLoadingSpinner() {
+  const loadingSpinner = document.getElementById("loading-container");
+  loadingSpinner.style.display = "none";
+}
+
+// Function to check if the loading spinner is visible
+function isLoadingSpinnerVisible() {
+  const loadingContainer = document.getElementById("loading-container");
+  const computedStyle = window.getComputedStyle(loadingContainer);
+  const displayValue = computedStyle.getPropertyValue("display");
+
+  return displayValue !== "none";
+}
+```
+
+```js
 const gridData = {
   type: grids.type,
   features: grids.features.map((feature) => {
     const lat = feature.properties.lat;
     const lon = feature.properties.long;
     // console.log(lat, lon);
+
     const selectedDate = date; // new Date("2024-04-09T00:00:00Z");
-    const code = calculate(lat, lon, selectedDate, {
-      evening: true,
-      yallop: true,
+    const elev = 0;
+    const code = calculate(lat, lon, elev, selectedDate, {
+      yallop: mode == "Yallop" ? true : false,
     });
     // console.log(code.qcode);
     const cellColor = getCellColor(code.qcode);
+    // hideLoadingSpinner();
     return {
       ...feature,
       properties: {
@@ -179,8 +287,8 @@ map.on("load", function () {
 });
 
 map.fitBounds([
-  [82.476562, -18.620677],
-  [149.229492, 13.009439],
+  [93.216, -12.922],
+  [143.07, 7.738],
 ]);
 
 let currentMarker = null;
@@ -197,30 +305,28 @@ map.on("click", (e) => {
   currentMarker = new maplibregl.Marker().setLngLat(e.lngLat).addTo(map);
 });
 
+// Watch for the 'data' event on the GeoJSON source
+// map.on("render", (e) => {
+//   console.log("GeoJSON data is loading");
+//   console.log(e);
+//   showLoadingSpinner();
+// });
+
+map.on("data", (e) => {
+  if (e.sourceId === "mygeojson" && e.isSourceLoaded) {
+    console.log("GeoJSON data has finished loading");
+    hideLoadingSpinner();
+    // You can perform additional actions here, such as showing a loading indicator
+  }
+});
+
 invalidation.then(() => map.remove());
 ```
 
 ---
 
-<!-- Moon Image Now -->
-
-## Moon Image Now
-
-<div class="grid grid-cols-1">
-  <div class="card">
-    <figure style="max-width: 100%;">
-      <img id="myImage" width="400" height="400" style="aspect-ratio: 1 / 1; height: auto;" />
-      <!-- <figcaption>
-        <a href="https://svs.gsfc.nasa.gov/4955">Visualizations by Ernie Wright</a> at <a href="https://svs.gsfc.nasa.gov/">NASA Scientific Visualization Studio</a>, Released on November 18, 2021.
-        <a href="${display(moonImageURLs.tif)}">👁 HD version (11MB .tif)</a>
-      </figcaption> -->
-    </figure>
-
-  </div>
-</div>
-
 ```js
-const moonImageURLs = getMoonImageURLs(new Date(), true);
+const moonImageURLs = getMoonImageURLs(date, true);
 const image = document.querySelector("#myImage");
 image.src = moonImageURLs.jpg;
 ```
