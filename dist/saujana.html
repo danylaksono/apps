@@ -135,15 +135,15 @@ function getCellColor(qcode) {
 return {getCellColor};
 }});
 
-define({id: "a6ac98f8", inputs: ["grids","calculate","getCellColor"], outputs: ["gridData"], body: (grids,calculate,getCellColor) => {
+define({id: "6e099aed", inputs: ["grids","date","calculate","getCellColor"], outputs: ["gridData"], body: (grids,date,calculate,getCellColor) => {
 const gridData = {
   type: grids.type,
   features: grids.features.map((feature) => {
     const lat = feature.properties.lat;
     const lon = feature.properties.long;
     // console.log(lat, lon);
-    const date = new Date("2024-04-09T00:00:00Z");
-    const code = calculate(lat, lon, date, {
+    const selectedDate = date; // new Date("2024-04-09T00:00:00Z");
+    const code = calculate(lat, lon, selectedDate, {
       evening: true,
       yallop: true,
     });
@@ -270,7 +270,7 @@ return {moonImageURLs,image};
 </div>
 <div id="cell-7e245d3b" class="observablehq observablehq--block"></div>
 <div id="cell-87950a33" class="observablehq observablehq--block"></div>
-<div id="cell-a6ac98f8" class="observablehq observablehq--block"></div>
+<div id="cell-6e099aed" class="observablehq observablehq--block"></div>
 <div id="cell-8c98860a" class="observablehq observablehq--block"></div>
 <hr>
 <!-- Moon Image Now -->
