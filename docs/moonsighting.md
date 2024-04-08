@@ -38,7 +38,7 @@ const coordsSetter = (lat, lon) => {
 ```js
 const dateInput = Inputs.date({
   label: "Tanggal: ",
-  // submit: true,
+  submit: true,
   value: new Date(),
 });
 const date = Generators.input(dateInput);

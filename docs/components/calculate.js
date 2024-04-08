@@ -3,7 +3,7 @@ import * as Astronomy from "npm:astronomy-engine@2.1.19";
 export function calculate(
   latitude,
   longitude,
-  // altitude,
+  altitude = 100,
   baseTime,
   options = {}
 ) {
@@ -19,7 +19,7 @@ export function calculate(
   let details = {};
 
   baseTime = Astronomy.MakeTime(baseTime);
-  const observer = new Astronomy.Observer(latitude, longitude, 0);
+  const observer = new Astronomy.Observer(latitude, longitude, altitude);
   const time = baseTime.AddDays(-observer.longitude / 360);
 
   // console.log("time", time);
