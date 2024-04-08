@@ -125,8 +125,8 @@ const gridData = {
     const lat = feature.properties.lat;
     const lon = feature.properties.long;
     // console.log(lat, lon);
-    const date = new Date("2024-04-09T00:00:00Z");
-    const code = calculate(lat, lon, date, {
+    const selectedDate = date; // new Date("2024-04-09T00:00:00Z");
+    const code = calculate(lat, lon, selectedDate, {
       evening: true,
       yallop: true,
     });
