@@ -1,0 +1,292 @@
+<!DOCTYPE html>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+<title>Saujana | Web-Apps</title>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=Source+Serif+Pro:ital,wght@0,400;0,600;0,700;1,400;1,600;1,700&amp;display=swap" crossorigin>
+<link rel="preload" as="style" href="./_observablehq/theme-air,near-midnight,alt,wide.css">
+<link rel="preload" as="style" href="./_observablehq/stdlib/inputs.css">
+<link rel="stylesheet" type="text/css" href="https://fonts.googleapis.com/css2?family=Source+Serif+Pro:ital,wght@0,400;0,600;0,700;1,400;1,600;1,700&amp;display=swap" crossorigin>
+<link rel="stylesheet" type="text/css" href="./_observablehq/theme-air,near-midnight,alt,wide.css">
+<link rel="stylesheet" type="text/css" href="./_observablehq/stdlib/inputs.css">
+<link rel="modulepreload" href="./_observablehq/client.js">
+<link rel="modulepreload" href="./_observablehq/runtime.js">
+<link rel="modulepreload" href="./_observablehq/stdlib.js">
+<link rel="modulepreload" href="./_import/components/calculate.3a83984b.js">
+<link rel="modulepreload" href="./_import/components/moon-now.2a971fc2.js">
+<link rel="modulepreload" href="./_npm/astronomy-engine@2.1.19/_esm.js">
+<link rel="modulepreload" href="./_npm/maplibre-gl@2.0.0/_esm.js">
+<link rel="modulepreload" href="./_observablehq/stdlib/inputs.js">
+<link rel="modulepreload" href="./_npm/htl@0.3.1/_esm.js">
+<link rel="modulepreload" href="./_npm/isoformat@0.2.1/_esm.js">
+<script type="module">
+
+import {define} from "./_observablehq/client.js";
+import {registerFile} from "./_observablehq/stdlib.js";
+
+registerFile("./data/grids_025.geojson", {"name":"./data/grids_025.geojson","mimeType":"application/geo+json","path":"./_file/data/grids_025.dae95e5e.geojson","lastModified":1712517375960});
+
+define({id: "3a5d9e72", outputs: ["calculate","getMoonImageURLs","Astronomy","maplibregl","Mutable"], body: async () => {
+const [{calculate}, {getMoonImageURLs}, Astronomy, {default: maplibregl}, {Mutable}] = await Promise.all([import("./_import/components/calculate.3a83984b.js"), import("./_import/components/moon-now.2a971fc2.js"), import("./_npm/astronomy-engine@2.1.19/_esm.js"), import("./_npm/maplibre-gl@2.0.0/_esm.js"), import("./_observablehq/stdlib.js")]);
+
+return {calculate,getMoonImageURLs,Astronomy,maplibregl,Mutable};
+}});
+
+define({id: "ac2756a2", inputs: ["Mutable"], outputs: ["coords","coordsSetter"], body: (Mutable) => {
+const coords = Mutable([]);
+const coordsSetter = (lat, lon) => {
+  coords.value = [lat, lon];
+};
+return {coords,coordsSetter};
+}});
+
+define({id: "b5002961", inputs: ["Inputs","Generators"], outputs: ["dateInput","date","runInput","run"], body: (Inputs,Generators) => {
+const dateInput = Inputs.date({
+  label: "Tanggal: ",
+  // submit: true,
+  value: new Date(),
+});
+const date = Generators.input(dateInput);
+
+const runInput = Inputs.button("Hitung");
+const run = Generators.input(runInput);
+return {dateInput,date,runInput,run};
+}});
+
+define({id: "71538d87", inputs: ["run","coords","calculate","date"], outputs: ["calculateDetails"], body: (run,coords,calculate,date) => {
+run;
+const calculateDetails = () => {
+  const lat = coords[0];
+  const lon = coords[1];
+  const code = calculate(lat, lon, date, {
+    evening: true,
+    yallop: true,
+  });
+  return code;
+};
+return {calculateDetails};
+}});
+
+define({id: "518e2c06", inputs: ["run","display","calculateDetails"], body: (run,display,calculateDetails) => {
+run;
+display(calculateDetails().qcode);
+}});
+
+define({id: "83053c83", inputs: ["FileAttachment"], outputs: ["grids"], body: (FileAttachment) => {
+const grids = FileAttachment("./data/grids_025.geojson").json();
+return {grids};
+}});
+
+define({id: "35590838", inline: true, inputs: ["dateInput","display"], body: async (dateInput,display) => {
+display(await(
+dateInput
+))
+}});
+
+define({id: "ed10897c", inline: true, inputs: ["runInput","display"], body: async (runInput,display) => {
+display(await(
+runInput
+))
+}});
+
+define({id: "b33f2c87", inline: true, inputs: ["coords","display"], body: async (coords,display) => {
+display(await(
+coords[0]
+))
+}});
+
+define({id: "a405f5b0", inline: true, inputs: ["coords","display"], body: async (coords,display) => {
+display(await(
+coords[1]
+))
+}});
+
+define({id: "696acf07", inline: true, inputs: ["date","display"], body: async (date,display) => {
+display(await(
+date.toISOString().slice(0, 10)
+))
+}});
+
+define({id: "7e245d3b", inputs: ["run","display"], outputs: ["isrun"], body: (run,display) => {
+run;
+const isrun = run ? true : false;
+display(isrun);
+return {isrun};
+}});
+
+define({id: "87950a33", outputs: ["getCellColor"], body: () => {
+function getCellColor(qcode) {
+  let color;
+
+  if (qcode === "A") color = "rgba(62, 255, 0, 255)";
+  else if (qcode === "B") color = "rgba(62, 255, 109, 255)";
+  else if (qcode === "C") color = "rgba(0, 255, 158, 255)";
+  else if (qcode === "D") color = "rgba(0, 255, 250, 255)";
+  else if (qcode === "E") color = "rgba(60, 120, 255, 255)";
+  else if (qcode === "F") color = "rgba(0, 0, 0, 255)";
+  else if (qcode === "G") color = "rgba(173, 13, 106, 255)";
+  else if (qcode === "H") color = "rgba(0, 0, 0, 255)";
+  else if (qcode === "I") color = "rgba(0, 0, 255, 255)";
+  else if (qcode === "J") color = "rgba(87, 7, 181, 255)";
+  else color = null;
+
+  return color;
+}
+return {getCellColor};
+}});
+
+define({id: "a6ac98f8", inputs: ["grids","calculate","getCellColor"], outputs: ["gridData"], body: (grids,calculate,getCellColor) => {
+const gridData = {
+  type: grids.type,
+  features: grids.features.map((feature) => {
+    const lat = feature.properties.lat;
+    const lon = feature.properties.long;
+    // console.log(lat, lon);
+    const date = new Date("2024-04-09T00:00:00Z");
+    const code = calculate(lat, lon, date, {
+      evening: true,
+      yallop: true,
+    });
+    // console.log(code.qcode);
+    const cellColor = getCellColor(code.qcode);
+    return {
+      ...feature,
+      properties: {
+        ...feature.properties,
+        color: cellColor,
+      },
+    };
+  }),
+};
+return {gridData};
+}});
+
+define({id: "8c98860a", inputs: ["maplibregl","gridData","coordsSetter","invalidation"], outputs: ["map","currentMarker"], body: (maplibregl,gridData,coordsSetter,invalidation) => {
+const map = new maplibregl.Map({
+  boxZoom: true,
+  pitch: 0,
+  bearing: 0,
+  maplibreLogo: true,
+  container: "map-container",
+  center: [110, -7],
+  zoom: 12,
+  style:
+    "https://basemaps.cartocdn.com/gl/dark-matter-nolabels-gl-style/style.json",
+  // see more: https://deck.gl/docs/api-reference/carto/basemap
+  scrollZoom: true,
+});
+
+map.on("load", function () {
+  map.addSource("mygeojson", {
+    type: "geojson",
+    data: gridData,
+  });
+
+  map.addLayer({
+    id: "mygeojson",
+    type: "fill",
+    source: "mygeojson",
+    paint: {
+      "fill-color": ["get", "color"],
+      // "fill-outline-color": ["get", "color"],
+      "fill-opacity": 0.5,
+      "fill-antialias": false,
+      // "line-opacity": 0,
+    },
+  });
+});
+
+map.fitBounds([
+  [82.476562, -18.620677],
+  [149.229492, 13.009439],
+]);
+
+let currentMarker = null;
+map.on("click", (e) => {
+  // Remove the previous marker if it exists
+  if (currentMarker !== null) {
+    currentMarker.remove();
+  }
+
+  // set the coords
+  coordsSetter(e.lngLat.lat, e.lngLat.lng);
+
+  // Create a new marker
+  currentMarker = new maplibregl.Marker().setLngLat(e.lngLat).addTo(map);
+});
+
+invalidation.then(() => map.remove());
+return {map,currentMarker};
+}});
+
+define({id: "952ee3be", inline: true, inputs: ["display","moonImageURLs"], body: (display,moonImageURLs) => {
+display(moonImageURLs.tif)
+}});
+
+define({id: "73402ccd", inputs: ["getMoonImageURLs"], outputs: ["moonImageURLs","image"], body: (getMoonImageURLs) => {
+const moonImageURLs = getMoonImageURLs(new Date(), true);
+const image = document.querySelector("#myImage");
+image.src = moonImageURLs.jpg;
+return {moonImageURLs,image};
+}});
+
+</script>
+<div id="observablehq-center">
+<main id="observablehq-main" class="observablehq">
+<style>
+
+#map-container {
+  width: 100%;
+  height: 400px;// 100vh; // Use vh for viewport height
+}
+
+</style>
+<h1 id="moonsighting-%F0%9F%8C%9B" tabindex="-1"><a class="observablehq-header-anchor" href="#moonsighting-%F0%9F%8C%9B">Moonsighting 🌛</a></h1>
+<!-- Load and transform the data -->
+<link href="https://unpkg.com/maplibre-gl@2.1.9/dist/maplibre-gl.css" rel="stylesheet">
+<div id="cell-3a5d9e72" class="observablehq observablehq--block"></div>
+<div id="cell-ac2756a2" class="observablehq observablehq--block"></div>
+<div id="cell-b5002961" class="observablehq observablehq--block"></div>
+<div id="cell-71538d87" class="observablehq observablehq--block"></div>
+<div id="cell-518e2c06" class="observablehq observablehq--block"></div>
+<div id="cell-83053c83" class="observablehq observablehq--block"></div>
+<h2 id="calculate" tabindex="-1"><a class="observablehq-header-anchor" href="#calculate">Calculate</a></h2>
+<div class="grid grid-cols-1">
+  <div class="card">
+  <span id="cell-35590838" class="observablehq--loading"></span>
+<p><span id="cell-ed10897c" class="observablehq--loading"></span></p>
+  <div> 
+  <span id="cell-b33f2c87" class="observablehq--loading"></span> | <span id="cell-a405f5b0" class="observablehq--loading"></span>
+  </div>
+  </div>
+</div>
+<div class="grid grid-cols-1">
+  <div class="card" style="padding:6px">
+    <div id="map-container"></div>
+    <div>
+    <i> Hilal visibility on: <span id="cell-696acf07" class="observablehq--loading"></span> </i>
+    </div>
+  </div>
+</div>
+<div id="cell-7e245d3b" class="observablehq observablehq--block"></div>
+<div id="cell-87950a33" class="observablehq observablehq--block"></div>
+<div id="cell-a6ac98f8" class="observablehq observablehq--block"></div>
+<div id="cell-8c98860a" class="observablehq observablehq--block"></div>
+<hr>
+<!-- Moon Image Now -->
+<h2 id="moon-image-now" tabindex="-1"><a class="observablehq-header-anchor" href="#moon-image-now">Moon Image Now</a></h2>
+<div class="grid grid-cols-1">
+  <div class="card">
+    <figure style="max-width: 100%;">
+      <img id="myImage" width="400" height="400" style="aspect-ratio: 1 / 1; height: auto;">
+      <!-- <figcaption>
+        <a href="https://svs.gsfc.nasa.gov/4955">Visualizations by Ernie Wright</a> at <a href="https://svs.gsfc.nasa.gov/">NASA Scientific Visualization Studio</a>, Released on November 18, 2021.
+        <a href="<span id="cell-952ee3be" class="observablehq--loading"></span>">👁 HD version (11MB .tif)</a>
+      </figcaption> -->
+    </figure>
+  </div>
+</div>
+<div id="cell-73402ccd" class="observablehq observablehq--block"></div>
+<!-- Render the data -->
+</main>
+</div>
