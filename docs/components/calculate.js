@@ -1,28 +1,28 @@
-import * as Astronomy from "./astronomy.min.js";
+import * as Astronomy from "npm:astronomy-engine@2.1.19";
 
 export function calculate(
   latitude,
   longitude,
-  altitude,
+  // altitude,
   baseTime,
   options = {}
 ) {
   const {
     evening = true,
     yallop = true,
-    details = null,
-    ignoreBesttime = false,
     drawMoonLine = null,
     resultTime = null,
     qValue = null,
   } = options;
 
   // const astroTime = new Astronomy.AstroTime(baseTime);
-  const observer = new Astronomy.Observer(latitude, longitude, 0);
+  let details = {};
 
+  baseTime = Astronomy.MakeTime(baseTime);
+  const observer = new Astronomy.Observer(latitude, longitude, 0);
   const time = baseTime.AddDays(-observer.longitude / 360);
 
-  console.log("time", time);
+  // console.log("time", time);
 
   const direction = evening ? -1 : 1;
   const sunsetSunrise = Astronomy.SearchRiseSet(
@@ -40,7 +40,7 @@ export function calculate(
     1
   );
 
-  if (sunsetSunrise == null || moonsetMoonrise == null) return "H"; // No sun{set,rise} or moon{set,rise}
+  if (sunsetSunrise == null || moonsetMoonrise == null) details.qcode = "H"; // No sun{set,rise} or moon{set,rise}
 
   // return sunsetSunrise;
   // const time = astroTime; //astroTime.AddDays(baseTime);
@@ -104,9 +104,9 @@ export function calculate(
 
   const beforeNewMoon =
     (sunsetSunrise.ut - newMoonNearest.ut) * (evening ? 1 : -1) < 0;
-  if (lagTime < 0 && beforeNewMoon) return "J"; // Checks both conditions, shows a mixed color
-  // if (lagTime < 0) return "I"; // Moonset before sunset / Moonrise after sunrise
-  // if (beforeNewMoon) return "G"; // Sunset is before new moon / Sunrise is after new moon
+  if (lagTime < 0 && beforeNewMoon) details.qcode = "J"; // Checks both conditions, shows a mixed color
+  if (lagTime < 0) details.qcode = "I"; // Moonset before sunset / Moonrise after sunrise
+  if (beforeNewMoon) details.qcode = "G"; // Sunset is before new moon / Sunrise is after new moon
 
   const sunEquator = Astronomy.Equator(
     Astronomy.Body.Sun,
@@ -234,25 +234,24 @@ export function calculate(
 
   // console.log("value", value);
 
-  if (details) {
-    details.bestTime = bestTime;
-    details.sd = SD;
-    details.lunarParallax = lunarParallax;
-    details.arcl = ARCL;
-    details.arcv = ARCV;
-    details.daz = DAZ;
-    details.wTopo = WTopo;
-    details.sdTopo = SDTopo;
-    details.value = value;
-    (details.moonAzimuth = moonHorizon.azimuth),
-      (details.moonAltitude = moonHorizon.altitude);
-    details.moonRa = moonHorizon.ra;
-    details.moonDec = moonHorizon.dec;
-    details.sunAzimuth = sunHorizon.azimuth;
-    details.sunAltitude = sunHorizon.altitude;
-    details.sunRa = sunHorizon.ra;
-    details.sunDec = sunHorizon.dec;
-  }
+  details.qcode = result;
+  details.bestTime = bestTime;
+  details.sd = SD;
+  details.lunarParallax = lunarParallax;
+  details.arcl = ARCL;
+  details.arcv = ARCV;
+  details.daz = DAZ;
+  details.wTopo = WTopo;
+  details.sdTopo = SDTopo;
+  details.value = value;
+  (details.moonAzimuth = moonHorizon.azimuth),
+    (details.moonAltitude = moonHorizon.altitude);
+  details.moonRa = moonHorizon.ra;
+  details.moonDec = moonHorizon.dec;
+  details.sunAzimuth = sunHorizon.azimuth;
+  details.sunAltitude = sunHorizon.altitude;
+  details.sunRa = sunHorizon.ra;
+  details.sunDec = sunHorizon.dec;
 
-  return result;
+  return details;
 }
