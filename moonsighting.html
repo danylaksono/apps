@@ -26,7 +26,7 @@
 import {define} from "./_observablehq/client.js";
 import {registerFile} from "./_observablehq/stdlib.js";
 
-registerFile("./data/grids_025.geojson", {"name":"./data/grids_025.geojson","mimeType":"application/geo+json","path":"./_file/data/grids_025.dae95e5e.geojson","lastModified":1712638171770});
+registerFile("./data/grids_025.geojson", {"name":"./data/grids_025.geojson","mimeType":"application/geo+json","path":"./_file/data/grids_025.dae95e5e.geojson","lastModified":1712640216021});
 
 define({id: "2c90c8e2", outputs: ["calculate","geocode","getMoonImageURLs","Astronomy","maplibregl","Mutable","moment"], body: async () => {
 const [{calculate}, {geocode}, {getMoonImageURLs}, Astronomy, {default: maplibregl}, {Mutable}, {moment}] = await Promise.all([import("./_import/components/calculate.1847bd3b.js"), import("./_import/components/geocoder.39d0e028.js"), import("./_import/components/moon-now.2a971fc2.js"), import("./_npm/astronomy-engine@2.1.19/_esm.js"), import("./_npm/maplibre-gl@2.0.0/_esm.js"), import("./_observablehq/stdlib.js"), import("./_npm/moment@2.30.1/_esm.js")]);
@@ -169,18 +169,6 @@ html`<button class="tablinks" onclick=${(event) => openTab(event, 'secondtab')}>
 ))
 }});
 
-define({id: "b5190d11", inline: true, inputs: ["openTab","event","display"], body: async (openTab,event,display) => {
-display(await(
-openTab(event,'firsttab')
-))
-}});
-
-define({id: "f33b4cbc", inline: true, inputs: ["openTab","event","display"], body: async (openTab,event,display) => {
-display(await(
-openTab(event,'secondtab')
-))
-}});
-
 define({id: "876d5404", inline: true, inputs: ["date","display"], body: async (date,display) => {
 display(await(
 date.toLocaleDateString('en-gb',{ year: 'numeric', month: 'long', day: 'numeric' })
@@ -235,7 +223,7 @@ coords[0] ? calculateDetails().arcl : ''
 ))
 }});
 
-define({id: "fca6deb4", outputs: ["openTab"], body: () => {
+define({id: "aab0064a", outputs: ["openTab"], body: () => {
 function openTab(event, tabName) {
   // Get all elements with class="tabcontent" and hide them
   const tabcontents = document.querySelectorAll(".tabcontent");
@@ -253,26 +241,6 @@ function openTab(event, tabName) {
   document.getElementById(tabName).style.display = "block";
   event.currentTarget.classList.add("active");
 }
-// function openTab(evt, tabName) {
-//   // Declare all variables
-//   var i, tabcontent, tablinks;
-
-//   // Get all elements with class="tabcontent" and hide them
-//   tabcontent = document.getElementsByClassName("tabcontent");
-//   for (i = 0; i < tabcontent.length; i++) {
-//     tabcontent[i].style.display = "none";
-//   }
-
-//   // Get all elements with class="tablinks" and remove the class "active"
-//   tablinks = document.getElementsByClassName("tablinks");
-//   for (i = 0; i < tablinks.length; i++) {
-//     tablinks[i].className = tablinks[i].className.replace(" active", "");
-//   }
-
-//   // Show the current tab, and add an "active" class to the button that opened the tab
-//   document.getElementById(tabName).style.display = "block";
-//   evt.currentTarget.className += " active";
-// }
 return {openTab};
 }});
 
@@ -575,44 +543,48 @@ return {moonImageURLs,image};
     <div id="map-container"></div>
   </div>
   <div class="card" style="max-height:500px;">
-  <div class="tab">
-    <span id="cell-60d29c2c" class="observablehq--loading"></span>
-    <span id="cell-ef254005" class="observablehq--loading"></span>
-  </div>
-  <!-- <div class="tab"> -->
-    <!-- <button class="tablinks" onclick="<span id="cell-b5190d11" class="observablehq--loading"></span>">Image</button> -->
-    <!-- <button class="tablinks active" onclick="<span id="cell-f33b4cbc" class="observablehq--loading"></span>">Details</button> -->
-  <!-- </div> -->
-  <div id="firsttab" class="tabcontent" style="display: block;">
-    <figure style="max-width: 100%;">
-      <img id="myImage" width="250" height="250" style="aspect-ratio: 1 / 1; height: auto;">
-      <figcaption>
-        <div>
-          <i> <span id="cell-876d5404" class="observablehq--loading"></span> <a href="https://svs.gsfc.nasa.gov/4955" target="_blank" rel="noopener noreferrer">- Credit: Ernie Wright; @forresto</a> </i>
-        </div>
-      </figcaption>
-    </figure>
-  </div>
-  <div id="secondtab" class="tabcontent">
-    <p><i>Clicked Location Detail:</i></p>
-    <p>Lat: <span id="cell-74b75e79" class="observablehq--loading"></span>, Long: <span id="cell-b770821d" class="observablehq--loading"></span></p>
-    <p>Lag Time: <span id="cell-520e6b08" class="observablehq--loading"></span></p>
-    <p>Moon set: <span id="cell-eb867d1a" class="observablehq--loading"></span></p>
-    <p>Sun set: <span id="cell-47f0ee39" class="observablehq--loading"></span></p>
-    <p>New Moon: <span id="cell-a1fa2d99" class="observablehq--loading"></span></p>
-    <p>Moon Semi-Diameter: <span id="cell-68d7ae6a" class="observablehq--loading"></span></p>
-    <p>Elongation (Arc of Light): <span id="cell-870a2756" class="observablehq--loading"></span></p>
-  </div>
+    <div class="tab">
+      <span id="cell-60d29c2c" class="observablehq--loading"></span>
+      <span id="cell-ef254005" class="observablehq--loading"></span>
+    </div>
+    <div id="firsttab" class="tabcontent" style="display: block;">
+      <figure style="max-width: 100%;">
+        <img id="myImage" width="250" height="250" style="aspect-ratio: 1 / 1; height: auto;">
+        <figcaption>
+          <div>
+            <i> <span id="cell-876d5404" class="observablehq--loading"></span> <a href="https://svs.gsfc.nasa.gov/4955" target="_blank" rel="noopener noreferrer">- Credit: Ernie Wright</a> at <a href="https://svs.gsfc.nasa.gov/" target="_blank" rel="noopener noreferrer">NASA Scientific Visualization Studio</a> &amp; <a href="https://observablehq.com/@forresto/the-moon-now" target="_blank" rel="noopener noreferrer"> @forresto </a></i>
+          </div>
+        </figcaption>
+      </figure>
+    </div>
+    <div id="secondtab" class="tabcontent">
+      <p><i>Clicked Location Detail:</i></p>
+      <p>Lat: <span id="cell-74b75e79" class="observablehq--loading"></span>, Long: <span id="cell-b770821d" class="observablehq--loading"></span></p>
+      <p>Lag Time: <span id="cell-520e6b08" class="observablehq--loading"></span></p>
+      <p>Moon set: <span id="cell-eb867d1a" class="observablehq--loading"></span></p>
+      <p>Sun set: <span id="cell-47f0ee39" class="observablehq--loading"></span></p>
+      <p>New Moon: <span id="cell-a1fa2d99" class="observablehq--loading"></span></p>
+      <p>Moon Semi-Diameter: <span id="cell-68d7ae6a" class="observablehq--loading"></span></p>
+      <p>Elongation (Arc of Light): <span id="cell-870a2756" class="observablehq--loading"></span></p>
+    </div>
+<div style="font-color:'grey'; font-size:0.8em; padding:0;">
+  <hr style="padding-top:8px; padding-bottom:4px; margin:2px;">
+  <p style="margin-bottom: 0.2rem;">Dashboard and crescent visibility calculation in JS by <a href="https://github.com/danylaksono" target="_blank" rel="noopener noreferrer">@danylaksono</a></p>
+  <p style="margin-top: 0.2rem; margin-bottom: 0.2rem;">Credits:</p>
+  <p style="margin-top: 0.2rem; margin-bottom: 0.2rem;">- <a href="https://github.com/cosinekitty/astronomy" target="_blank" rel="noopener noreferrer">Astronomy Engine</a></p>
+  <p style="margin-top: 0.2rem; margin-bottom: 0.2rem;">- <a href="https://github.com/crescent-moon-visibility/crescent-moon-visibility/" target="_blank" rel="noopener noreferrer">Crescent Moon Visibility in C++</a></p>
+  <p style="margin-top: 0.2rem; margin-bottom: 0.2rem;">- <a href="https://observablehq.com/framework" target="_blank" rel="noopener noreferrer">Observable Framework</a></p>
+  <p style="margin-top: 0.2rem;"> This is a work in progress and might not reflect the actual conditions. Please refer to the official calculation methods for crescent visibility </p>
 </div>
+  </div>
 </div>
 <!-- Helper Functions -->
-<div id="cell-fca6deb4" class="observablehq observablehq--block"></div>
+<div id="cell-aab0064a" class="observablehq observablehq--block"></div>
 <div id="cell-54777517" class="observablehq observablehq--block"></div>
 <div id="cell-2815ddfc" class="observablehq observablehq--block"></div>
 <div id="cell-1afca64c" class="observablehq observablehq--block"></div>
 <div id="cell-1a9bcb70" class="observablehq observablehq--block"></div>
 <div id="cell-39a30403" class="observablehq observablehq--block"></div>
-<hr>
 <div id="cell-6690dbc2" class="observablehq observablehq--block"></div>
 <!-- Render the data -->
 </div></div></main>
