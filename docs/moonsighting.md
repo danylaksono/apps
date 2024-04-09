@@ -228,35 +228,40 @@ console.log(formattedDuration); // Output: "00:59:00"
     <div id="map-container"></div>
   </div>
   <div class="card" style="max-height:500px;">
-  <div class="tab">
-    ${html`<button class="tablinks active" onclick=${(event) => openTab(event, 'firsttab')}>Image</button>`}
-    ${html`<button class="tablinks" onclick=${(event) => openTab(event, 'secondtab')}>Details</button>`}
-  </div>
-  <!-- <div class="tab"> -->
-    <!-- <button class="tablinks" onclick="${openTab(event,'firsttab')}">Image</button> -->
-    <!-- <button class="tablinks active" onclick="${openTab(event,'secondtab')}">Details</button> -->
-  <!-- </div> -->
-  <div id="firsttab" class="tabcontent" style="display: block;">
-    <figure style="max-width: 100%;">
-      <img id="myImage" width="250" height="250" style="aspect-ratio: 1 / 1; height: auto;" />
-      <figcaption>
-        <div>
-          <i> ${date.toLocaleDateString('en-gb',{ year: 'numeric', month: 'long', day: 'numeric' })} <a href="https://svs.gsfc.nasa.gov/4955">- Credit: Ernie Wright; @forresto</a> </i>
-        </div>
-      </figcaption>
-    </figure>
-  </div>
-  <div id="secondtab" class="tabcontent">
-    <p><i>Clicked Location Detail:</i></p>
-    <p>Lat: ${coords[0] ? coords[0].toFixed(5) : ''}, Long: ${coords[1] ? coords[1].toFixed(5) : ''}</p>
-    <p>Lag Time: ${coords[0] ? formatDuration((calculateDetails().lagTime).toFixed(4)) : ''}</p>
-    <p>Moon set: ${coords[0] ? formatDate(calculateDetails().moonsetMoonrise) : ''}</p>
-    <p>Sun set: ${coords[0] ? formatDate(calculateDetails().sunsetSunrise) : ''}</p>
-    <p>New Moon: ${coords[0] ? formatDate(calculateDetails().newMoonPrev) : ''}</p>
-    <p>Moon Semi-Diameter: ${coords[0] ? calculateDetails().sdTopo : ''}</p>
-    <p>Elongation (Arc of Light): ${coords[0] ? calculateDetails().arcl : ''}</p>
-  </div>
+    <div class="tab">
+      ${html`<button class="tablinks active" onclick=${(event) => openTab(event, 'firsttab')}>Image</button>`}
+      ${html`<button class="tablinks" onclick=${(event) => openTab(event, 'secondtab')}>Details</button>`}
+    </div>
+    <div id="firsttab" class="tabcontent" style="display: block;">
+      <figure style="max-width: 100%;">
+        <img id="myImage" width="250" height="250" style="aspect-ratio: 1 / 1; height: auto;" />
+        <figcaption>
+          <div>
+            <i> ${date.toLocaleDateString('en-gb',{ year: 'numeric', month: 'long', day: 'numeric' })} <a href="https://svs.gsfc.nasa.gov/4955">- Credit: Ernie Wright</a> at <a href="https://svs.gsfc.nasa.gov/">NASA Scientific Visualization Studio</a> & <a href="https://observablehq.com/@forresto/the-moon-now"> @forresto </a></i>
+          </div>
+        </figcaption>
+      </figure>
+    </div>
+    <div id="secondtab" class="tabcontent">
+      <p><i>Clicked Location Detail:</i></p>
+      <p>Lat: ${coords[0] ? coords[0].toFixed(5) : ''}, Long: ${coords[1] ? coords[1].toFixed(5) : ''}</p>
+      <p>Lag Time: ${coords[0] ? formatDuration((calculateDetails().lagTime).toFixed(4)) : ''}</p>
+      <p>Moon set: ${coords[0] ? formatDate(calculateDetails().moonsetMoonrise) : ''}</p>
+      <p>Sun set: ${coords[0] ? formatDate(calculateDetails().sunsetSunrise) : ''}</p>
+      <p>New Moon: ${coords[0] ? formatDate(calculateDetails().newMoonPrev) : ''}</p>
+      <p>Moon Semi-Diameter: ${coords[0] ? calculateDetails().sdTopo : ''}</p>
+      <p>Elongation (Arc of Light): ${coords[0] ? calculateDetails().arcl : ''}</p>
+    </div>
+<div style="font-color:'grey'; font-size:0.8em; padding:0;">
+  <hr style="padding-top:8px; padding-bottom:4px; margin:2px;">
+  <p style="margin-bottom: 0.2rem;">Dashboard and crescent visibility calculation in JS by <a href="https://github.com/danylaksono">@danylaksono</a></p>
+  <p style="margin-top: 0.2rem; margin-bottom: 0.2rem;">Credits:</p>
+  <p style="margin-top: 0.2rem; margin-bottom: 0.2rem;">- <a href="https://github.com/cosinekitty/astronomy">Astronomy Engine</a></p>
+  <p style="margin-top: 0.2rem; margin-bottom: 0.2rem;">- <a href="https://github.com/crescent-moon-visibility/crescent-moon-visibility/">Crescent Moon Visibility in C++</a></p>
+  <p style="margin-top: 0.2rem; margin-bottom: 0.2rem;">- <a href="https://observablehq.com/framework">Observable Framework</a></p>
+  <p style="margin-top: 0.2rem;"> This is a work in progress and might not reflect the actual conditions. Please refer to the official calculation methods for crescent visibility </p>
 </div>
+  </div>
 </div>
 
 <!-- Helper Functions -->
@@ -279,26 +284,6 @@ function openTab(event, tabName) {
   document.getElementById(tabName).style.display = "block";
   event.currentTarget.classList.add("active");
 }
-// function openTab(evt, tabName) {
-//   // Declare all variables
-//   var i, tabcontent, tablinks;
-
-//   // Get all elements with class="tabcontent" and hide them
-//   tabcontent = document.getElementsByClassName("tabcontent");
-//   for (i = 0; i < tabcontent.length; i++) {
-//     tabcontent[i].style.display = "none";
-//   }
-
-//   // Get all elements with class="tablinks" and remove the class "active"
-//   tablinks = document.getElementsByClassName("tablinks");
-//   for (i = 0; i < tablinks.length; i++) {
-//     tablinks[i].className = tablinks[i].className.replace(" active", "");
-//   }
-
-//   // Show the current tab, and add an "active" class to the button that opened the tab
-//   document.getElementById(tabName).style.display = "block";
-//   evt.currentTarget.className += " active";
-// }
 ```
 
 ```js
@@ -459,8 +444,6 @@ map.on("data", (e) => {
 
 invalidation.then(() => map.remove());
 ```
-
----
 
 ```js
 const moonImageURLs = getMoonImageURLs(date, true);

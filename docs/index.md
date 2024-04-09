@@ -47,7 +47,6 @@ toc: false
 <link rel="shortcut icon" href="/images/favicon.png">
 
 <div class="hero">
-  <h1>Hello, Observable Framework</h1>
-  <h2>Welcome to your new project! Edit&nbsp;<code style="font-size: 90%;">docs/index.md</code> to change this page.</h2>
-  <a href="https://observablehq.com/framework/getting-started" target="_blank">Get started<span style="display: inline-block; margin-left: 0.25rem;">↗︎</span></a>
+  <h1>Hello, Strangers</h1>
+  <h2>If you happen to get to this page, please be patient as I gradually put some of my projects here. Meanwhile, please kindly head back to <a href="https://danylaksono.com">danylaksono.com </a>, my <a href="https://github.com/danylaksono">github page</a> or my <a href="https://observablehq.com/@danylaksono"> Observable page </a>.</h2>
 </div>
