@@ -3,7 +3,7 @@ import * as Astronomy from "npm:astronomy-engine@2.1.19";
 export function calculate(
   latitude,
   longitude,
-  altitude = 100,
+  altitude = 0,
   baseTime,
   options = {}
 ) {

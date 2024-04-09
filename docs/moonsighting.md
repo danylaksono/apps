@@ -49,6 +49,43 @@ sidebar: false
   }
 }
 
+
+/* Style the tab */
+.tab {
+  overflow: hidden;
+  border: 1px solid #ccc;
+  background-color: #f1f1f1;
+}
+
+/* Style the buttons that are used to open the tab content */
+.tab button {
+  background-color: inherit;
+  float: left;
+  border: none;
+  outline: none;
+  cursor: pointer;
+  padding: 14px 16px;
+  transition: 0.3s;
+}
+
+/* Change background color of buttons on hover */
+.tab button:hover {
+  background-color: #ddd;
+}
+
+/* Create an active/current tablink class */
+.tab button.active {
+  background-color: #ccc;
+}
+
+/* Style the tab content */
+.tabcontent {
+  display: none;
+  padding: 6px 12px;
+  border: 1px solid #ccc;
+  border-top: none;
+}
+
 </style>
 
 <link rel="shortcut icon" href="/images/favicon.png">
@@ -58,6 +95,7 @@ sidebar: false
 
 ```js
 import { calculate } from "./components/calculate.js";
+import { geocode } from "./components/geocoder.js";
 import { getMoonImageURLs } from "./components/moon-now.js";
 import * as Astronomy from "npm:astronomy-engine@2.1.19";
 import maplibregl from "npm:maplibre-gl@2.0.0";
@@ -121,6 +159,38 @@ const calculateDetails = () => {
   });
   return code;
 };
+
+function formatDate(date) {
+  const options = {
+    weekday: "long",
+    year: "numeric",
+    month: "long",
+    day: "numeric",
+    hour: "numeric",
+    minute: "numeric",
+    hourCycle: "h12",
+  };
+  const timeString = date.toLocaleTimeString("en-US", { hour12: true });
+  const dateString = date.toLocaleDateString("en-US", options);
+
+  return `${dateString}, ${timeString}`;
+}
+
+function formatDuration(duration) {
+  const hours = Math.floor(duration);
+  const minutes = Math.floor((duration - hours) * 60);
+  const seconds = Math.floor(((duration - hours) * 60 - minutes) * 60);
+
+  const formattedHours = hours.toString().padStart(2, "0");
+  const formattedMinutes = minutes.toString().padStart(2, "0");
+  const formattedSeconds = seconds.toString().padStart(2, "0");
+
+  return `${formattedHours}:${formattedMinutes}:${formattedSeconds}`;
+}
+
+const duration = 0.9821;
+const formattedDuration = formatDuration(duration);
+console.log(formattedDuration); // Output: "00:59:00"
 ```
 
 # Moonsighting 🌛
@@ -132,7 +202,7 @@ const calculateDetails = () => {
     <div>
     <span> Select date and submit to draw the moon's visibility map. Click on the map to get the visibility calculation for that location. Adjust the elevation if needed. </span>
     </div>
-    <span>Only Yallop method is available for now. </span>
+    <span>Only <a href="https://webspace.science.uu.nl/~gent0113/islam/islam_lunvis_method.htm">Yallop</a> method is available for now. </span>
     </div>
     <div>
     ${modeInput}
@@ -140,9 +210,12 @@ const calculateDetails = () => {
     ${dateInput}
     </div>
     <div>
-    ${coords ? calculateDetails().qcode : ''}
+      <div>
+        <h1> Criteria: ${ coords[0] ? calculateDetails().qcode : ''} </h1>
+      <div>
+        <h3> ( ${coords[0] ? yallop[calculateDetails().qcode] : ''} ) </h3>
+      </div>
     </div>
-
   </div>
 </div>
 
@@ -154,30 +227,79 @@ const calculateDetails = () => {
     <!-- maps -->
     <div id="map-container"></div>
   </div>
-    <div class="card">
+  <div class="card" style="max-height:500px;">
+  <div class="tab">
+    ${html`<button class="tablinks active" onclick=${(event) => openTab(event, 'firsttab')}>Image</button>`}
+    ${html`<button class="tablinks" onclick=${(event) => openTab(event, 'secondtab')}>Details</button>`}
+  </div>
+  <!-- <div class="tab"> -->
+    <!-- <button class="tablinks" onclick="${openTab(event,'firsttab')}">Image</button> -->
+    <!-- <button class="tablinks active" onclick="${openTab(event,'secondtab')}">Details</button> -->
+  <!-- </div> -->
+  <div id="firsttab" class="tabcontent" style="display: block;">
     <figure style="max-width: 100%;">
-      <img id="myImage" width="300" height="300" style="aspect-ratio: 1 / 1; height: auto;" />
+      <img id="myImage" width="250" height="250" style="aspect-ratio: 1 / 1; height: auto;" />
       <figcaption>
-      <div>
-      <i> The moon on: ${date.toLocaleDateString('en-gb',{
-            year: 'numeric',
-            month: 'long',
-            day: 'numeric'
-          }
-        )} </i>
+        <div>
+          <i> ${date.toLocaleDateString('en-gb',{ year: 'numeric', month: 'long', day: 'numeric' })} <a href="https://svs.gsfc.nasa.gov/4955">- Credit: Ernie Wright; @forresto</a> </i>
         </div>
-        <a href="https://svs.gsfc.nasa.gov/4955">Visualizations by Ernie Wright</a> at <a href="https://svs.gsfc.nasa.gov/">NASA Scientific Visualization Studio</a>. Code adapted from @forresto.
       </figcaption>
     </figure>
-    <div>
-    <span> 
-      <i> Hilal visibility on: ${date.toISOString().slice(0, 10)} </i>
-        <span> ${coords? coords[0]: ''} | ${coords? coords[1]:''} </span>
-    </div>
   </div>
+  <div id="secondtab" class="tabcontent">
+    <p><i>Clicked Location Detail:</i></p>
+    <p>Lat: ${coords[0] ? coords[0].toFixed(5) : ''}, Long: ${coords[1] ? coords[1].toFixed(5) : ''}</p>
+    <p>Lag Time: ${coords[0] ? formatDuration((calculateDetails().lagTime).toFixed(4)) : ''}</p>
+    <p>Moon set: ${coords[0] ? formatDate(calculateDetails().moonsetMoonrise) : ''}</p>
+    <p>Sun set: ${coords[0] ? formatDate(calculateDetails().sunsetSunrise) : ''}</p>
+    <p>New Moon: ${coords[0] ? formatDate(calculateDetails().newMoonPrev) : ''}</p>
+    <p>Moon Semi-Diameter: ${coords[0] ? calculateDetails().sdTopo : ''}</p>
+    <p>Elongation (Arc of Light): ${coords[0] ? calculateDetails().arcl : ''}</p>
+  </div>
+</div>
 </div>
 
 <!-- Helper Functions -->
+
+```js
+function openTab(event, tabName) {
+  // Get all elements with class="tabcontent" and hide them
+  const tabcontents = document.querySelectorAll(".tabcontent");
+  tabcontents.forEach((tabcontent) => {
+    tabcontent.style.display = "none";
+  });
+
+  // Get all elements with class="tablinks" and remove the class "active"
+  const tablinks = document.querySelectorAll(".tablinks");
+  tablinks.forEach((tablink) => {
+    tablink.classList.remove("active");
+  });
+
+  // Show the current tab, and add an "active" class to the button that opened the tab
+  document.getElementById(tabName).style.display = "block";
+  event.currentTarget.classList.add("active");
+}
+// function openTab(evt, tabName) {
+//   // Declare all variables
+//   var i, tabcontent, tablinks;
+
+//   // Get all elements with class="tabcontent" and hide them
+//   tabcontent = document.getElementsByClassName("tabcontent");
+//   for (i = 0; i < tabcontent.length; i++) {
+//     tabcontent[i].style.display = "none";
+//   }
+
+//   // Get all elements with class="tablinks" and remove the class "active"
+//   tablinks = document.getElementsByClassName("tablinks");
+//   for (i = 0; i < tablinks.length; i++) {
+//     tablinks[i].className = tablinks[i].className.replace(" active", "");
+//   }
+
+//   // Show the current tab, and add an "active" class to the button that opened the tab
+//   document.getElementById(tabName).style.display = "block";
+//   evt.currentTarget.className += " active";
+// }
+```
 
 ```js
 function getCellColor(qcode) {
@@ -185,20 +307,35 @@ function getCellColor(qcode) {
   if (!isLoadingSpinnerVisible()) {
     showLoadingSpinner();
   }
-  if (qcode === "A") color = "rgba(62, 255, 0, 255)";
-  else if (qcode === "B") color = "rgba(62, 255, 109, 255)";
-  else if (qcode === "C") color = "rgba(0, 255, 158, 255)";
-  else if (qcode === "D") color = "rgba(0, 255, 250, 255)";
-  else if (qcode === "E") color = "rgba(60, 120, 255, 255)";
-  else if (qcode === "F") color = "rgba(0, 0, 0, 255)";
-  else if (qcode === "G") color = "rgba(173, 13, 106, 255)";
+  if (qcode === "A") color = "rgb(1,255,1)";
+  else if (qcode === "B") color = "rgb(127,255,0)";
+  else if (qcode === "C") color = "RGB(127,255,127)";
+  else if (qcode === "D") color = "RGB(255,255,0)";
+  else if (qcode === "E") color = "RGB(255,127,76)";
+  else if (qcode === "F") color = "rgba(0, 0, 0, 0)";
+  else if (qcode === "G") color = "RGB(178,0,178)";
   else if (qcode === "H") color = "rgba(0, 0, 0, 255)";
-  else if (qcode === "I") color = "rgba(0, 0, 255, 255)";
-  else if (qcode === "J") color = "rgba(87, 7, 181, 255)";
+  else if (qcode === "I") color = "RGB(255,0,0)";
+  else if (qcode === "J") color = "rgba(0, 0, 0, 0)";
   else color = null;
 
   return color;
 }
+```
+
+```js
+// Yallop criteria lookup
+const yallop = {
+  A: "Hilal easily visible",
+  B: "Hilal visible under perfect conditions",
+  C: "May need optical aid to find crescent",
+  D: "Will need optical aid to find crescent",
+  E: "Crescent not visible with telescope",
+  F: "Hilal not visible - below the Danjon limit (7°)",
+  G: "Hilal not visible - Sunset is before new moon", //
+  H: "Hilal not visible - No Moonset on location", //
+  I: "Hilal not visible - Moonset before sunset",
+};
 ```
 
 ```js
