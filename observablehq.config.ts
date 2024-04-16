@@ -11,7 +11,7 @@ export default {
       name: "Projects",
       pages: [
         { name: "Dashboard", path: "/moonsighting" },
-        // {name: "Report", path: "/example-report"}
+        { name: "Gridded-glyphmaps", path: "/gridded" },
       ],
     },
   ],

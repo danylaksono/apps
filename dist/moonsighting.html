@@ -1,0 +1,591 @@
+<!DOCTYPE html>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+<title>Moonsighting | Web-Apps</title>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=Source+Serif+Pro:ital,wght@0,400;0,600;0,700;1,400;1,600;1,700&amp;display=swap" crossorigin>
+<link rel="preload" as="style" href="./_observablehq/theme-air,near-midnight,alt,wide.css">
+<link rel="preload" as="style" href="./_observablehq/stdlib/inputs.css">
+<link rel="stylesheet" type="text/css" href="https://fonts.googleapis.com/css2?family=Source+Serif+Pro:ital,wght@0,400;0,600;0,700;1,400;1,600;1,700&amp;display=swap" crossorigin>
+<link rel="stylesheet" type="text/css" href="./_observablehq/theme-air,near-midnight,alt,wide.css">
+<link rel="stylesheet" type="text/css" href="./_observablehq/stdlib/inputs.css">
+<link rel="modulepreload" href="./_observablehq/client.js">
+<link rel="modulepreload" href="./_observablehq/runtime.js">
+<link rel="modulepreload" href="./_observablehq/stdlib.js">
+<link rel="modulepreload" href="./_import/components/calculate.1847bd3b.js">
+<link rel="modulepreload" href="./_import/components/geocoder.39d0e028.js">
+<link rel="modulepreload" href="./_import/components/moon-now.2a971fc2.js">
+<link rel="modulepreload" href="./_npm/astronomy-engine@2.1.19/_esm.js">
+<link rel="modulepreload" href="./_npm/maplibre-gl@2.0.0/_esm.js">
+<link rel="modulepreload" href="./_npm/moment@2.30.1/_esm.js">
+<link rel="modulepreload" href="./_npm/htl@0.3.1/_esm.js">
+<link rel="modulepreload" href="./_observablehq/stdlib/inputs.js">
+<link rel="modulepreload" href="./_npm/isoformat@0.2.1/_esm.js">
+<script type="module">
+
+import {define} from "./_observablehq/client.js";
+import {registerFile} from "./_observablehq/stdlib.js";
+
+registerFile("./data/grids_025.geojson", {"name":"./data/grids_025.geojson","mimeType":"application/geo+json","path":"./_file/data/grids_025.dae95e5e.geojson","lastModified":1712517375960});
+
+define({id: "2c90c8e2", outputs: ["calculate","geocode","getMoonImageURLs","Astronomy","maplibregl","Mutable","moment"], body: async () => {
+const [{calculate}, {geocode}, {getMoonImageURLs}, Astronomy, {default: maplibregl}, {Mutable}, {moment}] = await Promise.all([import("./_import/components/calculate.1847bd3b.js"), import("./_import/components/geocoder.39d0e028.js"), import("./_import/components/moon-now.2a971fc2.js"), import("./_npm/astronomy-engine@2.1.19/_esm.js"), import("./_npm/maplibre-gl@2.0.0/_esm.js"), import("./_observablehq/stdlib.js"), import("./_npm/moment@2.30.1/_esm.js")]);
+
+return {calculate,geocode,getMoonImageURLs,Astronomy,maplibregl,Mutable,moment};
+}});
+
+define({id: "83053c83", inputs: ["FileAttachment"], outputs: ["grids"], body: (FileAttachment) => {
+const grids = FileAttachment("./data/grids_025.geojson").json();
+return {grids};
+}});
+
+define({id: "ac2756a2", inputs: ["Mutable"], outputs: ["coords","coordsSetter"], body: (Mutable) => {
+const coords = Mutable([]);
+const coordsSetter = (lat, lon) => {
+  coords.value = [lat, lon];
+};
+return {coords,coordsSetter};
+}});
+
+define({id: "b4da55ef", inputs: ["Inputs","Generators"], outputs: ["dateInput","date"], body: (Inputs,Generators) => {
+const dateInput = Inputs.date({
+  label: "Select Date: ",
+  submit: true,
+  value: new Date(),
+});
+const date = Generators.input(dateInput);
+
+// Object.assign(dateInput, {
+//   oninput: (event) => event.isTrusted && event.stopImmediatePropagation(),
+//   // oninput: (event) => {
+//   //   console.log("event fired", event);
+//   //   // showLoadingSpinner();
+//   //   //event.currentTarget.dispatchEvent(new Event("input")),
+//   // },
+// });
+return {dateInput,date};
+}});
+
+define({id: "716e085a", inputs: ["Inputs","Generators"], outputs: ["modeInput","mode","elevInput","elev"], body: (Inputs,Generators) => {
+const modeInput = Inputs.radio(["Odeh", "Yallop"], {
+  label: "Criteria: ",
+  value: "Yallop",
+  disabled: true,
+});
+const mode = Generators.input(modeInput);
+
+const elevInput = Inputs.text({
+  label: "Elevation (m): ",
+  value: "100",
+});
+const elev = Generators.input(elevInput);
+return {modeInput,mode,elevInput,elev};
+}});
+
+define({id: "9dc4b35e", inputs: ["coords","elev","calculate","date","mode"], outputs: ["calculateDetails","formatDate","formatDuration","duration","formattedDuration"], body: (coords,elev,calculate,date,mode) => {
+const calculateDetails = () => {
+  const lat = coords ? coords[0] : -7.983889;
+  const lon = coords ? coords[1] : 110.323125;
+  const elevation = parseFloat(elev);
+  const code = calculate(lat, lon, elevation, date, {
+    yallop: mode == "Yallop" ? true : false,
+  });
+  return code;
+};
+
+function formatDate(date) {
+  const options = {
+    weekday: "long",
+    year: "numeric",
+    month: "long",
+    day: "numeric",
+    hour: "numeric",
+    minute: "numeric",
+    hourCycle: "h12",
+  };
+  const timeString = date.toLocaleTimeString("en-US", { hour12: true });
+  const dateString = date.toLocaleDateString("en-US", options);
+
+  return `${dateString}, ${timeString}`;
+}
+
+function formatDuration(duration) {
+  const hours = Math.floor(duration);
+  const minutes = Math.floor((duration - hours) * 60);
+  const seconds = Math.floor(((duration - hours) * 60 - minutes) * 60);
+
+  const formattedHours = hours.toString().padStart(2, "0");
+  const formattedMinutes = minutes.toString().padStart(2, "0");
+  const formattedSeconds = seconds.toString().padStart(2, "0");
+
+  return `${formattedHours}:${formattedMinutes}:${formattedSeconds}`;
+}
+
+const duration = 0.9821;
+const formattedDuration = formatDuration(duration);
+console.log(formattedDuration); // Output: "00:59:00"
+return {calculateDetails,formatDate,formatDuration,duration,formattedDuration};
+}});
+
+define({id: "764cbf36", inline: true, inputs: ["modeInput","display"], body: async (modeInput,display) => {
+display(await(
+modeInput
+))
+}});
+
+define({id: "b657c7a7", inline: true, inputs: ["elevInput","display"], body: async (elevInput,display) => {
+display(await(
+elevInput
+))
+}});
+
+define({id: "35590838", inline: true, inputs: ["dateInput","display"], body: async (dateInput,display) => {
+display(await(
+dateInput
+))
+}});
+
+define({id: "f6c4dbe0", inline: true, inputs: ["coords","calculateDetails","display"], body: async (coords,calculateDetails,display) => {
+display(await(
+ coords[0] ? calculateDetails().qcode : ''
+))
+}});
+
+define({id: "d7ae58ae", inline: true, inputs: ["coords","yallop","calculateDetails","display"], body: async (coords,yallop,calculateDetails,display) => {
+display(await(
+coords[0] ? yallop[calculateDetails().qcode] : ''
+))
+}});
+
+define({id: "60d29c2c", inline: true, inputs: ["html","openTab","display"], body: async (html,openTab,display) => {
+display(await(
+html`<button class="tablinks active" onclick=${(event) => openTab(event, 'firsttab')}>Image</button>`
+))
+}});
+
+define({id: "ef254005", inline: true, inputs: ["html","openTab","display"], body: async (html,openTab,display) => {
+display(await(
+html`<button class="tablinks" onclick=${(event) => openTab(event, 'secondtab')}>Details</button>`
+))
+}});
+
+define({id: "876d5404", inline: true, inputs: ["date","display"], body: async (date,display) => {
+display(await(
+date.toLocaleDateString('en-gb',{ year: 'numeric', month: 'long', day: 'numeric' })
+))
+}});
+
+define({id: "74b75e79", inline: true, inputs: ["coords","display"], body: async (coords,display) => {
+display(await(
+coords[0] ? coords[0].toFixed(5) : ''
+))
+}});
+
+define({id: "b770821d", inline: true, inputs: ["coords","display"], body: async (coords,display) => {
+display(await(
+coords[1] ? coords[1].toFixed(5) : ''
+))
+}});
+
+define({id: "520e6b08", inline: true, inputs: ["coords","formatDuration","calculateDetails","display"], body: async (coords,formatDuration,calculateDetails,display) => {
+display(await(
+coords[0] ? formatDuration((calculateDetails().lagTime).toFixed(4)) : ''
+))
+}});
+
+define({id: "eb867d1a", inline: true, inputs: ["coords","formatDate","calculateDetails","display"], body: async (coords,formatDate,calculateDetails,display) => {
+display(await(
+coords[0] ? formatDate(calculateDetails().moonsetMoonrise) : ''
+))
+}});
+
+define({id: "47f0ee39", inline: true, inputs: ["coords","formatDate","calculateDetails","display"], body: async (coords,formatDate,calculateDetails,display) => {
+display(await(
+coords[0] ? formatDate(calculateDetails().sunsetSunrise) : ''
+))
+}});
+
+define({id: "a1fa2d99", inline: true, inputs: ["coords","formatDate","calculateDetails","display"], body: async (coords,formatDate,calculateDetails,display) => {
+display(await(
+coords[0] ? formatDate(calculateDetails().newMoonPrev) : ''
+))
+}});
+
+define({id: "68d7ae6a", inline: true, inputs: ["coords","calculateDetails","display"], body: async (coords,calculateDetails,display) => {
+display(await(
+coords[0] ? calculateDetails().sdTopo : ''
+))
+}});
+
+define({id: "870a2756", inline: true, inputs: ["coords","calculateDetails","display"], body: async (coords,calculateDetails,display) => {
+display(await(
+coords[0] ? calculateDetails().arcl : ''
+))
+}});
+
+define({id: "aab0064a", outputs: ["openTab"], body: () => {
+function openTab(event, tabName) {
+  // Get all elements with class="tabcontent" and hide them
+  const tabcontents = document.querySelectorAll(".tabcontent");
+  tabcontents.forEach((tabcontent) => {
+    tabcontent.style.display = "none";
+  });
+
+  // Get all elements with class="tablinks" and remove the class "active"
+  const tablinks = document.querySelectorAll(".tablinks");
+  tablinks.forEach((tablink) => {
+    tablink.classList.remove("active");
+  });
+
+  // Show the current tab, and add an "active" class to the button that opened the tab
+  document.getElementById(tabName).style.display = "block";
+  event.currentTarget.classList.add("active");
+}
+return {openTab};
+}});
+
+define({id: "54777517", inputs: ["isLoadingSpinnerVisible","showLoadingSpinner"], outputs: ["getCellColor"], body: (isLoadingSpinnerVisible,showLoadingSpinner) => {
+function getCellColor(qcode) {
+  let color;
+  if (!isLoadingSpinnerVisible()) {
+    showLoadingSpinner();
+  }
+  if (qcode === "A") color = "rgb(1,255,1)";
+  else if (qcode === "B") color = "rgb(127,255,0)";
+  else if (qcode === "C") color = "RGB(127,255,127)";
+  else if (qcode === "D") color = "RGB(255,255,0)";
+  else if (qcode === "E") color = "RGB(255,127,76)";
+  else if (qcode === "F") color = "rgba(0, 0, 0, 0)";
+  else if (qcode === "G") color = "RGB(178,0,178)";
+  else if (qcode === "H") color = "rgba(0, 0, 0, 255)";
+  else if (qcode === "I") color = "RGB(255,0,0)";
+  else if (qcode === "J") color = "rgba(0, 0, 0, 0)";
+  else color = null;
+
+  return color;
+}
+return {getCellColor};
+}});
+
+define({id: "2815ddfc", outputs: ["yallop"], body: () => {
+// Yallop criteria lookup
+const yallop = {
+  A: "Hilal easily visible",
+  B: "Hilal visible under perfect conditions",
+  C: "May need optical aid to find crescent",
+  D: "Will need optical aid to find crescent",
+  E: "Crescent not visible with telescope",
+  F: "Hilal not visible - below the Danjon limit (7°)",
+  G: "Hilal not visible - Sunset is before new moon", //
+  H: "Hilal not visible - No Moonset on location", //
+  I: "Hilal not visible - Moonset before sunset",
+};
+return {yallop};
+}});
+
+define({id: "1afca64c", outputs: ["showLoadingSpinner","hideLoadingSpinner","isLoadingSpinnerVisible"], body: () => {
+// Function to show the loading spinner
+function showLoadingSpinner() {
+  const loadingSpinner = document.getElementById("loading-container");
+  loadingSpinner.style.display = "block";
+}
+
+// Function to hide the loading spinner
+function hideLoadingSpinner() {
+  const loadingSpinner = document.getElementById("loading-container");
+  loadingSpinner.style.display = "none";
+}
+
+// Function to check if the loading spinner is visible
+function isLoadingSpinnerVisible() {
+  const loadingContainer = document.getElementById("loading-container");
+  const computedStyle = window.getComputedStyle(loadingContainer);
+  const displayValue = computedStyle.getPropertyValue("display");
+
+  return displayValue !== "none";
+}
+return {showLoadingSpinner,hideLoadingSpinner,isLoadingSpinnerVisible};
+}});
+
+define({id: "1a9bcb70", inputs: ["grids","date","calculate","mode","getCellColor"], outputs: ["gridData"], body: (grids,date,calculate,mode,getCellColor) => {
+const gridData = {
+  type: grids.type,
+  features: grids.features.map((feature) => {
+    const lat = feature.properties.lat;
+    const lon = feature.properties.long;
+    // console.log(lat, lon);
+
+    const selectedDate = date; // new Date("2024-04-09T00:00:00Z");
+    const elev = 0;
+    const code = calculate(lat, lon, elev, selectedDate, {
+      yallop: mode == "Yallop" ? true : false,
+    });
+    // console.log(code.qcode);
+    const cellColor = getCellColor(code.qcode);
+    // hideLoadingSpinner();
+    return {
+      ...feature,
+      properties: {
+        ...feature.properties,
+        color: cellColor,
+      },
+    };
+  }),
+};
+return {gridData};
+}});
+
+define({id: "39a30403", inputs: ["maplibregl","gridData","coordsSetter","hideLoadingSpinner","invalidation"], outputs: ["map","currentMarker"], body: (maplibregl,gridData,coordsSetter,hideLoadingSpinner,invalidation) => {
+const map = new maplibregl.Map({
+  boxZoom: true,
+  pitch: 0,
+  bearing: 0,
+  maplibreLogo: true,
+  container: "map-container",
+  center: [110, -7],
+  zoom: 12,
+  style:
+    "https://basemaps.cartocdn.com/gl/dark-matter-nolabels-gl-style/style.json",
+  // see more: https://deck.gl/docs/api-reference/carto/basemap
+  scrollZoom: true,
+});
+
+map.on("load", function () {
+  map.addSource("mygeojson", {
+    type: "geojson",
+    data: gridData,
+  });
+
+  map.addLayer({
+    id: "mygeojson",
+    type: "fill",
+    source: "mygeojson",
+    paint: {
+      "fill-color": ["get", "color"],
+      // "fill-outline-color": ["get", "color"],
+      "fill-opacity": 0.5,
+      "fill-antialias": false,
+      // "line-opacity": 0,
+    },
+  });
+});
+
+map.fitBounds([
+  [93.216, -12.922],
+  [143.07, 7.738],
+]);
+
+let currentMarker = null;
+map.on("click", (e) => {
+  // Remove the previous marker if it exists
+  if (currentMarker !== null) {
+    currentMarker.remove();
+  }
+
+  // set the coords
+  coordsSetter(e.lngLat.lat, e.lngLat.lng);
+
+  // Create a new marker
+  currentMarker = new maplibregl.Marker().setLngLat(e.lngLat).addTo(map);
+});
+
+// Watch for the 'data' event on the GeoJSON source
+// map.on("render", (e) => {
+//   console.log("GeoJSON data is loading");
+//   console.log(e);
+//   showLoadingSpinner();
+// });
+
+map.on("data", (e) => {
+  if (e.sourceId === "mygeojson" && e.isSourceLoaded) {
+    console.log("GeoJSON data has finished loading");
+    hideLoadingSpinner();
+    // You can perform additional actions here, such as showing a loading indicator
+  }
+});
+
+invalidation.then(() => map.remove());
+return {map,currentMarker};
+}});
+
+define({id: "6690dbc2", inputs: ["getMoonImageURLs","date"], outputs: ["moonImageURLs","image"], body: (getMoonImageURLs,date) => {
+const moonImageURLs = getMoonImageURLs(date, true);
+const image = document.querySelector("#myImage");
+image.src = moonImageURLs.jpg;
+return {moonImageURLs,image};
+}});
+
+</script>
+<div id="observablehq-center">
+<main id="observablehq-main" class="observablehq">
+<style>
+
+.grid {
+  margin: 5px;
+}
+
+#map-container {
+  width: 100%;
+  height: 500px;// 100vh; // Use vh for viewport height
+  /* padding: 6px; */
+}
+
+#loading-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 100px;
+}
+
+#progressBar {
+  width: 300px;
+  height: 20px;
+  margin-bottom: 20px;
+}
+
+.spinner {
+  border: 4px solid #f3f3f3;
+  border-top: 4px solid #3498db;
+  border-radius: 50%;
+  width: 30px;
+  height: 30px;
+  animation: spin 2s linear infinite;
+}
+
+@keyframes spin {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
+}
+
+
+/* Style the tab */
+.tab {
+  overflow: hidden;
+  border: 1px solid #ccc;
+  background-color: #f1f1f1;
+}
+
+/* Style the buttons that are used to open the tab content */
+.tab button {
+  background-color: inherit;
+  float: left;
+  border: none;
+  outline: none;
+  cursor: pointer;
+  padding: 14px 16px;
+  transition: 0.3s;
+}
+
+/* Change background color of buttons on hover */
+.tab button:hover {
+  background-color: #ddd;
+}
+
+/* Create an active/current tablink class */
+.tab button.active {
+  background-color: #ccc;
+}
+
+/* Style the tab content */
+.tabcontent {
+  display: none;
+  padding: 6px 12px;
+  border: 1px solid #ccc;
+  border-top: none;
+}
+
+</style>
+<link rel="shortcut icon" href="./_file/images/favicon.df720e6d.png">
+<link href="https://unpkg.com/maplibre-gl@2.1.9/dist/maplibre-gl.css" rel="stylesheet">
+<!-- Library Preparations -->
+<div id="cell-2c90c8e2" class="observablehq observablehq--block"></div>
+<div id="cell-83053c83" class="observablehq observablehq--block"></div>
+<div id="cell-ac2756a2" class="observablehq observablehq--block"></div>
+<div id="cell-b4da55ef" class="observablehq observablehq--block"></div>
+<!-- INPUTS -->
+<div id="cell-716e085a" class="observablehq observablehq--block"></div>
+<div id="cell-9dc4b35e" class="observablehq observablehq--block"></div>
+<h1 id="moonsighting-%F0%9F%8C%9B" tabindex="-1"><a class="observablehq-header-anchor" href="#moonsighting-%F0%9F%8C%9B">Moonsighting 🌛</a></h1>
+<div class="grid grid-cols-1" style="max-height:60px;">
+  <div class="card" style="padding:6px;">
+    <div class="grid grid-cols-3">
+    <div>
+    <div>
+    <span> Select date and submit to draw the moon's visibility map. Click on the map to get the visibility calculation for that location. Adjust the elevation if needed. </span>
+    </div>
+    <span>Only <a href="https://webspace.science.uu.nl/~gent0113/islam/islam_lunvis_method.htm" target="_blank" rel="noopener noreferrer">Yallop</a> method is available for now. </span>
+    </div>
+    <div>
+    <span id="cell-764cbf36" class="observablehq--loading"></span>
+    <span id="cell-b657c7a7" class="observablehq--loading"></span>
+    <span id="cell-35590838" class="observablehq--loading"></span>
+    </div>
+    <div>
+      <div>
+        <h1> Criteria: <span id="cell-f6c4dbe0" class="observablehq--loading"></span> </h1>
+      <div>
+        <h3> ( <span id="cell-d7ae58ae" class="observablehq--loading"></span> ) </h3>
+      </div>
+    </div>
+  </div>
+</div>
+<div class="grid grid-cols-4">
+  <div class="card grid-colspan-3" style="padding:6px;">
+    <div id="loading-container">
+    <span id="loadingSpinner" class="spinner"></span>
+    </div>
+    <!-- maps -->
+    <div id="map-container"></div>
+  </div>
+  <div class="card" style="max-height:500px;">
+    <div class="tab">
+      <span id="cell-60d29c2c" class="observablehq--loading"></span>
+      <span id="cell-ef254005" class="observablehq--loading"></span>
+    </div>
+    <div id="firsttab" class="tabcontent" style="display: block;">
+      <figure style="max-width: 100%;">
+        <img id="myImage" width="250" height="250" style="aspect-ratio: 1 / 1; height: auto;">
+        <figcaption>
+          <div>
+            <i> <span id="cell-876d5404" class="observablehq--loading"></span> <a href="https://svs.gsfc.nasa.gov/4955" target="_blank" rel="noopener noreferrer">- Credit: Ernie Wright</a> at <a href="https://svs.gsfc.nasa.gov/" target="_blank" rel="noopener noreferrer">NASA Scientific Visualization Studio</a> &amp; <a href="https://observablehq.com/@forresto/the-moon-now" target="_blank" rel="noopener noreferrer"> @forresto </a></i>
+          </div>
+        </figcaption>
+      </figure>
+    </div>
+    <div id="secondtab" class="tabcontent">
+      <p><i>Clicked Location Detail:</i></p>
+      <p>Lat: <span id="cell-74b75e79" class="observablehq--loading"></span>, Long: <span id="cell-b770821d" class="observablehq--loading"></span></p>
+      <p>Lag Time: <span id="cell-520e6b08" class="observablehq--loading"></span></p>
+      <p>Moon set: <span id="cell-eb867d1a" class="observablehq--loading"></span></p>
+      <p>Sun set: <span id="cell-47f0ee39" class="observablehq--loading"></span></p>
+      <p>New Moon: <span id="cell-a1fa2d99" class="observablehq--loading"></span></p>
+      <p>Moon Semi-Diameter: <span id="cell-68d7ae6a" class="observablehq--loading"></span></p>
+      <p>Elongation (Arc of Light): <span id="cell-870a2756" class="observablehq--loading"></span></p>
+    </div>
+<div style="font-color:'grey'; font-size:0.8em; padding:0;">
+  <hr style="padding-top:8px; padding-bottom:4px; margin:2px;">
+  <p style="margin-bottom: 0.2rem;">Dashboard and crescent visibility calculation in JS by <a href="https://github.com/danylaksono" target="_blank" rel="noopener noreferrer">@danylaksono</a></p>
+  <p style="margin-top: 0.2rem; margin-bottom: 0.2rem;">Credits:</p>
+  <p style="margin-top: 0.2rem; margin-bottom: 0.2rem;">- <a href="https://github.com/cosinekitty/astronomy" target="_blank" rel="noopener noreferrer">Astronomy Engine</a></p>
+  <p style="margin-top: 0.2rem; margin-bottom: 0.2rem;">- <a href="https://github.com/crescent-moon-visibility/crescent-moon-visibility/" target="_blank" rel="noopener noreferrer">Crescent Moon Visibility in C++</a></p>
+  <p style="margin-top: 0.2rem; margin-bottom: 0.2rem;">- <a href="https://observablehq.com/framework" target="_blank" rel="noopener noreferrer">Observable Framework</a></p>
+  <p style="margin-top: 0.2rem;"> This is a work in progress and might not reflect the actual conditions. Please refer to the official calculation methods for crescent visibility </p>
+</div>
+  </div>
+</div>
+<!-- Helper Functions -->
+<div id="cell-aab0064a" class="observablehq observablehq--block"></div>
+<div id="cell-54777517" class="observablehq observablehq--block"></div>
+<div id="cell-2815ddfc" class="observablehq observablehq--block"></div>
+<div id="cell-1afca64c" class="observablehq observablehq--block"></div>
+<div id="cell-1a9bcb70" class="observablehq observablehq--block"></div>
+<div id="cell-39a30403" class="observablehq observablehq--block"></div>
+<div id="cell-6690dbc2" class="observablehq observablehq--block"></div>
+<!-- Render the data -->
+</div></div></main>
+</div>
