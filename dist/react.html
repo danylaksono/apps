@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+<title>React | Web-Apps</title>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=Source+Serif+Pro:ital,wght@0,400;0,600;0,700;1,400;1,600;1,700&amp;display=swap" crossorigin>
+<link rel="preload" as="style" href="./_observablehq/theme-air,near-midnight,alt,wide.css">
+<link rel="stylesheet" type="text/css" href="https://fonts.googleapis.com/css2?family=Source+Serif+Pro:ital,wght@0,400;0,600;0,700;1,400;1,600;1,700&amp;display=swap" crossorigin>
+<link rel="stylesheet" type="text/css" href="./_observablehq/theme-air,near-midnight,alt,wide.css">
+<link rel="modulepreload" href="./_observablehq/client.js">
+<link rel="modulepreload" href="./_observablehq/runtime.js">
+<link rel="modulepreload" href="./_observablehq/stdlib.js">
+<link rel="modulepreload" href="./_npm/react@18.2.0/_esm.js">
+<link rel="modulepreload" href="./_npm/react-dom@18.2.0/_esm.js">
+<link rel="modulepreload" href="./_npm/@mantine/core@7.8.0/_esm.js">
+<link rel="modulepreload" href="./_npm/scheduler@0.23.0/_esm.js">
+<link rel="modulepreload" href="./_npm/react-remove-scroll@2.5.9/_esm.js">
+<link rel="modulepreload" href="./_npm/@mantine/hooks@7.8.0/_esm.js">
+<link rel="modulepreload" href="./_npm/clsx@2.1.0/_esm.js">
+<link rel="modulepreload" href="./_npm/@floating-ui/react@0.26.12/_esm.js">
+<link rel="modulepreload" href="./_npm/react-textarea-autosize@8.5.3/_esm.js">
+<link rel="modulepreload" href="./_npm/react-number-format@5.3.4/_esm.js">
+<link rel="modulepreload" href="./_npm/tslib@2.6.2/_esm.js">
+<link rel="modulepreload" href="./_npm/react-remove-scroll-bar@2.3.6/constants/_esm.js">
+<link rel="modulepreload" href="./_npm/use-callback-ref@1.3.2/_esm.js">
+<link rel="modulepreload" href="./_npm/use-sidecar@1.1.2/_esm.js">
+<link rel="modulepreload" href="./_npm/react-remove-scroll-bar@2.3.6/_esm.js">
+<link rel="modulepreload" href="./_npm/react-style-singleton@2.2.1/_esm.js">
+<link rel="modulepreload" href="./_npm/@floating-ui/react@0.26.12/utils/_esm.js">
+<link rel="modulepreload" href="./_npm/@floating-ui/utils@0.2.1/_esm.js">
+<link rel="modulepreload" href="./_npm/@floating-ui/react-dom@2.0.8/_esm.js">
+<link rel="modulepreload" href="./_npm/@floating-ui/utils@0.2.1/dom/_esm.js">
+<link rel="modulepreload" href="./_npm/tabbable@6.2.0/_esm.js">
+<link rel="modulepreload" href="./_npm/@babel/runtime@7.24.4/helpers/esm/extends/_esm.js">
+<link rel="modulepreload" href="./_npm/@babel/runtime@7.24.4/helpers/esm/objectWithoutPropertiesLoose/_esm.js">
+<link rel="modulepreload" href="./_npm/use-latest@1.2.1/_esm.js">
+<link rel="modulepreload" href="./_npm/use-composed-ref@1.3.0/_esm.js">
+<link rel="modulepreload" href="./_npm/detect-node-es@1.1.0/_esm.js">
+<link rel="modulepreload" href="./_npm/get-nonce@1.0.1/_esm.js">
+<link rel="modulepreload" href="./_npm/@floating-ui/dom@1.6.3/_esm.js">
+<link rel="modulepreload" href="./_npm/use-isomorphic-layout-effect@1.1.2/_esm.js">
+<link rel="modulepreload" href="./_npm/@floating-ui/core@1.6.0/_esm.js">
+<script type="module">
+
+import {define} from "./_observablehq/client.js";
+
+define({id: "dd2a2738", outputs: ["createElement","createRoot","MultiSelect","MantineProvider","root"], body: async () => {
+const [{createElement}, {createRoot}, {MultiSelect, MantineProvider}] = await Promise.all([import("./_npm/react@18.2.0/_esm.js"), import("./_npm/react-dom@18.2.0/_esm.js"), import("./_npm/@mantine/core@7.8.0/_esm.js")]);
+const root = createRoot(document.getElementById("root"));
+return {createElement,createRoot,MultiSelect,MantineProvider,root};
+}});
+
+define({id: "ffbc1fd3", outputs: ["Mutable","useState","selected","setSelected"], body: async () => {
+const {Mutable} = await import("./_observablehq/stdlib.js");
+function useState(value) {
+  const state = Mutable(value);
+  const setState = (value) => (state.value = value);
+  return [state, setState];
+}
+const [selected, setSelected] = useState(["react"]);
+return {Mutable,useState,selected,setSelected};
+}});
+
+define({id: "6e420740", inputs: ["root","createElement","MantineProvider","MultiSelect","selected","setSelected"], body: (root,createElement,MantineProvider,MultiSelect,selected,setSelected) => {
+root.render(
+  createElement(
+    MantineProvider,
+    {},
+    createElement(MultiSelect, {
+      label: "your favorite libraries",
+      placeholder: "pick value",
+      data: ["react", "angular", "vue", "svelte"],
+      value: selected,
+      clearable: true,
+      searchable: true,
+      onChange: setSelected,
+    })
+  )
+);
+}});
+
+</script>
+<div id="observablehq-center">
+<main id="observablehq-main" class="observablehq">
+<h1 id="using-react-in-observable-framework" tabindex="-1"><a class="observablehq-header-anchor" href="#using-react-in-observable-framework">Using React in Observable Framework</a></h1>
+<p>source: <a href="https://github.com/observablehq/framework/discussions/1095" target="_blank" rel="noopener noreferrer">https://github.com/observablehq/framework/discussions/1095</a></p>
+<div id="cell-dd2a2738" class="observablehq observablehq--block"></div>
+<div class="observablehq observablehq--block">
+  <div class="observablehq--inspect observablehq--error">SyntaxError: Unexpected token (1:0)</div>
+</div>
+<div id="cell-ffbc1fd3" class="observablehq observablehq--block"></div>
+<div id="cell-6e420740" class="observablehq observablehq--block"></div>
+</main>
+</div>
