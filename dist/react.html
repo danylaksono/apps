@@ -13,6 +13,7 @@
 <link rel="modulepreload" href="./_npm/react@18.2.0/_esm.js">
 <link rel="modulepreload" href="./_npm/react-dom@18.2.0/_esm.js">
 <link rel="modulepreload" href="./_npm/@mantine/core@7.8.0/_esm.js">
+<link rel="modulepreload" href="./_npm/reactflow@11.11.3/_esm.js">
 <link rel="modulepreload" href="./_npm/scheduler@0.23.0/_esm.js">
 <link rel="modulepreload" href="./_npm/react-remove-scroll@2.5.9/_esm.js">
 <link rel="modulepreload" href="./_npm/@mantine/hooks@7.8.0/_esm.js">
@@ -20,6 +21,12 @@
 <link rel="modulepreload" href="./_npm/@floating-ui/react@0.26.12/_esm.js">
 <link rel="modulepreload" href="./_npm/react-textarea-autosize@8.5.3/_esm.js">
 <link rel="modulepreload" href="./_npm/react-number-format@5.3.4/_esm.js">
+<link rel="modulepreload" href="./_npm/@reactflow/core@11.11.3/_esm.js">
+<link rel="modulepreload" href="./_npm/@reactflow/minimap@11.7.13/_esm.js">
+<link rel="modulepreload" href="./_npm/@reactflow/controls@11.2.13/_esm.js">
+<link rel="modulepreload" href="./_npm/@reactflow/background@11.3.13/_esm.js">
+<link rel="modulepreload" href="./_npm/@reactflow/node-toolbar@1.3.13/_esm.js">
+<link rel="modulepreload" href="./_npm/@reactflow/node-resizer@2.2.13/_esm.js">
 <link rel="modulepreload" href="./_npm/tslib@2.6.2/_esm.js">
 <link rel="modulepreload" href="./_npm/react-remove-scroll-bar@2.3.6/constants/_esm.js">
 <link rel="modulepreload" href="./_npm/use-callback-ref@1.3.2/_esm.js">
@@ -35,30 +42,55 @@
 <link rel="modulepreload" href="./_npm/@babel/runtime@7.24.4/helpers/esm/objectWithoutPropertiesLoose/_esm.js">
 <link rel="modulepreload" href="./_npm/use-latest@1.2.1/_esm.js">
 <link rel="modulepreload" href="./_npm/use-composed-ref@1.3.0/_esm.js">
+<link rel="modulepreload" href="./_npm/classcat@5.0.5/_esm.js">
+<link rel="modulepreload" href="./_npm/zustand@4.5.2/traditional/_esm.js">
+<link rel="modulepreload" href="./_npm/zustand@4.5.2/shallow/_esm.js">
+<link rel="modulepreload" href="./_npm/d3-zoom@3.0.0/_esm.js">
+<link rel="modulepreload" href="./_npm/d3-selection@3.0.0/_esm.js">
+<link rel="modulepreload" href="./_npm/d3-drag@3.0.0/_esm.js">
 <link rel="modulepreload" href="./_npm/detect-node-es@1.1.0/_esm.js">
 <link rel="modulepreload" href="./_npm/get-nonce@1.0.1/_esm.js">
 <link rel="modulepreload" href="./_npm/@floating-ui/dom@1.6.3/_esm.js">
 <link rel="modulepreload" href="./_npm/use-isomorphic-layout-effect@1.1.2/_esm.js">
+<link rel="modulepreload" href="./_npm/use-sync-external-store@1.2.0/shim/with-selector.js/_esm.js">
+<link rel="modulepreload" href="./_npm/zustand@4.5.2/vanilla/_esm.js">
+<link rel="modulepreload" href="./_npm/d3-dispatch@3.0.1/_esm.js">
+<link rel="modulepreload" href="./_npm/d3-interpolate@3.0.1/_esm.js">
+<link rel="modulepreload" href="./_npm/d3-transition@3.0.1/_esm.js">
 <link rel="modulepreload" href="./_npm/@floating-ui/core@1.6.0/_esm.js">
+<link rel="modulepreload" href="./_npm/use-sync-external-store@1.2.0/shim/_esm.js">
+<link rel="modulepreload" href="./_npm/d3-color@3.1.0/_esm.js">
+<link rel="modulepreload" href="./_npm/d3-timer@3.0.1/_esm.js">
+<link rel="modulepreload" href="./_npm/d3-ease@3.0.1/_esm.js">
 <script type="module">
 
 import {define} from "./_observablehq/client.js";
 
-define({id: "dd2a2738", outputs: ["createElement","createRoot","MultiSelect","MantineProvider","root"], body: async () => {
-const [{createElement}, {createRoot}, {MultiSelect, MantineProvider}] = await Promise.all([import("./_npm/react@18.2.0/_esm.js"), import("./_npm/react-dom@18.2.0/_esm.js"), import("./_npm/@mantine/core@7.8.0/_esm.js")]);
-const root = createRoot(document.getElementById("root"));
-return {createElement,createRoot,MultiSelect,MantineProvider,root};
+define({id: "f7577c59", inline: true, inputs: ["selected","display"], body: async (selected,display) => {
+display(await(
+selected.join(', ')
+))
 }});
 
-define({id: "ffbc1fd3", outputs: ["Mutable","useState","selected","setSelected"], body: async () => {
-const {Mutable} = await import("./_observablehq/stdlib.js");
+define({id: "658a9a29", outputs: ["React","createElement","createRoot","MultiSelect","MantineProvider","ReactFlow","Mutable"], body: async () => {
+const [{React, createElement}, {createRoot}, {MultiSelect, MantineProvider}, {ReactFlow}, {Mutable}] = await Promise.all([import("./_npm/react@18.2.0/_esm.js"), import("./_npm/react-dom@18.2.0/_esm.js"), import("./_npm/@mantine/core@7.8.0/_esm.js"), import("./_npm/reactflow@11.11.3/_esm.js"), import("./_observablehq/stdlib.js")]);
+
+return {React,createElement,createRoot,MultiSelect,MantineProvider,ReactFlow,Mutable};
+}});
+
+define({id: "3bf43208", inputs: ["createRoot"], outputs: ["root"], body: (createRoot) => {
+const root = createRoot(document.getElementById("root"));
+return {root};
+}});
+
+define({id: "fc3ef288", inputs: ["Mutable"], outputs: ["useState","selected","setSelected"], body: (Mutable) => {
 function useState(value) {
   const state = Mutable(value);
   const setState = (value) => (state.value = value);
   return [state, setState];
 }
 const [selected, setSelected] = useState(["react"]);
-return {Mutable,useState,selected,setSelected};
+return {useState,selected,setSelected};
 }});
 
 define({id: "6e420740", inputs: ["root","createElement","MantineProvider","MultiSelect","selected","setSelected"], body: (root,createElement,MantineProvider,MultiSelect,selected,setSelected) => {
@@ -84,11 +116,14 @@ root.render(
 <main id="observablehq-main" class="observablehq">
 <h1 id="using-react-in-observable-framework" tabindex="-1"><a class="observablehq-header-anchor" href="#using-react-in-observable-framework">Using React in Observable Framework</a></h1>
 <p>source: <a href="https://github.com/observablehq/framework/discussions/1095" target="_blank" rel="noopener noreferrer">https://github.com/observablehq/framework/discussions/1095</a></p>
-<div id="cell-dd2a2738" class="observablehq observablehq--block"></div>
-<div class="observablehq observablehq--block">
-  <div class="observablehq--inspect observablehq--error">SyntaxError: Unexpected token (1:0)</div>
-</div>
-<div id="cell-ffbc1fd3" class="observablehq observablehq--block"></div>
+<link rel="stylesheet" href="./_npm/@mantine/core@7.8.0/styles.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reactflow@11.11.3/dist/style.min.css">
+<!-- <link rel="stylesheet" href="npm:@mantine/core/styles.css" /> -->
+<div id="root"></div>
+<p>Selected values: <span id="cell-f7577c59" class="observablehq--loading"></span></p>
+<div id="cell-658a9a29" class="observablehq observablehq--block"></div>
+<div id="cell-3bf43208" class="observablehq observablehq--block"></div>
+<div id="cell-fc3ef288" class="observablehq observablehq--block"></div>
 <div id="cell-6e420740" class="observablehq observablehq--block"></div>
 </main>
 </div>

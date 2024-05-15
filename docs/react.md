@@ -10,14 +10,17 @@ sidebar: false
 source: https://github.com/observablehq/framework/discussions/1095
 
 <link rel="stylesheet" href="npm:@mantine/core/styles.css" />
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reactflow@11.11.3/dist/style.min.css">
+<!-- <link rel="stylesheet" href="npm:@mantine/core/styles.css" /> -->
 <div id="root"></div>
 
 Selected values: ${selected.join(', ')}
 
 ```js
-import { createElement } from "npm:react";
+import { React, createElement } from "npm:react";
 import { createRoot } from "npm:react-dom";
 import { MultiSelect, MantineProvider } from "npm:@mantine/core";
+import { ReactFlow } from "npm:reactflow";
 import { Mutable } from "npm:@observablehq/stdlib";
 ```
 
@@ -50,4 +53,8 @@ root.render(
     })
   )
 );
+```
+
+```js
+
 ```
