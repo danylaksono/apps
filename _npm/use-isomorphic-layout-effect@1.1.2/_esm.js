@@ -4,4 +4,4 @@
  *
  * Do NOT use SRI with dynamically generated files! More information: https://www.jsdelivr.com/using-sri-with-dynamic-files
  */
-import{useLayoutEffect as r}from"../react@18.2.0/_esm.js";var a=r;export{a as default};
+import{useLayoutEffect as r}from"../react@16.14.0/_esm.js";var a=r;export{a as default};
