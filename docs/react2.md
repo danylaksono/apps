@@ -1,6 +1,6 @@
 ---
 theme: dashboard
-title: Gridded
+title: React2
 toc: false
 sidebar: true
 ---
