@@ -12,7 +12,9 @@
     "@observablehq/framework": "latest",
     "d3-dsv": "^3.0.1",
     "d3-time-format": "^4.1.0",
-    "intersection-observer": "^0.12.2"
+    "intersection-observer": "^0.12.2",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1"
   },
   "devDependencies": {
     "rimraf": "^5.0.5"

@@ -66,16 +66,22 @@
 
 import {define} from "./_observablehq/client.js";
 
+define({id: "c60990ea", outputs: ["React","createElement","createRoot","Mutable","MultiSelect","MantineProvider","ReactFlow"], body: async () => {
+const [{React, createElement}, {createRoot}, {Mutable}, {MultiSelect, MantineProvider}, {ReactFlow}] = await Promise.all([import("./_npm/react@18.2.0/_esm.js"), import("./_npm/react-dom@18.2.0/_esm.js"), import("./_observablehq/stdlib.js"), import("./_npm/@mantine/core@7.8.0/_esm.js"), import("./_npm/reactflow@11.11.3/_esm.js")]);
+
+return {React,createElement,createRoot,Mutable,MultiSelect,MantineProvider,ReactFlow};
+}});
+
+define({id: "3e03ef1a", outputs: ["Grid"], body: async () => {
+const {Grid} = await import("./_npm/@mantine/core@7.8.0/_esm.js");
+
+return {Grid};
+}});
+
 define({id: "f7577c59", inline: true, inputs: ["selected","display"], body: async (selected,display) => {
 display(await(
 selected.join(', ')
 ))
-}});
-
-define({id: "658a9a29", outputs: ["React","createElement","createRoot","MultiSelect","MantineProvider","ReactFlow","Mutable"], body: async () => {
-const [{React, createElement}, {createRoot}, {MultiSelect, MantineProvider}, {ReactFlow}, {Mutable}] = await Promise.all([import("./_npm/react@18.2.0/_esm.js"), import("./_npm/react-dom@18.2.0/_esm.js"), import("./_npm/@mantine/core@7.8.0/_esm.js"), import("./_npm/reactflow@11.11.3/_esm.js"), import("./_observablehq/stdlib.js")]);
-
-return {React,createElement,createRoot,MultiSelect,MantineProvider,ReactFlow,Mutable};
 }});
 
 define({id: "3bf43208", inputs: ["createRoot"], outputs: ["root"], body: (createRoot) => {
@@ -114,16 +120,20 @@ root.render(
 </script>
 <div id="observablehq-center">
 <main id="observablehq-main" class="observablehq">
+<div id="cell-c60990ea" class="observablehq observablehq--block"></div>
+<div id="cell-3e03ef1a" class="observablehq observablehq--block"></div>
 <h1 id="using-react-in-observable-framework" tabindex="-1"><a class="observablehq-header-anchor" href="#using-react-in-observable-framework">Using React in Observable Framework</a></h1>
 <p>source: <a href="https://github.com/observablehq/framework/discussions/1095" target="_blank" rel="noopener noreferrer">https://github.com/observablehq/framework/discussions/1095</a></p>
 <link rel="stylesheet" href="./_npm/@mantine/core@7.8.0/styles.css">
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reactflow@11.11.3/dist/style.min.css">
-<!-- <link rel="stylesheet" href="npm:@mantine/core/styles.css" /> -->
+<link rel="stylesheet" href="./_npm/@mantine/core@7.8.0/styles.css">
 <div id="root"></div>
 <p>Selected values: <span id="cell-f7577c59" class="observablehq--loading"></span></p>
-<div id="cell-658a9a29" class="observablehq observablehq--block"></div>
 <div id="cell-3bf43208" class="observablehq observablehq--block"></div>
 <div id="cell-fc3ef288" class="observablehq observablehq--block"></div>
 <div id="cell-6e420740" class="observablehq observablehq--block"></div>
+<div class="observablehq observablehq--block">
+  <div class="observablehq--inspect observablehq--error">SyntaxError: Unexpected token (3:4)</div>
+</div>
 </main>
 </div>
