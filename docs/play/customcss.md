@@ -3,7 +3,7 @@ theme: dashboard
 title: Test custom css
 toc: false
 sidebar: false
-style: "https://cdn.jsdelivr.net/npm/bulma@1.0.0/css/bulma.min.css"
+# style: "https://cdn.jsdelivr.net/npm/bulma@1.0.0/css/bulma.min.css"
 ---
 
 <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300italic,700,700italic">
