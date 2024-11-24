@@ -1,0 +1,88 @@
+.year-picker-container {
+    position: relative;
+    display: inline-block;
+    font-family: Arial, sans-serif;
+  }
+
+  .year-picker-prev,
+  .year-picker-next {
+    background: #f0f0f0;
+    border: 1px solid #ccc;
+    padding: 5px 10px;
+    cursor: pointer;
+  }
+
+  .year-picker-prev:disabled,
+  .year-picker-next:disabled {
+    cursor: not-allowed;
+    opacity: 0.5;
+  }
+
+  .year-picker-display {
+    display: inline-block;
+    padding: 5px 15px;
+    border: 1px solid #ccc;
+    background: white;
+    cursor: pointer;
+  }
+
+  .year-picker-dropdown {
+    /* position: absolute; */
+    top: 100%;
+    left: 0;
+    width: 200px;
+    background: white;
+    border: 1px solid #ccc;
+    display: none;
+    z-index: 10;
+    opacity: 0;
+    transform: scaleY(0);
+    transform-origin: top;
+    transition: opacity 0.3s, transform 0.3s;
+  }
+
+  .year-picker-dropdown[style*="display: block"] {
+    opacity: 1;
+    transform: scaleY(1);
+  }
+
+  .year-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 5px;
+    padding: 10px;
+  }
+
+  .year-grid button {
+    border: 1px solid #ccc;
+    background: #f9f9f9;
+    padding: 5px;
+    cursor: pointer;
+    text-align: center;
+    transition: background 0.2s;
+  }
+
+  .year-grid button:hover {
+    background: #ddd;
+  }
+
+  .year-grid .selected {
+    background: #007bff;
+    color: white;
+  }
+
+  .year-picker-today {
+    margin: 10px;
+    background: #007bff;
+    color: white;
+    border: none;
+    padding: 5px 10px;
+    cursor: pointer;
+    text-align: center;
+    display: block;
+    transition: background 0.2s;
+  }
+
+  .year-picker-today:hover {
+    background: #0056b3;
+  }
