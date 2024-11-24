@@ -1,3 +1,16 @@
+:root {
+    --primary-color: #007bff;
+    --secondary-color: #f8f9fa;
+  }
+
+  .year-picker-container {
+    background-color: var(--secondary-color);
+  }
+
+  .year-picker-display {
+    color: var(--primary-color);
+  }
+
 .year-picker-container {
     position: relative;
     display: inline-block;
@@ -85,4 +98,18 @@
 
   .year-picker-today:hover {
     background: #0056b3;
+  }
+
+
+  .year-picker-quick-jump {
+    margin: 10px 0;
+    padding: 5px;
+    width: 100%;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+  }
+
+  .highlight {
+    background-color: #ffd700;
+    border-color: #ffa500;
   }

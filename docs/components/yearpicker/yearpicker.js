@@ -9,11 +9,32 @@ export class YearPicker {
         options
       );
 
+      this.isRangeMode = options.rangeMode || false;
+      this.selectedRange = []; // Store the start and end year
+
+
       this.currentYear = this.options.initialYear;
       this.selectedYear = this.currentYear;
 
+      this.multiSelect = options.multiSelect || false;
+      this.selectedYears = [];
+
+      this.inline = options.inline || false;
       this.createPicker();
+      if (this.inline) {
+        this.dropdown.style.display = "block";
+      }
+
+      this.highlightYears = options.highlightYears || [];
+
+      this.minYear = options.minYear || Number.MIN_SAFE_INTEGER;
+      this.maxYear = options.maxYear || Number.MAX_SAFE_INTEGER;
+
+      this.theme = options.theme || {};
+      this.applyTheme();
+
       this.updateGrid(this.currentYear - 4);
+      this.createQuickJump();
     }
 
     createPicker() {
@@ -49,28 +70,62 @@ export class YearPicker {
     }
 
     updateGrid(startYear) {
-      this.yearGrid.innerHTML = "";
-      for (let i = 0; i < 9; i++) {
-        const year = startYear + i;
-        const button = document.createElement("button");
-        button.textContent = year;
-        button.className = year === this.selectedYear ? "selected" : "";
-        button.addEventListener("click", () => this.selectYear(year));
-        this.yearGrid.appendChild(button);
+        this.yearGrid.innerHTML = "";
+        for (let i = 0; i < 9; i++) {
+          const year = startYear + i;
+          const button = document.createElement("button");
+          button.textContent = year;
+          if (this.highlightYears.includes(year)) {
+            button.classList.add("highlight");
+          }
+          button.addEventListener("click", () => this.selectYear(year));
+          this.yearGrid.appendChild(button);
+        }
       }
-    }
+
+    applyTheme() {
+        if (this.theme.primaryColor) {
+          this.container.style.setProperty("--primary-color", this.theme.primaryColor);
+        }
+        if (this.theme.secondaryColor) {
+          this.container.style.setProperty("--secondary-color", this.theme.secondaryColor);
+        }
+        if (this.theme.font) {
+          this.container.style.fontFamily = this.theme.font;
+        }
+      }
 
     selectYear(year) {
-      this.selectedYear = year;
-      this.display.textContent = this.selectedYear;
-      this.updateGrid(Number(this.yearGrid.firstChild.textContent));
-      this.toggleDropdown(false);
+        if (this.isRangeMode) {
+            if (this.selectedRange.length === 2) this.selectedRange = [];
+            this.selectedRange.push(year);
+            this.selectedRange.sort((a, b) => a - b);
+            if (this.selectedRange.length === 2 && this.options.onSelect) {
+              this.options.onSelect(this.selectedRange[0], this.selectedRange[1]);
+            }
+          } else {
+            this.selectedYear = year;
+            if (this.options.onSelect) this.options.onSelect(year);
+          }
 
-      // Trigger onSelect callback
-      if (typeof this.options.onSelect === "function") {
-        this.options.onSelect(this.selectedYear);
+        if (this.multiSelect) {
+          const index = this.selectedYears.indexOf(year);
+          if (index !== -1) {
+            this.selectedYears.splice(index, 1); // Deselect
+          } else {
+            this.selectedYears.push(year); // Select
+          }
+          if (this.options.onSelect) {
+            this.options.onSelect(this.selectedYears);
+          }
+        } else {
+          this.selectedYear = year;
+          if (this.options.onSelect) {
+            this.options.onSelect(year);
+          }
+        }
+        this.updateGrid(Number(this.yearGrid.firstChild.textContent));
       }
-    }
 
     resetToToday() {
       this.selectYear(new Date().getFullYear());
@@ -101,5 +156,19 @@ export class YearPicker {
       this.prevButton.disabled = true;
       this.nextButton.disabled = true;
     }
+
+    createQuickJump() {
+        const input = document.createElement("input");
+        input.type = "number";
+        input.placeholder = "Jump to year";
+        input.className = "year-picker-quick-jump";
+        input.addEventListener("change", (e) => {
+          const year = parseInt(e.target.value, 10);
+          if (!isNaN(year)) {
+            this.updateGrid(year - 4);
+          }
+        });
+        this.container.appendChild(input);
+      }
   }
 
