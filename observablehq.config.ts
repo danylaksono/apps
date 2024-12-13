@@ -12,6 +12,11 @@ export default {
       pages: [
         { name: "Dashboard", path: "/moonsighting" },
         { name: "Gridded-glyphmaps", path: "/gridded" },
+        { name: "Yearpicker", path: "/yearpicker" },
+        { name: "Investigate DuckDB", path: "/investiduck" },
+        { name: "Obs Layout", path: "/layout" },
+        { name: "Scrolly", path: "/scroll" },
+        { name: "Morpher", path: "/morph" },
       ],
     },
   ],
