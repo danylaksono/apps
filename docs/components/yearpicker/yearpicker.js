@@ -34,7 +34,9 @@ export class YearPicker {
       this.applyTheme();
 
       this.updateGrid(this.currentYear - 4);
-      this.createQuickJump();
+      if (this.allowQuickJump){
+        this.createQuickJump();
+      }
     }
 
     createPicker() {

@@ -45,6 +45,7 @@ const [selected, setSelected] = useState({});
 ```js
 const container = document.querySelector("#year-picker");
 const picker = new YearPicker(container, {
+    allowQuickJump: true,
     onSelect: (year) => {
         console.log(`Year selected: ${year}`)
         setSelected(year);
