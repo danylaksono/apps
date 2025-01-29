@@ -17,6 +17,7 @@ export default {
         { name: "Obs Layout", path: "/layout" },
         { name: "Scrolly", path: "/scroll" },
         { name: "Morpher", path: "/morph" },
+        { name: "Histogram", path: "/histograms" },
       ],
     },
   ],

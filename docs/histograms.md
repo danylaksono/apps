@@ -51,8 +51,8 @@ const data = [
 ```
 
 <div id="histogram-container"></div>
-<button id="clear-selection">Clear Selection</button>
-<button id="reset-histogram">Reset Histogram</button>
+<!-- <button id="clear-selection">Clear Selection</button>
+<button id="reset-histogram">Reset Histogram</button> -->
 
 ```js
 const histogram = new Histogram({
@@ -60,7 +60,7 @@ const histogram = new Histogram({
   height: 400,
   column: 'age',
   colors: ['steelblue', 'orange'],
-  selectionMode: 'multiple',
+  selectionMode: 'drag',
 //   axis: true,
   showLabelsBelow: true,
 });
