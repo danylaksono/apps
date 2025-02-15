@@ -761,50 +761,46 @@ export class Histogram {
     const isSelected = this.selectedBins.has(d);
 
     if (event.ctrlKey && this.config.selectionMode === "multiple") {
-      // Toggle selection in multiple mode with CTRL
       this.selectedBins.has(d)
         ? this.selectedBins.delete(d)
         : this.selectedBins.add(d);
     } else {
-      // Single selection mode
       if (isSelected) {
-        // Deselect if already selected
         this.selectedBins.clear();
       } else {
-        // Select new bar
         this.selectedBins.clear();
         this.selectedBins.add(d);
       }
     }
 
-    this.dispatch.call("selectionChanged", this, this.getSelectedData());
+    // Get selected data and dispatch when ready
+    this.getSelectedData().then((selectedData) => {
+      this.dispatch.call("selectionChanged", this, selectedData);
+    });
+
     this.drawBars();
   }
 
   handleBrush(event) {
     if (!event.selection) {
-      // Clear selection if brush was cleared
       this.clearSelection();
       return;
     }
 
     const [x0, x1] = event.selection;
-
-    // Find bins within brush selection
     const selected = this.bins.filter((b) => {
       const binLeft = this.xScale(b.x0);
       const binRight = this.xScale(b.x1);
       return binLeft <= x1 && binRight >= x0;
     });
 
-    // Update selection
     this.selectedBins = new Set(selected);
-
-    // Redraw with new selection
     this.drawBars();
 
-    // Dispatch selection event
-    this.dispatch.call("selectionChanged", this, this.getSelectedData());
+    // Get selected data and dispatch when ready
+    this.getSelectedData().then((selectedData) => {
+      this.dispatch.call("selectionChanged", this, selectedData);
+    });
   }
 
   async getSelectedData() {
@@ -835,13 +831,15 @@ export class Histogram {
       `;
     }
 
-    const result = await this.duckdb.query(query);
+    // Changed from this.duckdb.query to this.conn.query
+    const result = await this.conn.query(query);
     return result.toArray();
   }
 
   clearSelection() {
     this.selectedBins.clear();
     this.drawBars();
+    // Return empty array immediately since there's no selection
     this.dispatch.call("selectionChanged", this, []);
   }
 

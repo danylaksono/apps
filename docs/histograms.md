@@ -220,11 +220,11 @@ const histogram = new Histogram({
 await histogram.initialize();
 await histogram.update();
 
-const svgNode = histogram.createSvg();
+// const svgNode = histogram.createSvg();
 // const svgNode = histogram.createSvg();
 
 // histogram.update(data);
-display(svgNode);
+display(histogram.svg.node());
 ```
 
 ```js
