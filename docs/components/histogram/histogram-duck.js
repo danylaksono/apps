@@ -58,7 +58,7 @@ export class Histogram {
       LIMIT 1
     `;
 
-    const result = await this.duckdb.query(query);
+    const result = await this.conn.query(query);
     const type = result.toArray()[0].col_type.toLowerCase();
 
     if (type.includes("float") || type.includes("integer")) return "continuous";
@@ -66,41 +66,92 @@ export class Histogram {
     return "ordinal";
   }
 
+  // https://duckdb.org/docs/sql/data_types/overview
+  getDuckDBType(type) {
+    switch (type?.toUpperCase()) {
+      case "BIGINT":
+      case "HUGEINT":
+      case "UBIGINT":
+        return "bigint";
+      case "DOUBLE":
+      case "REAL":
+      case "FLOAT":
+        return "number";
+      case "INTEGER":
+      case "SMALLINT":
+      case "TINYINT":
+      case "USMALLINT":
+      case "UINTEGER":
+      case "UTINYINT":
+        return "integer";
+      case "BOOLEAN":
+        return "boolean";
+      case "DATE":
+      case "TIMESTAMP":
+      case "TIMESTAMP WITH TIME ZONE":
+        return "date";
+      case "VARCHAR":
+      case "UUID":
+        return "string";
+      // case "BLOB":
+      // case "INTERVAL":
+      // case "TIME":
+      default:
+        if (/^DECIMAL\(/.test(type)) return "integer";
+        return "other";
+    }
+  }
+
   async binDataWithDuckDB(column, type) {
     let query;
 
     switch (type) {
       case "continuous":
-        // Calculate bins using DuckDB's width_bucket function
+        // First get the column type to handle casting properly
+        const typeQuery = `SELECT typeof(${column}) as col_type 
+                          FROM ${this.tableName} 
+                          WHERE ${column} IS NOT NULL 
+                          LIMIT 1`;
+        const typeResult = await this.logQuery(typeQuery, "Get Column Type");
+        const colType = typeResult.toArray()[0].col_type;
+        const numericType = this.getDuckDBType(colType);
+
         query = `
           WITH stats AS (
             SELECT 
               MIN(${column}) as min_val,
               MAX(${column}) as max_val,
               COUNT(*) as n,
-              (MAX(${column}) - MIN(${column})) / 
-                (2 * (PERCENTILE_CONT(0.75) WITHIN GROUP (ORDER BY ${column}) - 
-                      PERCENTILE_CONT(0.25) WITHIN GROUP (ORDER BY ${column})) * 
-                      POW(COUNT(*)::FLOAT, -1.0/3)) as bin_count
+              (MAX(${column}) - MIN(${column})) as range
             FROM ${this.tableName}
             WHERE ${column} IS NOT NULL
+          ),
+          bin_params AS (
+            SELECT 
+              min_val,
+              max_val,
+              (max_val - min_val) / 10.0 as bin_width
+            FROM stats
+          ),
+          bins AS (
+            SELECT 
+              min_val + (CAST(value - 1 AS ${colType}) * bin_width) as x0,
+              min_val + (CAST(value AS ${colType}) * bin_width) as x1
+            FROM generate_series(1, 10) vals(value), bin_params
           )
-          SELECT 
-            width_bucket(${column}, min_val, max_val, 
-              GREATEST(10, CAST(bin_count AS INTEGER))) as bin_id,
-            MIN(${column}) as x0,
-            MAX(${column}) as x1,
-            COUNT(*) as length,
-            AVG(${column}) as mean
-          FROM ${this.tableName}, stats
-          WHERE ${column} IS NOT NULL
-          GROUP BY bin_id
-          ORDER BY bin_id
+          SELECT
+            x0,
+            x1,
+            COUNT(${column}) as length
+          FROM ${this.tableName}
+          CROSS JOIN bins
+          WHERE ${column} >= x0 AND ${column} < x1
+          GROUP BY x0, x1
+          ORDER BY x0
         `;
         break;
 
       case "date":
-        // Bin by day using date_trunc
         query = `
           SELECT 
             date_trunc('day', ${column}) as x0,
@@ -129,7 +180,7 @@ export class Histogram {
         break;
     }
 
-    const result = await this.duckdb.query(query);
+    const result = await this.conn.query(query);
     let bins = result.toArray().map((row) => ({
       ...row,
       x0: type === "date" ? new Date(row.x0) : row.x0,
@@ -137,7 +188,6 @@ export class Histogram {
     }));
 
     if (type === "ordinal" && bins.length === this.config.maxOrdinalBins) {
-      // Handle "Others" category for ordinal data
       const othersQuery = `
         WITH ranked AS (
           SELECT ${column}, COUNT(*) as cnt
@@ -151,7 +201,7 @@ export class Histogram {
         FROM ranked
       `;
 
-      const othersResult = await this.duckdb.query(othersQuery);
+      const othersResult = await this.conn.query(othersQuery);
       const othersCount = othersResult.toArray()[0].length;
 
       if (othersCount > 0) {
@@ -272,24 +322,48 @@ export class Histogram {
 
   async loadJSONData(data) {
     try {
-      // Create table from first object schema
       if (data.length === 0) {
         throw new Error("Empty data array provided");
       }
 
-      // Infer schema from first object
+      // Infer schema from the first object
       const schema = this.inferSchema(data[0]);
       const createTableSQL = this.generateCreateTableSQL(schema);
 
+      // Create the table
       await this.conn.query(createTableSQL);
+      console.log("Table created successfully");
 
-      // Insert data in batches
+      // Insert data in batches using SQL INSERT
       const batchSize = 1000;
       for (let i = 0; i < data.length; i += batchSize) {
         const batch = data.slice(i, i + batchSize);
-        await this.conn.insert(this.tableName, batch);
+
+        // Generate INSERT query for the batch
+        const columns = Object.keys(schema)
+          .map((col) => `"${col}"`)
+          .join(", ");
+        const values = batch
+          .map((row) => {
+            const rowValues = Object.values(row).map((val) => {
+              if (val === null || val === undefined) return "NULL";
+              if (typeof val === "string")
+                return `'${val.replace(/'/g, "''")}'`; // Escape single quotes
+              if (val instanceof Date) return `'${val.toISOString()}'`; // Format dates
+              return val;
+            });
+            return `(${rowValues.join(", ")})`;
+          })
+          .join(", ");
+
+        const insertQuery = `INSERT INTO ${this.tableName} (${columns}) VALUES ${values}`;
+        await this.conn.query(insertQuery);
+        console.log(`Inserted batch ${i / batchSize + 1}`);
       }
+
+      console.log("JSON data loaded successfully");
     } catch (error) {
+      console.error("Failed to load JSON data:", error);
       throw new Error(`Failed to load JSON data: ${error.message}`);
     }
   }
@@ -349,6 +423,24 @@ export class Histogram {
       }
     }
     return schema;
+  }
+
+  escape(name) {
+    return `"${name}"`;
+  }
+
+  async describeColumn(column) {
+    const query = `DESCRIBE ${this.escape(this.tableName)}`;
+    const result = await this.conn.query(query);
+    const columnInfo = result
+      .toArray()
+      .find((row) => row.column_name === column);
+    return {
+      name: columnInfo.column_name,
+      type: this.getDuckDBType(columnInfo.column_type),
+      nullable: columnInfo.null !== "NO",
+      databaseType: columnInfo.column_type,
+    };
   }
 
   generateCreateTableSQL(schema) {
@@ -531,7 +623,7 @@ export class Histogram {
   }
 
   createYScale() {
-    const max = d3.max(this.bins, (b) => b.length);
+    const max = d3.max(this.bins, (b) => Number(b.length)); // Convert BigInt to Number
     return d3
       .scaleLinear()
       .domain([0, max])
@@ -568,8 +660,8 @@ export class Histogram {
       .enter()
       .append("rect")
       .attr("class", "bar")
-      .attr("stroke", "white") // Add white stroke
-      .attr("stroke-width", "1") // Set stroke width to 1px
+      .attr("stroke", "white")
+      .attr("stroke-width", "1")
       .on("mouseover", (event, d) => this.handleMouseOver(event, d))
       .on("mouseout", (event, d) => this.handleMouseOut(event, d))
       .on("click", (event, d) => this.handleClick(event, d));
@@ -577,9 +669,9 @@ export class Histogram {
     bars
       .merge(enter)
       .attr("x", (b) => xScale(b.x0))
-      .attr("y", (b) => yScale(b.length))
+      .attr("y", (b) => yScale(Number(b.length))) // Convert BigInt to Number
       .attr("width", (b) => this.getBarWidth(b))
-      .attr("height", (b) => height - yScale(b.length))
+      .attr("height", (b) => height - yScale(Number(b.length))) // Convert BigInt to Number
       .attr("fill", (b) =>
         this.selectedBins.has(b) ? this.config.colors[1] : this.config.colors[0]
       );
@@ -809,5 +901,21 @@ export class Histogram {
     const yAxis = d3.axisLeft(this.yScale).ticks(5);
 
     this.g.append("g").attr("class", "axis y-axis").call(yAxis);
+  }
+
+  // Add this method to your Histogram class
+  async logQuery(query, context = "") {
+    console.group(`DuckDB Query: ${context}`);
+    console.log("SQL:", query);
+    try {
+      const result = await this.conn.query(query);
+      console.log("Result:", result.toArray());
+      console.groupEnd();
+      return result;
+    } catch (error) {
+      console.error("Query Error:", error);
+      console.groupEnd();
+      throw error;
+    }
   }
 }

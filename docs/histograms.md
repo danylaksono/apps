@@ -218,6 +218,8 @@ const histogram = new Histogram({
 });
 
 await histogram.initialize();
+await histogram.update();
+
 const svgNode = histogram.createSvg();
 // const svgNode = histogram.createSvg();
 
