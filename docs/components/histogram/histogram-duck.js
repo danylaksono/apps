@@ -498,11 +498,11 @@ export class Histogram {
 
     // Labels below the histogram
     if (this.config.showLabelsBelow) {
-      const centerX = this.config.width / 2;
       this.labelGroup = this.g
         .append("g")
         .attr("class", "labels")
-        .attr("transform", `translate(${centerX},${this.config.height + 25})`);
+        // Remove the centerX translation and just use height
+        .attr("transform", `translate(0,${this.config.height + 25})`);
     }
 
     // Brush for drag selection
@@ -678,10 +678,19 @@ export class Histogram {
   }
 
   drawLabels() {
-    const { xScale, bins } = this;
+    const { xScale, bins, type } = this;
 
     // Clear existing labels
     this.labelGroup.selectAll(".label").remove();
+
+    // Calculate total width for centering
+    const totalWidth = this.config.width;
+
+    // Update labelGroup position to align with the bars
+    this.labelGroup.attr(
+      "transform",
+      `translate(0,${this.config.height + 25})`
+    );
 
     // Add new labels
     this.labelGroup
@@ -693,15 +702,26 @@ export class Histogram {
       .attr("text-anchor", "middle")
       .attr("fill", "#333")
       .attr("font-size", "12px")
-      .attr(
-        "x",
-        (b) =>
-          xScale(b.x0) +
-          (this.config.type === "ordinal"
-            ? xScale.bandwidth() / 2
-            : (xScale(b.x1) - xScale(b.x0)) / 2)
-      )
-      .text((b) => `${b.key}: ${b.length}`);
+      .attr("x", (b) => {
+        if (type === "ordinal") {
+          return xScale(b.x0) + xScale.bandwidth() / 2;
+        }
+        // For continuous/date data, center between x0 and x1
+        const x0 = xScale(b.x0);
+        const x1 = xScale(b.x1);
+        return x0 + (x1 - x0) / 2;
+      })
+      .text((b) => {
+        if (type === "ordinal") {
+          return `${b.key}: ${b.length}`;
+        }
+        if (type === "date") {
+          const formatter = d3.timeFormat("%Y-%m-%d");
+          return `${formatter(b.x0)}: ${b.length}`;
+        }
+        // For continuous numeric data, format numbers nicely
+        return `${b.x0.toFixed(1)}-${b.x1.toFixed(1)}: ${b.length}`;
+      });
   }
 
   getBarWidth(b) {
