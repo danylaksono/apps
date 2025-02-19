@@ -1,5 +1,6 @@
 import * as d3 from "npm:d3";
 import _ from "npm:lodash";
+import { DuckDBDataProcessor } from "./duckdb-data-processor.js";
 
 export class Histogram {
   constructor(config) {
@@ -21,6 +22,7 @@ export class Histogram {
 
     this.config = { ...defaults, ...config };
     this.data = [];
+    this.bins = []; // <-- Initialize bins as an empty array
     this.selectedBins = new Set();
     this.dispatch = d3.dispatch("selectionChanged");
     this.initialized = false;
@@ -31,39 +33,127 @@ export class Histogram {
     this.queryCache = null; // Cache for query results
     this.conn = null;
     this.tableName = `data_${Math.random().toString(36).substr(2, 9)}`; // Generate unique table name
+    this.dataProcessor = null;
 
     // Automatically initialize the histogram
     this.createSvg();
   }
 
+  // Add this simple helper to determine data type from the first datum
+  getType(data, column) {
+    if (!data || data.length === 0) return "ordinal";
+    const sample = data[0][column];
+    if (sample instanceof Date) return "date";
+    if (typeof sample === "number") return "continuous";
+    return "ordinal";
+  }
+
   async initDuckDB(duckdbConnection, tableName) {
     this.duckdb = duckdbConnection;
     this.tableName = tableName;
+    this.dataProcessor = new DuckDBDataProcessor(this.duckdb, this.tableName);
+    await this.dataProcessor.connect();
   }
 
   async processDataWithDuckDB() {
     const { column } = this.config;
-    this.type = await this.getTypeFromDuckDB(column);
-    this.bins = await this.binDataWithDuckDB(column, this.type);
+    console.log("Processing data with DuckDB for column:", column);
+    this.type = await this.dataProcessor.getTypeFromDuckDB(column);
+    console.log("DuckDB determined type:", this.type);
+    this.bins = await this.dataProcessor.binDataWithDuckDB(
+      column,
+      this.type,
+      this.config.maxOrdinalBins
+    );
+    console.log("DuckDB generated bins:", this.bins);
 
     this.xScale = this.createXScale();
     this.yScale = this.createYScale();
   }
 
-  async getTypeFromDuckDB(column) {
-    const query = `
-      SELECT typeof(${column}) as col_type 
-      FROM ${this.tableName} 
-      WHERE ${column} IS NOT NULL 
-      LIMIT 1
-    `;
+  async initialize() {
+    if (!this.initialized) {
+      this.createSvg();
+    }
 
-    const result = await this.conn.query(query);
-    const type = result.toArray()[0].col_type.toLowerCase();
+    // Initialize DuckDB if not already done
+    if (!this.duckdb) {
+      await this.setupDuckDB();
+    }
 
-    if (type.includes("float") || type.includes("integer")) return "continuous";
-    if (type.includes("date") || type.includes("timestamp")) return "date";
-    return "ordinal";
+    // Load data if provided
+    if (this.config.dataSource) {
+      await this.loadData(this.config.dataSource, this.config.dataFormat);
+    }
+
+    return this;
+  }
+
+  async setupDuckDB() {
+    try {
+      this.dataProcessor = new DuckDBDataProcessor(this.duckdb, this.tableName);
+      await this.dataProcessor.connect();
+      this.conn = this.dataProcessor.conn;
+    } catch (error) {
+      throw new Error(`Failed to initialize DuckDB: ${error.message}`);
+    }
+  }
+
+  async loadData(source, format) {
+    try {
+      await this.dataProcessor.loadData(source, format);
+    } catch (error) {
+      throw new Error(`Failed to load data: ${error.message}`);
+    }
+  }
+
+  async getSelectedData() {
+    if (this.selectedBins.size === 0) return [];
+
+    const selectedBins = Array.from(this.selectedBins);
+    let query;
+
+    if (this.type === "ordinal") {
+      const values = selectedBins.map((bin) => `'${bin.key}'`).join(",");
+      query = `
+        SELECT *
+        FROM ${this.tableName}
+        WHERE ${this.config.column} IN (${values})
+      `;
+    } else {
+      const conditions = selectedBins
+        .map(
+          (bin) =>
+            `(${this.config.column} >= ${bin.x0} AND ${this.config.column} < ${bin.x1})`
+        )
+        .join(" OR ");
+
+      query = `
+        SELECT *
+        FROM ${this.tableName}
+        WHERE ${conditions}
+      `;
+    }
+
+    // Changed from this.duckdb.query to this.conn.query
+    const result = await this.dataProcessor.query(query);
+    return result;
+  }
+
+  async destroy() {
+    if (this.dataProcessor) {
+      await this.dataProcessor.dropTable();
+      await this.dataProcessor.close();
+      await this.dataProcessor.terminate();
+    }
+    this.svg.remove();
+    this.tooltip.remove();
+    this.initialized = false;
+  }
+
+  // Add this method to your Histogram class
+  async logQuery(query, context = "") {
+    return await this.dataProcessor.logQuery(query, context);
   }
 
   // https://duckdb.org/docs/sql/data_types/overview
@@ -102,121 +192,6 @@ export class Histogram {
     }
   }
 
-  async binDataWithDuckDB(column, type) {
-    let query;
-
-    switch (type) {
-      case "continuous":
-        // First get the column type to handle casting properly
-        const typeQuery = `SELECT typeof(${column}) as col_type 
-                          FROM ${this.tableName} 
-                          WHERE ${column} IS NOT NULL 
-                          LIMIT 1`;
-        const typeResult = await this.logQuery(typeQuery, "Get Column Type");
-        const colType = typeResult.toArray()[0].col_type;
-        const numericType = this.getDuckDBType(colType);
-
-        query = `
-          WITH stats AS (
-            SELECT 
-              MIN(${column}) as min_val,
-              MAX(${column}) as max_val,
-              COUNT(*) as n,
-              (MAX(${column}) - MIN(${column})) as range
-            FROM ${this.tableName}
-            WHERE ${column} IS NOT NULL
-          ),
-          bin_params AS (
-            SELECT 
-              min_val,
-              max_val,
-              (max_val - min_val) / 10.0 as bin_width
-            FROM stats
-          ),
-          bins AS (
-            SELECT 
-              min_val + (CAST(value - 1 AS ${colType}) * bin_width) as x0,
-              min_val + (CAST(value AS ${colType}) * bin_width) as x1
-            FROM generate_series(1, 10) vals(value), bin_params
-          )
-          SELECT
-            x0,
-            x1,
-            COUNT(${column}) as length
-          FROM ${this.tableName}
-          CROSS JOIN bins
-          WHERE ${column} >= x0 AND ${column} < x1
-          GROUP BY x0, x1
-          ORDER BY x0
-        `;
-        break;
-
-      case "date":
-        query = `
-          SELECT 
-            date_trunc('day', ${column}) as x0,
-            date_trunc('day', ${column}) + INTERVAL '1 day' as x1,
-            COUNT(*) as length
-          FROM ${this.tableName}
-          WHERE ${column} IS NOT NULL
-          GROUP BY date_trunc('day', ${column})
-          ORDER BY x0
-        `;
-        break;
-
-      case "ordinal":
-        query = `
-          SELECT 
-            ${column} as key,
-            ${column} as x0,
-            ${column} as x1,
-            COUNT(*) as length
-          FROM ${this.tableName}
-          WHERE ${column} IS NOT NULL
-          GROUP BY ${column}
-          ORDER BY length DESC
-          LIMIT ${this.config.maxOrdinalBins}
-        `;
-        break;
-    }
-
-    const result = await this.conn.query(query);
-    let bins = result.toArray().map((row) => ({
-      ...row,
-      x0: type === "date" ? new Date(row.x0) : row.x0,
-      x1: type === "date" ? new Date(row.x1) : row.x1,
-    }));
-
-    if (type === "ordinal" && bins.length === this.config.maxOrdinalBins) {
-      const othersQuery = `
-        WITH ranked AS (
-          SELECT ${column}, COUNT(*) as cnt
-          FROM ${this.tableName}
-          WHERE ${column} IS NOT NULL
-          GROUP BY ${column}
-          ORDER BY cnt DESC
-          OFFSET ${this.config.maxOrdinalBins - 1}
-        )
-        SELECT SUM(cnt) as length
-        FROM ranked
-      `;
-
-      const othersResult = await this.conn.query(othersQuery);
-      const othersCount = othersResult.toArray()[0].length;
-
-      if (othersCount > 0) {
-        bins.push({
-          key: "Other",
-          x0: "Other",
-          x1: "Other",
-          length: othersCount,
-        });
-      }
-    }
-
-    return bins;
-  }
-
   async initialize() {
     if (!this.initialized) {
       this.createSvg();
@@ -233,91 +208,6 @@ export class Histogram {
     }
 
     return this;
-  }
-
-  // async setupDuckDB() {
-  //   try {
-  //     // Import DuckDB only when needed
-  //     const duckdb = await import("npm:@duckdb/duckdb-wasm");
-  //     const JSDELIVR_BUNDLES = await duckdb.getJsDelivrBundles();
-  //     const bundle = await duckdb.selectBundle(JSDELIVR_BUNDLES);
-  //     const worker = new Worker(bundle.mainWorker);
-  //     const logger = new duckdb.ConsoleLogger();
-
-  //     this.duckdb = new duckdb.AsyncDuckDB(logger, worker);
-  //     await this.duckdb.instantiate(bundle.mainModule);
-  //     this.conn = await this.duckdb.connect();
-  //   } catch (error) {
-  //     throw new Error(`Failed to initialize DuckDB: ${error.message}`);
-  //   }
-  // }
-
-  async setupDuckDB() {
-    try {
-      // Import DuckDB only when needed
-      const duckdb = await import("npm:@duckdb/duckdb-wasm");
-
-      // Define the bundles for DuckDB
-      const bundle = await duckdb.selectBundle({
-        mvp: {
-          mainModule: import.meta.resolve(
-            "npm:@duckdb/duckdb-wasm@1.28.1-dev287.0/dist/duckdb-mvp.wasm"
-          ),
-          mainWorker: import.meta.resolve(
-            "npm:@duckdb/duckdb-wasm@1.28.1-dev287.0/dist/duckdb-browser-mvp.worker.js"
-          ),
-        },
-        eh: {
-          mainModule: import.meta.resolve(
-            "npm:@duckdb/duckdb-wasm@1.28.1-dev287.0/dist/duckdb-eh.wasm"
-          ),
-          mainWorker: import.meta.resolve(
-            "npm:@duckdb/duckdb-wasm@1.28.1-dev287.0/dist/duckdb-browser-eh.worker.js"
-          ),
-        },
-      });
-
-      const logger = new duckdb.ConsoleLogger(duckdb.LogLevel.WARNING);
-      const worker = new Worker(bundle.mainWorker);
-
-      this.duckdb = new duckdb.AsyncDuckDB(logger, worker);
-      await this.duckdb.instantiate(bundle.mainModule);
-      this.conn = await this.duckdb.connect();
-    } catch (error) {
-      throw new Error(`Failed to initialize DuckDB: ${error.message}`);
-    }
-  }
-
-  async loadData(source, format) {
-    try {
-      // Drop existing table if it exists
-      await this.conn.query(`DROP TABLE IF EXISTS ${this.tableName}`);
-
-      if (Array.isArray(source)) {
-        // Handle JavaScript array of objects
-        await this.loadJSONData(source);
-      } else if (source instanceof File) {
-        // Handle File object
-        await this.loadFileData(source, format);
-      } else if (typeof source === "string") {
-        // Handle URL
-        await this.loadURLData(source, format);
-      } else {
-        throw new Error("Unsupported data source");
-      }
-
-      // Verify data loading
-      const countResult = await this.conn.query(
-        `SELECT COUNT(*) as count FROM ${this.tableName}`
-      );
-      const count = countResult.toArray()[0].count;
-
-      if (count === 0) {
-        throw new Error("No data was loaded");
-      }
-    } catch (error) {
-      throw new Error(`Failed to load data: ${error.message}`);
-    }
   }
 
   async loadJSONData(data) {
@@ -526,19 +416,37 @@ export class Histogram {
   }
 
   async update(data = null) {
+    console.log("Update called", { 
+      data, 
+      initialized: this.initialized, 
+      duckdb: this.duckdb, 
+      tableName: this.tableName,
+      dataSource: this.config.dataSource 
+    });
+  
     if (!this.initialized) {
       this.createSvg();
     }
-
+  
     if (data) {
-      // Direct data update (old behavior)
+      console.log("Updating with direct data");
       this.data = data;
       this.processData();
-    } else if (this.duckdb && this.tableName) {
-      // Process data using DuckDB
+    } 
+    else if (this.duckdb && this.tableName) {
+      console.log("Updating with DuckDB data processing");
       await this.processDataWithDuckDB();
+    } 
+    else if (this.config.dataSource) {
+      console.log("Updating with config.dataSource");
+      this.data = this.config.dataSource;
+      this.processData();
+    } 
+    else {
+      console.warn("No data provided and DuckDB not initialized");
     }
-
+  
+    console.log("Bins after processing:", this.bins);
     this.draw();
     return this;
   }
@@ -546,22 +454,12 @@ export class Histogram {
   processData() {
     const { column } = this.config;
     this.type = this.getType(this.data, column);
+    console.log("Determined type:", this.type);
     this.bins = this.binData(this.data, column, this.type);
+    console.log("Bins generated:", this.bins);
 
     this.xScale = this.createXScale();
     this.yScale = this.createYScale();
-  }
-
-  getType(data, column) {
-    for (const d of data) {
-      const value = d[column];
-      if (value === undefined) continue;
-      if (value == null) continue;
-      if (typeof value === "number") return "continuous";
-      if (value instanceof Date) return "date";
-      return "ordinal";
-    }
-    return "ordinal";
   }
 
   binData(data, column, type) {
@@ -570,6 +468,7 @@ export class Histogram {
 
     switch (type) {
       case "continuous":
+        console.log("Binning continuous data");
         const threshold =
           this.config.binThreshold || d3.thresholdFreedmanDiaconis;
         const histogram = d3.histogram().value(accessor).thresholds(threshold);
@@ -577,6 +476,7 @@ export class Histogram {
         break;
 
       case "date":
+        console.log("Binning date data");
         const timeHistogram = d3
           .histogram()
           .value((d) => accessor(d).getTime())
@@ -585,6 +485,7 @@ export class Histogram {
         break;
 
       case "ordinal":
+        console.log("Binning ordinal data");
         const grouped = _.groupBy(data, accessor);
         bins = Object.entries(grouped).map(([key, values]) => ({
           key,
@@ -596,8 +497,10 @@ export class Histogram {
           bins = this.handleLargeOrdinalBins(bins);
         }
         break;
+      default:
+        console.warn("Unexpected data type for binning:", type);
+        bins = [];
     }
-
     return bins;
   }
 
@@ -852,8 +755,8 @@ export class Histogram {
     }
 
     // Changed from this.duckdb.query to this.conn.query
-    const result = await this.conn.query(query);
-    return result.toArray();
+    const result = await this.dataProcessor.query(query);
+    return result;
   }
 
   clearSelection() {
@@ -923,17 +826,6 @@ export class Histogram {
 
   // Add this method to your Histogram class
   async logQuery(query, context = "") {
-    console.group(`DuckDB Query: ${context}`);
-    console.log("SQL:", query);
-    try {
-      const result = await this.conn.query(query);
-      console.log("Result:", result.toArray());
-      console.groupEnd();
-      return result;
-    } catch (error) {
-      console.error("Query Error:", error);
-      console.groupEnd();
-      throw error;
-    }
+    return await this.dataProcessor.logQuery(query, context);
   }
 }
