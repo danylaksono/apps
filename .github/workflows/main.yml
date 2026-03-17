@@ -1,4 +1,4 @@
-name: Deploy City Rose
+name: Deploy apps site
 
 on:
   push:
@@ -18,18 +18,26 @@ jobs:
           node-version: 20
           cache: "npm"
 
-      - name: Install dependencies
+      - name: Install dependencies (city-rose)
         run: npm ci
         working-directory: city-rose
 
-      - name: Build
+      - name: Build city-rose
         run: npm run build
         working-directory: city-rose
+
+      - name: Prepare deploy directory
+        run: |
+          rm -rf deploy
+          mkdir -p deploy
+          cp -R index.html walk sector7 archive deploy/
+          mkdir -p deploy/city-rose
+          cp -R city-rose/dist/* deploy/city-rose/
 
       - name: Deploy to GitHub Pages
         uses: peaceiris/actions-gh-pages@v3.9.2
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
-          publish_dir: ./city-rose/dist
+          publish_dir: ./deploy
           destination_dir: apps
           publish_branch: gh-pages

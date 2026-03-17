@@ -1,53 +1,44 @@
-# Web-Apps
+# apps
 
-This is an [Observable Framework](https://observablehq.com/framework) project. To start the local preview server, run:
+This repository hosts small web demos and interactive examples. The old Observable Framework site is now archived under `archive/observablehq`.
 
-```
+## Live demo (GitHub Pages)
+
+The project is published to GitHub Pages at:
+
+- https://danylaksono.github.io/apps/
+
+This site includes:
+
+- **City Rose** (React + Vite) — `/apps/city-rose/`
+- **Walk (Isochrone)** (static JS) — `/apps/walk/`
+- **Sector 7** (canvas game) — `/apps/sector7/`
+- **Archived ObservableHQ site** — `/apps/archive/observablehq/`
+
+## Local development
+
+### City Rose (React + Vite)
+
+```bash
+cd city-rose
+npm install
 npm run dev
 ```
 
-Then visit <http://localhost:3000> to preview your project.
+Then open http://localhost:5173/.
 
-For more, see <https://observablehq.com/framework/getting-started>.
+### Walk (static)
 
-## Project structure
+Open `walk/walk.html` in your browser (no build step required).
 
-A typical Framework project looks like this:
+### Sector 7 (static)
 
-```ini
-.
-├─ docs
-│  ├─ components
-│  │  └─ timeline.js           # an importable module
-│  ├─ data
-│  │  ├─ launches.csv.js       # a data loader
-│  │  └─ events.json           # a static data file
-│  ├─ example-dashboard.md     # a page
-│  ├─ example-report.md        # another page
-│  └─ index.md                 # the home page
-├─ .gitignore
-├─ observablehq.config.ts      # the project config file
-├─ package.json
-└─ README.md
-```
+Open `sector7/index.html` in your browser.
 
-**`docs`** - This is the “source root” — where your source files live. Pages go here. Each page is a Markdown file. Observable Framework uses [file-based routing](https://observablehq.com/framework/routing), which means that the name of the file controls where the page is served. You can create as many pages as you like. Use folders to organize your pages.
+## Archival content
 
-**`docs/index.md`** - This is the home page for your site. You can have as many additional pages as you’d like, but you should always have a home page, too.
+The previous Observable Framework project (pages and build artifacts) is preserved under:
 
-**`docs/data`** - You can put [data loaders](https://observablehq.com/framework/loaders) or static data files anywhere in your source root, but we recommend putting them here.
+- `archive/observablehq/`
 
-**`docs/components`** - You can put shared [JavaScript modules](https://observablehq.com/framework/javascript/imports) anywhere in your source root, but we recommend putting them here. This helps you pull code out of Markdown files and into JavaScript modules, making it easier to reuse code across pages, write tests and run linters, and even share code with vanilla web applications.
-
-**`observablehq.config.ts`** - This is the [project configuration](https://observablehq.com/framework/config) file, such as the pages and sections in the sidebar navigation, and the project’s title.
-
-## Command reference
-
-| Command           | Description                                              |
-| ----------------- | -------------------------------------------------------- |
-| `npm install`            | Install or reinstall dependencies                        |
-| `npm run dev`        | Start local preview server                               |
-| `npm run build`      | Build your static site, generating `./dist`              |
-| `npm run deploy`     | Deploy your project to Observable                        |
-| `npm run clean`      | Clear the local data loader cache                        |
-| `npm run observable` | Run commands like `observable help`                      |
+You can explore those files for reference, but they are no longer part of the actively maintained deployment.

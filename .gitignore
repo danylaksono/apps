@@ -1,5 +1,10 @@
 .DS_Store
+# Build / deploy artifacts
+deploy/
+
+# Dist folders (legacy)
 # dist/
+
 docs/.observablehq/cache/
 node_modules/
 yarn-error.log
