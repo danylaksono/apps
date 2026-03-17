@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+<title>React2 | Web-Apps</title>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=Source+Serif+Pro:ital,wght@0,400;0,600;0,700;1,400;1,600;1,700&amp;display=swap" crossorigin>
+<link rel="preload" as="style" href="./_observablehq/theme-air,near-midnight,alt,wide.css">
+<link rel="stylesheet" type="text/css" href="https://fonts.googleapis.com/css2?family=Source+Serif+Pro:ital,wght@0,400;0,600;0,700;1,400;1,600;1,700&amp;display=swap" crossorigin>
+<link rel="stylesheet" type="text/css" href="./_observablehq/theme-air,near-midnight,alt,wide.css">
+<link rel="modulepreload" href="./_observablehq/client.js">
+<link rel="modulepreload" href="./_observablehq/runtime.js">
+<link rel="modulepreload" href="./_observablehq/stdlib.js">
+<link rel="modulepreload" href="./_npm/react@18.2.0/_esm.js">
+<link rel="modulepreload" href="./_npm/react-dom@18.2.0/_esm.js">
+<link rel="modulepreload" href="./_npm/@mantine/form@7.9.1/_esm.js">
+<link rel="modulepreload" href="./_npm/@mantine/core@7.8.0/_esm.js">
+<link rel="modulepreload" href="./_npm/scheduler@0.23.0/_esm.js">
+<link rel="modulepreload" href="./_npm/klona@2.0.6/full/_esm.js">
+<link rel="modulepreload" href="./_npm/fast-deep-equal@3.1.3/_esm.js">
+<link rel="modulepreload" href="./_npm/react@18.2.0/jsx-runtime/_esm.js">
+<link rel="modulepreload" href="./_npm/react-remove-scroll@2.5.9/_esm.js">
+<link rel="modulepreload" href="./_npm/@mantine/hooks@7.8.0/_esm.js">
+<link rel="modulepreload" href="./_npm/clsx@2.1.0/_esm.js">
+<link rel="modulepreload" href="./_npm/@floating-ui/react@0.26.12/_esm.js">
+<link rel="modulepreload" href="./_npm/react-textarea-autosize@8.5.3/_esm.js">
+<link rel="modulepreload" href="./_npm/react-number-format@5.3.4/_esm.js">
+<link rel="modulepreload" href="./_npm/tslib@2.6.2/_esm.js">
+<link rel="modulepreload" href="./_npm/react-remove-scroll-bar@2.3.6/constants/_esm.js">
+<link rel="modulepreload" href="./_npm/use-callback-ref@1.3.2/_esm.js">
+<link rel="modulepreload" href="./_npm/use-sidecar@1.1.2/_esm.js">
+<link rel="modulepreload" href="./_npm/react-remove-scroll-bar@2.3.6/_esm.js">
+<link rel="modulepreload" href="./_npm/react-style-singleton@2.2.1/_esm.js">
+<link rel="modulepreload" href="./_npm/@floating-ui/react@0.26.12/utils/_esm.js">
+<link rel="modulepreload" href="./_npm/@floating-ui/utils@0.2.1/_esm.js">
+<link rel="modulepreload" href="./_npm/@floating-ui/react-dom@2.0.8/_esm.js">
+<link rel="modulepreload" href="./_npm/@floating-ui/utils@0.2.1/dom/_esm.js">
+<link rel="modulepreload" href="./_npm/tabbable@6.2.0/_esm.js">
+<link rel="modulepreload" href="./_npm/@babel/runtime@7.24.4/helpers/esm/extends/_esm.js">
+<link rel="modulepreload" href="./_npm/@babel/runtime@7.24.4/helpers/esm/objectWithoutPropertiesLoose/_esm.js">
+<link rel="modulepreload" href="./_npm/use-latest@1.2.1/_esm.js">
+<link rel="modulepreload" href="./_npm/use-composed-ref@1.3.0/_esm.js">
+<link rel="modulepreload" href="./_npm/detect-node-es@1.1.0/_esm.js">
+<link rel="modulepreload" href="./_npm/get-nonce@1.0.1/_esm.js">
+<link rel="modulepreload" href="./_npm/@floating-ui/dom@1.6.3/_esm.js">
+<link rel="modulepreload" href="./_npm/use-isomorphic-layout-effect@1.1.2/_esm.js">
+<link rel="modulepreload" href="./_npm/@floating-ui/core@1.6.0/_esm.js">
+<script type="module">
+
+import {define} from "./_observablehq/client.js";
+
+define({id: "80645fc8", outputs: ["React","createElement","createRoot","useForm","Grid","GridCol","MantineProvider","NumberInput","TextInput","Button"], body: async () => {
+const [{React, createElement}, {createRoot}, {useForm}, {Grid, GridCol, MantineProvider, NumberInput, TextInput, Button}] = await Promise.all([import("./_npm/react@18.2.0/_esm.js"), import("./_npm/react-dom@18.2.0/_esm.js"), import("./_npm/@mantine/form@7.9.1/_esm.js"), import("./_npm/@mantine/core@7.8.0/_esm.js")]);
+// import { useState } from "npm:react";
+
+
+return {React,createElement,createRoot,useForm,Grid,GridCol,MantineProvider,NumberInput,TextInput,Button};
+}});
+
+define({id: "5664c652", inputs: ["createRoot","display"], outputs: ["root"], body: (createRoot,display) => {
+const root = createRoot(display(document.createElement("DIV")));
+return {root};
+}});
+
+define({id: "527527aa", inputs: ["root","createElement","MantineProvider","Grid","GridCol"], body: (root,createElement,MantineProvider,Grid,GridCol) => {
+root.render(
+  createElement(
+    MantineProvider,
+    {},
+    createElement(
+      Grid,
+      null,
+      createElement(GridCol, { span: 4 }, "1"),
+      createElement(GridCol, { span: 4 }, "2"),
+      createElement(GridCol, { span: 4 }, "3")
+    )
+  )
+);
+}});
+
+define({id: "e5314573", inputs: ["root","createElement","MantineProvider","Demo"], body: (root,createElement,MantineProvider,Demo) => {
+root.render(createElement(MantineProvider, {}, Demo()));
+}});
+
+define({id: "7fb02209", inputs: ["useForm","createElement","TextInput","NumberInput","Button"], outputs: ["Demo"], body: (useForm,createElement,TextInput,NumberInput,Button) => {
+function Demo() {
+  const form = useForm({
+    mode: "uncontrolled",
+    initialValues: { name: "", email: "", age: 0 },
+    validate: {
+      name: (value) =>
+        value.length < 2 ? "Name must have at least 2 letters" : null,
+      email: (value) => (/^\S+@\S+$/.test(value) ? null : "Invalid email"),
+      age: (value) =>
+        value < 18 ? "You must be at least 18 to register" : null,
+    },
+  });
+
+  return createElement(
+    "form",
+    { onSubmit: form.onSubmit(console.log) },
+    createElement(TextInput, {
+      label: "Name",
+      placeholder: "Name",
+      key: form.key("name"),
+      ...form.getInputProps("name"),
+    }),
+    createElement(TextInput, {
+      mt: "sm",
+      label: "Email",
+      placeholder: "Email",
+      key: form.key("email"),
+      ...form.getInputProps("email"),
+    }),
+    createElement(NumberInput, {
+      mt: "sm",
+      label: "Age",
+      placeholder: "Age",
+      min: 0,
+      max: 99,
+      key: form.key("age"),
+      ...form.getInputProps("age"),
+    }),
+    createElement(Button, { type: "submit", mt: "sm" }, "Submit")
+  );
+}
+return {Demo};
+}});
+
+</script>
+<input id="observablehq-sidebar-toggle" type="checkbox" title="Toggle sidebar">
+<label id="observablehq-sidebar-backdrop" for="observablehq-sidebar-toggle"></label>
+<nav id="observablehq-sidebar">
+  <ol>
+    <label id="observablehq-sidebar-close" for="observablehq-sidebar-toggle"></label>
+    <li class="observablehq-link"><a href="./">Web-Apps</a></li>
+  </ol>
+  <ol>
+    <details open>
+      <summary>Projects</summary>
+      <ol>
+    <li class="observablehq-link"><a href="./moonsighting">Dashboard</a></li>
+    <li class="observablehq-link"><a href="./gridded">Gridded-glyphmaps</a></li>
+      </ol>
+    </details>
+  </ol>
+</nav>
+<script>{Object.assign(document.createElement("a"),{href:""}).password&&location.replace(location.href);const e=document.querySelector("#observablehq-sidebar"),o=document.querySelector("#observablehq-sidebar-toggle"),r=sessionStorage.getItem("observablehq-sidebar");r?o.checked=r==="true":o.indeterminate=!0;for(const t of document.querySelectorAll("#observablehq-sidebar summary")){const s=t.parentElement;switch(sessionStorage.getItem(`observablehq-sidebar:${t.textContent}`)){case"true":s.open=!0;break;case"false":s.classList.contains("observablehq-section-active")||(s.open=!1);break}}addEventListener("beforeunload",()=>sessionStorage.setItem("observablehq-sidebar-scrolly",`${e.scrollTop}`));const a=sessionStorage.getItem("observablehq-sidebar-scrolly");a!=null&&(e.style.cssText="overflow: hidden;",e.scrollTop=+a,e.style.cssText="");}</script>
+<div id="observablehq-center">
+<main id="observablehq-main" class="observablehq">
+<h1 id="react" tabindex="-1"><a class="observablehq-header-anchor" href="#react">React</a></h1>
+<div id="cell-80645fc8" class="observablehq observablehq--block"></div>
+<link rel="stylesheet" href="./_npm/@mantine/core@7.8.0/styles.css">
+<div id="cell-5664c652" class="observablehq observablehq--block"></div>
+<pre data-language="js"><code class="language-js"><span class="hljs-keyword">const</span> root = <span class="hljs-title function_">createRoot</span>(<span class="hljs-title function_">display</span>(<span class="hljs-variable language_">document</span>.<span class="hljs-title function_">createElement</span>(<span class="hljs-string">"DIV"</span>)));
+</code></pre>
+<p>The code above creates a root; a place for React content to live. We render some content into the root below.</p>
+<div id="cell-527527aa" class="observablehq observablehq--block"></div>
+<pre data-language="js"><code class="language-js">root.<span class="hljs-title function_">render</span>(
+  <span class="hljs-title function_">createElement</span>(
+    <span class="hljs-title class_">MantineProvider</span>,
+    {},
+    <span class="hljs-title function_">createElement</span>(
+      <span class="hljs-title class_">Grid</span>,
+      <span class="hljs-literal">null</span>,
+      <span class="hljs-title function_">createElement</span>(<span class="hljs-title class_">GridCol</span>, { <span class="hljs-attr">span</span>: <span class="hljs-number">4</span> }, <span class="hljs-string">"1"</span>),
+      <span class="hljs-title function_">createElement</span>(<span class="hljs-title class_">GridCol</span>, { <span class="hljs-attr">span</span>: <span class="hljs-number">4</span> }, <span class="hljs-string">"2"</span>),
+      <span class="hljs-title function_">createElement</span>(<span class="hljs-title class_">GridCol</span>, { <span class="hljs-attr">span</span>: <span class="hljs-number">4</span> }, <span class="hljs-string">"3"</span>)
+    )
+  )
+);
+</code></pre>
+<div id="cell-e5314573" class="observablehq observablehq--block"></div>
+<div id="cell-7fb02209" class="observablehq observablehq--block"></div>
+</main>
+</div>

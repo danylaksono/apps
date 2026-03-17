@@ -1,0 +1,959 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Alien Defense: Sector 7</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            background-color: #1a1a2e;
+            overflow: hidden; /* Prevent scrolling on mobile */
+            touch-action: none; /* Disable default touch actions globaly */
+            font-family: 'Courier New', Courier, monospace;
+            user-select: none;
+            -webkit-user-select: none;
+        }
+
+        #game-container {
+            position: relative;
+            width: 100vw;
+            height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background: linear-gradient(to bottom, #0f0c29, #302b63, #24243e);
+        }
+
+        canvas {
+            box-shadow: 0 0 20px rgba(0,0,0,0.5);
+            background-color: #87CEEB; /* Sky blue fallback */
+            image-rendering: pixelated;
+        }
+
+        /* Mobile Controls Overlay */
+        #controls {
+            position: absolute;
+            bottom: 20px;
+            left: 0;
+            width: 100%;
+            height: 120px;
+            pointer-events: none; /* Let touches pass through to buttons */
+            display: flex;
+            justify-content: space-between;
+            padding: 0 20px;
+            box-sizing: border-box;
+            z-index: 10;
+        }
+
+        .control-group {
+            display: flex;
+            gap: 15px;
+            pointer-events: auto;
+        }
+
+        .btn {
+            width: 60px;
+            height: 60px;
+            background: rgba(255, 255, 255, 0.2);
+            border: 2px solid rgba(255, 255, 255, 0.5);
+            border-radius: 50%;
+            color: white;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 24px;
+            backdrop-filter: blur(4px);
+            touch-action: none;
+            user-select: none;
+        }
+
+        .btn:active, .btn.active {
+            background: rgba(255, 255, 255, 0.5);
+            transform: scale(0.95);
+        }
+
+        .dpad-btn {
+            border-radius: 15px;
+        }
+
+        .action-btn {
+            background: rgba(255, 100, 100, 0.3);
+            border-color: rgba(255, 100, 100, 0.6);
+        }
+        
+        .jump-btn {
+            background: rgba(100, 255, 100, 0.3);
+            border-color: rgba(100, 255, 100, 0.6);
+        }
+
+        #ui-layer {
+            position: absolute;
+            top: 10px;
+            left: 20px;
+            color: white;
+            font-size: 18px;
+            text-shadow: 2px 2px 0 #000;
+            pointer-events: none;
+            z-index: 10;
+        }
+
+        #start-screen, #game-over-screen, #win-screen {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.85);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            color: white;
+            z-index: 50; /* High z-index to ensure it's on top */
+            text-align: center;
+        }
+
+        .hidden {
+            display: none !important;
+        }
+
+        h1 { font-size: 40px; margin-bottom: 10px; color: #4ade80; text-shadow: 0 0 10px #4ade80; }
+        h2 { font-size: 30px; color: #f87171; }
+        p { font-size: 16px; color: #ccc; max-width: 80%; line-height: 1.5; }
+        
+        .start-btn {
+            margin-top: 30px;
+            padding: 15px 40px;
+            font-size: 20px;
+            background: #4ade80;
+            color: #000;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: bold;
+            font-family: inherit;
+            box-shadow: 0 0 15px #4ade80;
+            animation: pulse 2s infinite;
+            
+            /* CRITICAL FIXES FOR MOBILE */
+            touch-action: manipulation; /* Allow tap but no zoom */
+            pointer-events: auto;
+            user-select: none;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        @keyframes pulse {
+            0% { transform: scale(1); box-shadow: 0 0 15px #4ade80; }
+            50% { transform: scale(1.05); box-shadow: 0 0 25px #4ade80; }
+            100% { transform: scale(1); box-shadow: 0 0 15px #4ade80; }
+        }
+
+        /* PC Instructions hint */
+        .pc-hint {
+            margin-top: 20px;
+            font-size: 12px;
+            opacity: 0.6;
+        }
+    </style>
+</head>
+<body>
+
+<div id="game-container">
+    <canvas id="gameCanvas"></canvas>
+
+    <div id="ui-layer">
+        <div>HEALTH: <span id="health-display">♥♥♥</span></div>
+        <div>SCORE: <span id="score-display">0000</span></div>
+        <div id="weapon-display" style="font-size: 14px; color: #ffd700;"></div>
+    </div>
+
+    <div id="controls">
+        <div class="control-group">
+            <div id="btn-left" class="btn dpad-btn">←</div>
+            <div id="btn-right" class="btn dpad-btn">→</div>
+        </div>
+        <div class="control-group">
+            <div id="btn-shoot" class="btn action-btn">B</div>
+            <div id="btn-jump" class="btn jump-btn">A</div>
+        </div>
+    </div>
+
+    <!-- Added inline event handlers for robustness on mobile -->
+    <div id="start-screen">
+        <h1>ALIEN DEFENSE</h1>
+        <p>Sector 7 is under attack.</p>
+        <p>Jump on Aliens or Shoot (B). Double Jump (A).</p>
+        <p>Hit Gold Blocks for Power Ups!</p>
+        <button class="start-btn" ontouchstart="startGame(); event.preventDefault();" onclick="startGame()">DEPLOY SOLDIER</button>
+        <div class="pc-hint">Desktop: Arrow Keys to Move/Jump, 'Z' to Shoot</div>
+    </div>
+
+    <div id="game-over-screen" class="hidden">
+        <h2>MISSION FAILED</h2>
+        <p>The aliens have overrun the sector.</p>
+        <div id="final-score-loss">Score: 0</div>
+        <button class="start-btn" ontouchstart="resetGame(); event.preventDefault();" onclick="resetGame()">RETRY MISSION</button>
+    </div>
+
+    <div id="win-screen" class="hidden">
+        <h1>MISSION ACCOMPLISHED</h1>
+        <p>Sector 7 is secure. Great work, soldier!</p>
+        <div id="final-score-win">Score: 0</div>
+        <button class="start-btn" ontouchstart="resetGame(); event.preventDefault();" onclick="resetGame()">NEXT PATROL</button>
+    </div>
+</div>
+
+<script>
+/**
+ * GAME ENGINE & LOGIC
+ */
+
+const canvas = document.getElementById('gameCanvas');
+const ctx = canvas.getContext('2d');
+const healthDisplay = document.getElementById('health-display');
+const scoreDisplay = document.getElementById('score-display');
+const weaponDisplay = document.getElementById('weapon-display');
+
+// Game State
+let gameState = 'START'; 
+let animationFrameId;
+let lastTime = 0;
+let score = 0;
+
+// Physics Constants
+const GRAVITY = 0.6;
+const FRICTION = 0.8;
+const PLAYER_SPEED = 0.5;
+const JUMP_FORCE = -10; 
+const MAX_SPEED = 4;
+
+// Inputs
+const keys = {
+    left: false,
+    right: false,
+    up: false,
+    shoot: false
+};
+
+// Mobile Touch State
+const touchInput = {
+    left: false,
+    right: false,
+    jump: false,
+    shoot: false
+};
+
+// Game Objects
+let player;
+let platforms = []; // Includes blocks now
+let enemies = [];
+let bullets = [];
+let particles = [];
+let goal;
+let camera = { x: 0, y: 0 };
+
+// Asset Colors
+const COLORS = {
+    skyTop: '#200f21',
+    skyBottom: '#382039',
+    ground: '#3b2a45',
+    groundHighlight: '#563e61',
+    platform: '#5e506b',
+    alien: '#84cc16',
+    alienFlyer: '#a855f7',
+    alienDark: '#4d7c0f',
+    soldier: '#eab308',
+    soldierArmor: '#a16207',
+    bullet: '#f43f5e',
+    blockActive: '#fbbf24',
+    blockEmpty: '#78716c'
+};
+
+// Resize handling
+function resize() {
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
+    ctx.imageSmoothingEnabled = false;
+}
+window.addEventListener('resize', resize);
+resize();
+
+// Input Event Listeners (Keyboard)
+window.addEventListener('keydown', (e) => {
+    if (e.code === 'ArrowLeft') keys.left = true;
+    if (e.code === 'ArrowRight') keys.right = true;
+    if (e.code === 'ArrowUp' || e.code === 'Space') {
+        if (!keys.up && player) player.jump();
+        keys.up = true;
+    }
+    if (e.code === 'KeyZ') {
+        if(!keys.shoot && player) player.shoot();
+        keys.shoot = true;
+    }
+});
+
+window.addEventListener('keyup', (e) => {
+    if (e.code === 'ArrowLeft') keys.left = false;
+    if (e.code === 'ArrowRight') keys.right = false;
+    if (e.code === 'ArrowUp' || e.code === 'Space') keys.up = false;
+    if (e.code === 'KeyZ') keys.shoot = false;
+});
+
+// Touch Controls Setup (Game Controls)
+function setupTouchButton(id, key) {
+    const btn = document.getElementById(id);
+    if (!btn) return;
+    
+    const handleStart = (e) => {
+        e.preventDefault();
+        touchInput[key] = true;
+        btn.classList.add('active');
+        
+        if (key === 'jump' && player) player.jump();
+        if (key === 'shoot' && player) player.shoot();
+    };
+
+    const handleEnd = (e) => {
+        e.preventDefault();
+        touchInput[key] = false;
+        btn.classList.remove('active');
+    };
+
+    btn.addEventListener('touchstart', handleStart, { passive: false });
+    btn.addEventListener('touchend', handleEnd, { passive: false });
+    // Mouse fallbacks for desktop testing
+    btn.addEventListener('mousedown', handleStart);
+    btn.addEventListener('mouseup', handleEnd);
+    btn.addEventListener('mouseleave', handleEnd);
+}
+
+setupTouchButton('btn-left', 'left');
+setupTouchButton('btn-right', 'right');
+setupTouchButton('btn-jump', 'jump');
+setupTouchButton('btn-shoot', 'shoot');
+
+// Classes
+
+class Block {
+    constructor(x, y) {
+        this.x = x;
+        this.y = y;
+        this.w = 30;
+        this.h = 30;
+        this.active = true;
+        this.bumpY = 0; // Animation offset
+        this.type = 'powerup';
+    }
+
+    hit() {
+        if (!this.active) return;
+        this.active = false;
+        this.bumpY = -10;
+        
+        // Effect
+        player.upgradeWeapon();
+        score += 500;
+        updateUI();
+        createParticles(this.x + this.w/2, this.y, '#fbbf24', 15);
+        
+        // Spawn floating text effect (simplified)
+        console.log("Powerup!");
+    }
+
+    update() {
+        if (this.bumpY < 0) {
+            this.bumpY += 1;
+        }
+    }
+
+    draw() {
+        ctx.save();
+        ctx.translate(this.x, this.y + this.bumpY);
+        
+        // Box
+        ctx.fillStyle = this.active ? COLORS.blockActive : COLORS.blockEmpty;
+        ctx.fillRect(0, 0, this.w, this.h);
+        
+        // Border
+        ctx.strokeStyle = '#fff';
+        ctx.lineWidth = 2;
+        ctx.strokeRect(0, 0, this.w, this.h);
+
+        // Question Mark
+        if (this.active) {
+            ctx.fillStyle = '#000';
+            ctx.font = 'bold 20px Courier New';
+            ctx.fillText('?', 10, 22);
+            
+            // Blinking effect
+            if (Math.floor(Date.now() / 200) % 2 === 0) {
+                ctx.fillStyle = 'rgba(255,255,255,0.3)';
+                ctx.fillRect(2, 2, this.w-4, this.h-4);
+            }
+        }
+
+        ctx.restore();
+    }
+}
+
+class Player {
+    constructor(x, y) {
+        this.x = x;
+        this.y = y;
+        this.w = 30;
+        this.h = 40;
+        this.vx = 0;
+        this.vy = 0;
+        this.grounded = false;
+        this.facingRight = true;
+        this.health = 3;
+        this.invulnerable = 0;
+        this.animTimer = 0;
+        
+        // New Features
+        this.jumpCount = 0;
+        this.maxJumps = 2;
+        this.weaponLevel = 1;
+    }
+
+    update() {
+        const left = keys.left || touchInput.left;
+        const right = keys.right || touchInput.right;
+
+        if (left) {
+            this.vx -= PLAYER_SPEED;
+            this.facingRight = false;
+        }
+        if (right) {
+            this.vx += PLAYER_SPEED;
+            this.facingRight = true;
+        }
+
+        this.vx *= FRICTION;
+        this.vx = Math.max(Math.min(this.vx, MAX_SPEED), -MAX_SPEED);
+
+        this.vy += GRAVITY;
+
+        this.x += this.vx;
+        this.checkCollisions(true);
+        this.y += this.vy;
+        this.checkCollisions(false);
+
+        if (this.invulnerable > 0) this.invulnerable--;
+        if (Math.abs(this.vx) > 0.1) this.animTimer++;
+
+        if (this.y > 2000) this.takeDamage(3);
+    }
+
+    jump() {
+        if (this.grounded) {
+            this.vy = JUMP_FORCE;
+            this.grounded = false;
+            this.jumpCount = 1;
+            createParticles(this.x + this.w/2, this.y + this.h, '#fff', 5);
+        } else if (this.jumpCount < this.maxJumps) {
+            // Double Jump
+            this.vy = JUMP_FORCE * 0.9;
+            this.jumpCount++;
+            // Jetpack effect
+            createParticles(this.x + this.w/2, this.y + this.h/2, '#38bdf8', 8);
+        }
+    }
+
+    upgradeWeapon() {
+        this.weaponLevel = 2;
+        weaponDisplay.innerText = "SPREAD SHOT ACTIVE!";
+    }
+
+    shoot() {
+        if (gameState !== 'PLAYING') return;
+        const bulletSpeed = 10;
+        const bx = this.facingRight ? this.x + this.w : this.x;
+        const dir = this.facingRight ? 1 : -1;
+
+        if (this.weaponLevel === 1) {
+            bullets.push(new Bullet(bx, this.y + 15, bulletSpeed * dir, 0));
+        } else {
+            // Spread Shot
+            bullets.push(new Bullet(bx, this.y + 15, bulletSpeed * dir, 0));
+            bullets.push(new Bullet(bx, this.y + 15, bulletSpeed * dir, -2)); // Up angle
+            bullets.push(new Bullet(bx, this.y + 15, bulletSpeed * dir, 2));  // Down angle
+        }
+    }
+
+    takeDamage(amount) {
+        if (this.invulnerable > 0) return;
+        this.health -= amount;
+        this.invulnerable = 60;
+        updateUI();
+        
+        this.vy = -5;
+        this.vx = this.facingRight ? -5 : 5;
+
+        if (this.health <= 0) endGame(false);
+    }
+
+    checkCollisions(horizontal) {
+        // Combine standard platforms and blocks for collision
+        const allPlatforms = [...platforms]; // Blocks are in platforms array
+
+        for (let p of allPlatforms) {
+            // Check intersection
+            if (this.x < p.x + p.w && this.x + this.w > p.x &&
+                this.y < p.y + p.h && this.y + this.h > p.y) {
+                
+                if (horizontal) {
+                    if (this.vx > 0) this.x = p.x - this.w;
+                    else if (this.vx < 0) this.x = p.x + p.w;
+                    this.vx = 0;
+                } else {
+                    if (this.vy > 0) { // Falling down
+                        // Only snap to top if we were previously above it
+                        // Simplified: standard platform logic
+                        this.y = p.y - this.h;
+                        this.grounded = true;
+                        this.jumpCount = 0; // Reset jumps on landing
+                        this.vy = 0;
+                    } else if (this.vy < 0) { // Hitting head (Moving UP)
+                        this.y = p.y + p.h;
+                        this.vy = 0;
+                        
+                        // Check if it's a block
+                        if (p instanceof Block) {
+                            p.hit();
+                        }
+                    }
+                }
+            }
+        }
+
+        if (this.x < goal.x + goal.w && this.x + this.w > goal.x &&
+            this.y < goal.y + goal.h && this.y + this.h > goal.y) {
+            endGame(true);
+        }
+    }
+
+    draw() {
+        if (this.invulnerable > 0 && Math.floor(Date.now() / 100) % 2 === 0) return;
+
+        ctx.save();
+        ctx.translate(Math.floor(this.x), Math.floor(this.y));
+        if (!this.facingRight) {
+            ctx.translate(this.w, 0);
+            ctx.scale(-1, 1);
+        }
+
+        // Soldier
+        ctx.fillStyle = COLORS.soldierArmor;
+        ctx.fillRect(5, 15, 20, 20); 
+        ctx.fillStyle = '#4b5563'; 
+        ctx.fillRect(5, 0, 20, 15);
+        ctx.fillStyle = '#38bdf8';
+        ctx.fillRect(18, 5, 7, 5);
+        
+        // Weapon Graphic Change
+        ctx.fillStyle = this.weaponLevel > 1 ? '#ff0000' : '#111';
+        ctx.fillRect(15, 20, 25, 6);
+
+        // Jetpack visual if upgraded jumps available? 
+        if (this.maxJumps > 1) {
+            ctx.fillStyle = '#ccc';
+            ctx.fillRect(0, 18, 5, 12);
+        }
+
+        ctx.fillStyle = '#333';
+        const legOffset = Math.sin(this.animTimer * 0.3) * 5;
+        if (this.grounded && Math.abs(this.vx) > 0.1) {
+             ctx.fillRect(8 + legOffset, 35, 6, 5);
+             ctx.fillRect(18 - legOffset, 35, 6, 5);
+        } else {
+             ctx.fillRect(8, 35, 6, 5);
+             ctx.fillRect(18, 35, 6, 5);
+        }
+
+        ctx.restore();
+    }
+}
+
+class Enemy {
+    constructor(x, y, type) {
+        this.x = x;
+        this.y = y;
+        this.w = 35;
+        this.h = 30;
+        this.vx = type === 'flyer' ? 2 : 1.5;
+        this.vy = 0;
+        this.type = type; // 'walker' or 'flyer'
+        this.patrolStart = x;
+        this.patrolDist = type === 'flyer' ? 300 : 200;
+        this.startY = y;
+        this.timeOffset = Math.random() * 100;
+    }
+
+    update() {
+        if (this.type === 'flyer') {
+            // Flying Logic (Sine wave)
+            this.x += this.vx;
+            if (this.x > this.patrolStart + this.patrolDist || this.x < this.patrolStart) {
+                this.vx *= -1;
+            }
+            // Hover effect
+            this.y = this.startY + Math.sin((Date.now() / 300) + this.timeOffset) * 40;
+        } else {
+            // Walker Logic
+            this.x += this.vx;
+            if (this.x > this.patrolStart + this.patrolDist || this.x < this.patrolStart) {
+                this.vx *= -1;
+            }
+            this.vy += GRAVITY;
+            this.y += this.vy;
+
+            for (let p of platforms) {
+                if (p instanceof Block) continue; // Enemies ignore blocks usually
+                if (this.x < p.x + p.w && this.x + this.w > p.x &&
+                    this.y < p.y + p.h && this.y + this.h > p.y) {
+                     if (this.vy > 0 && this.y + this.h - this.vy <= p.y) {
+                        this.y = p.y - this.h;
+                        this.vy = 0;
+                     }
+                }
+            }
+        }
+        
+        // Interact with Player
+        if (player.invulnerable <= 0) {
+            if (player.x < this.x + this.w && player.x + player.w > this.x &&
+                player.y < this.y + this.h && player.y + player.h > this.y) {
+                
+                const hitFromAbove = (player.vy > 0) && (player.y + player.h - player.vy <= this.y + this.h * 0.6);
+                
+                if (hitFromAbove) {
+                    this.die();
+                    player.vy = -8;
+                    score += 100;
+                    updateUI();
+                } else {
+                    player.takeDamage(1);
+                }
+            }
+        }
+    }
+
+    die() {
+        enemies = enemies.filter(e => e !== this);
+        createParticles(this.x + this.w/2, this.y + this.h/2, this.type === 'flyer' ? COLORS.alienFlyer : COLORS.alien, 10);
+    }
+
+    draw() {
+        ctx.save();
+        ctx.translate(Math.floor(this.x), Math.floor(this.y));
+        
+        if (this.type === 'flyer') {
+            // Flying Enemy (Purple with wings)
+            ctx.fillStyle = COLORS.alienFlyer;
+            
+            // Wings flapping
+            const flap = Math.sin(Date.now() / 50) * 5;
+            ctx.beginPath();
+            ctx.moveTo(-5, 10); ctx.lineTo(17, 15 + flap); ctx.lineTo(40, 10); // Wing span
+            ctx.lineTo(17, 5); 
+            ctx.fill();
+
+            // Body
+            ctx.beginPath();
+            ctx.arc(17, 15, 12, 0, Math.PI*2);
+            ctx.fill();
+
+            // Eye
+            ctx.fillStyle = '#ff0';
+            ctx.beginPath();
+            ctx.arc(17, 15, 5, 0, Math.PI*2);
+            ctx.fill();
+        } else {
+            // Walker Alien
+            ctx.fillStyle = COLORS.alien;
+            ctx.beginPath();
+            ctx.arc(17, 15, 15, Math.PI, 0); 
+            ctx.lineTo(35, 30);
+            ctx.lineTo(0, 30);
+            ctx.fill();
+            
+            ctx.fillStyle = '#fff';
+            ctx.beginPath(); 
+            ctx.arc(10, 10, 4, 0, Math.PI*2);
+            ctx.arc(24, 10, 4, 0, Math.PI*2);
+            ctx.fill();
+            ctx.fillStyle = '#000';
+            ctx.beginPath();
+            ctx.arc(10 + (this.vx>0?1:-1), 10, 1.5, 0, Math.PI*2);
+            ctx.arc(24 + (this.vx>0?1:-1), 10, 1.5, 0, Math.PI*2);
+            ctx.fill();
+
+            ctx.strokeStyle = COLORS.alienDark;
+            ctx.lineWidth = 2;
+            const wiggle = Math.sin(Date.now() / 100) * 3;
+            ctx.beginPath();
+            ctx.moveTo(5, 30); ctx.lineTo(5 + wiggle, 38);
+            ctx.moveTo(17, 30); ctx.lineTo(17 - wiggle, 38);
+            ctx.moveTo(29, 30); ctx.lineTo(29 + wiggle, 38);
+            ctx.stroke();
+        }
+
+        ctx.restore();
+    }
+}
+
+class Bullet {
+    constructor(x, y, vx, vy) {
+        this.x = x;
+        this.y = y;
+        this.r = 4;
+        this.vx = vx;
+        this.vy = vy || 0;
+        this.active = true;
+    }
+
+    update() {
+        this.x += this.vx;
+        this.y += this.vy;
+        
+        for (let e of enemies) {
+            if (this.x > e.x && this.x < e.x + e.w &&
+                this.y > e.y && this.y < e.y + e.h) {
+                e.die();
+                this.active = false;
+                score += 100;
+                updateUI();
+                createParticles(this.x, this.y, COLORS.bullet, 3);
+                break;
+            }
+        }
+
+        // Ignore blocks for bullets, but hit walls/floor
+        for (let p of platforms) {
+             if (p instanceof Block) continue;
+             if (this.x > p.x && this.x < p.x + p.w &&
+                this.y > p.y && this.y < p.y + p.h) {
+                this.active = false;
+                createParticles(this.x, this.y, '#ccc', 2);
+                break;
+            }
+        }
+
+        if (Math.abs(this.x - player.x) > 1000) this.active = false;
+    }
+
+    draw() {
+        ctx.fillStyle = COLORS.bullet;
+        ctx.beginPath();
+        ctx.arc(this.x, this.y, this.r, 0, Math.PI*2);
+        ctx.fill();
+    }
+}
+
+class Particle {
+    constructor(x, y, color) {
+        this.x = x;
+        this.y = y;
+        this.vx = (Math.random() - 0.5) * 6;
+        this.vy = (Math.random() - 0.5) * 6;
+        this.life = 1.0;
+        this.color = color;
+        this.size = Math.random() * 4 + 2;
+    }
+    update() {
+        this.x += this.vx;
+        this.y += this.vy;
+        this.life -= 0.05;
+    }
+    draw() {
+        ctx.globalAlpha = this.life;
+        ctx.fillStyle = this.color;
+        ctx.fillRect(this.x, this.y, this.size, this.size);
+        ctx.globalAlpha = 1.0;
+    }
+}
+
+function createParticles(x, y, color, count) {
+    for(let i=0; i<count; i++) {
+        particles.push(new Particle(x, y, color));
+    }
+}
+
+// Level Generation
+function buildLevel() {
+    platforms = [];
+    enemies = [];
+    
+    // Floor
+    platforms.push({x: -200, y: 500, w: 4000, h: 200});
+
+    // Regular Platforms
+    const levelData = [
+        {x: 300, y: 400, w: 150, h: 20},
+        {x: 550, y: 320, w: 100, h: 20},
+        {x: 750, y: 250, w: 200, h: 20},
+        {x: 1050, y: 350, w: 100, h: 20},
+        {x: 1200, y: 450, w: 150, h: 20},
+        {x: 1450, y: 300, w: 100, h: 20},
+        {x: 1650, y: 200, w: 300, h: 20}, 
+        {x: 2050, y: 400, w: 150, h: 20},
+        {x: 2300, y: 300, w: 100, h: 20},
+    ];
+    levelData.forEach(p => platforms.push(p));
+
+    // POWER UP BLOCKS (Mario style placement)
+    // Needs to be reachable by jump
+    platforms.push(new Block(400, 250));
+    platforms.push(new Block(1250, 250));
+
+    // Walls
+    platforms.push({x: -200, y: -1000, w: 200, h: 2000});
+
+    // Enemies
+    enemies.push(new Enemy(600, 200, 'walker'));
+    enemies.push(new Enemy(800, 150, 'walker'));
+    
+    // Flying Enemies
+    enemies.push(new Enemy(900, 200, 'flyer')); // New flyer
+    enemies.push(new Enemy(1500, 150, 'flyer')); // New flyer
+
+    enemies.push(new Enemy(1300, 300, 'walker'));
+    enemies.push(new Enemy(1700, 100, 'walker'));
+    enemies.push(new Enemy(2100, 300, 'walker'));
+
+    // Goal
+    goal = { x: 2600, y: 400, w: 50, h: 100 };
+}
+
+// Main Functions
+function startGame() {
+    document.getElementById('start-screen').classList.add('hidden');
+    document.getElementById('game-over-screen').classList.add('hidden');
+    document.getElementById('win-screen').classList.add('hidden');
+    weaponDisplay.innerText = "";
+    
+    gameState = 'PLAYING';
+    score = 0;
+    player = new Player(100, 300);
+    buildLevel();
+    bullets = [];
+    particles = [];
+    updateUI();
+    
+    // Ensure loop is running
+    if (!animationFrameId) loop();
+}
+
+function resetGame() {
+    startGame();
+}
+
+function endGame(win) {
+    gameState = win ? 'WIN' : 'GAMEOVER';
+    document.getElementById(win ? 'win-screen' : 'game-over-screen').classList.remove('hidden');
+    if(win) document.getElementById('final-score-win').innerText = "Score: " + score;
+    else document.getElementById('final-score-loss').innerText = "Score: " + score;
+}
+
+function updateUI() {
+    let hStr = '';
+    for(let i=0; i<player.health; i++) hStr += '♥';
+    healthDisplay.innerText = hStr;
+    scoreDisplay.innerText = score.toString().padStart(4, '0');
+}
+
+function drawBackground() {
+    const grad = ctx.createLinearGradient(0, 0, 0, canvas.height);
+    grad.addColorStop(0, COLORS.skyTop);
+    grad.addColorStop(1, COLORS.skyBottom);
+    ctx.fillStyle = grad;
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+    ctx.fillStyle = '#FFF';
+    for(let i=0; i<50; i++) {
+        const sx = (i * 137) % canvas.width;
+        const sy = (i * 67) % (canvas.height/2);
+        ctx.globalAlpha = Math.random() * 0.5 + 0.2;
+        ctx.fillRect(sx, sy, 2, 2);
+    }
+    ctx.globalAlpha = 1.0;
+}
+
+function updateCamera() {
+    if (!player) return;
+    const targetX = player.x - canvas.width / 2 + player.w / 2;
+    const targetY = player.y - canvas.height / 2;
+    camera.x += (targetX - camera.x) * 0.1;
+    camera.y = Math.min(100, Math.max(-500, targetY)); 
+    if (camera.x < 0) camera.x = 0;
+}
+
+function drawGoal() {
+    ctx.fillStyle = '#ffeb3b'; 
+    ctx.fillRect(goal.x + 20, goal.y, 10, goal.h);
+    const wave = Math.sin(Date.now() / 200) * 5;
+    ctx.fillStyle = '#ef4444'; 
+    ctx.beginPath();
+    ctx.moveTo(goal.x + 30, goal.y + 10);
+    ctx.lineTo(goal.x + 80, goal.y + 25 + wave);
+    ctx.lineTo(goal.x + 30, goal.y + 40);
+    ctx.fill();
+    ctx.fillStyle = '#0ff';
+    ctx.shadowBlur = 20;
+    ctx.shadowColor = '#0ff';
+    ctx.beginPath();
+    ctx.arc(goal.x + 25, goal.y + 80, 10 + Math.sin(Date.now()/100)*2, 0, Math.PI*2);
+    ctx.fill();
+    ctx.shadowBlur = 0;
+}
+
+function loop() {
+    if (gameState === 'PLAYING') {
+        player.update();
+        platforms.forEach(p => { if(p instanceof Block) p.update(); });
+        enemies.forEach(e => e.update());
+        bullets.forEach(b => b.update());
+        particles.forEach(p => p.update());
+        bullets = bullets.filter(b => b.active);
+        particles = particles.filter(p => p.life > 0);
+        updateCamera();
+    }
+
+    drawBackground();
+
+    ctx.save();
+    ctx.translate(-Math.floor(camera.x), -Math.floor(camera.y));
+
+    platforms.forEach(p => {
+        if (p instanceof Block) {
+            p.draw();
+        } else {
+            ctx.fillStyle = COLORS.platform;
+            ctx.fillRect(p.x, p.y, p.w, p.h);
+            ctx.strokeStyle = '#8b7e96';
+            ctx.strokeRect(p.x, p.y, p.w, p.h);
+            ctx.fillStyle = '#4a3b53';
+            ctx.beginPath();
+            ctx.arc(p.x+5, p.y+5, 2, 0, Math.PI*2);
+            ctx.arc(p.x+p.w-5, p.y+5, 2, 0, Math.PI*2);
+            ctx.fill();
+        }
+    });
+
+    drawGoal();
+    enemies.forEach(e => e.draw());
+    bullets.forEach(b => b.draw());
+    particles.forEach(p => p.draw());
+    if (gameState === 'PLAYING') player.draw();
+
+    ctx.restore();
+
+    animationFrameId = requestAnimationFrame(loop);
+}
+
+</script>
+</body>
+</html>
