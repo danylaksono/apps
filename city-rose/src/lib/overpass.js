@@ -3,6 +3,9 @@ import { OVERPASS_ENDPOINTS } from './constants';
 const HIGHWAY_PATTERN =
   '^(motorway|trunk|primary|secondary|tertiary|residential|unclassified)$';
 
+const cityCache = new Map();
+const mapDataCache = new Map();
+
 function buildAreaId(osmType, osmId) {
   const id = Number.parseInt(osmId, 10);
 
@@ -52,6 +55,11 @@ async function fetchOverpassData(areaId, attempt = 0) {
 }
 
 export async function fetchCity(searchQuery) {
+  const queryKey = searchQuery.trim().toLowerCase();
+  if (cityCache.has(queryKey)) {
+    return cityCache.get(queryKey);
+  }
+
   const response = await fetch(
     `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(searchQuery)}&limit=1&addressdetails=1`
   );
@@ -68,7 +76,7 @@ export async function fetchCity(searchQuery) {
 
   const city = data[0];
 
-  return {
+  const result = {
     areaId: buildAreaId(city.osm_type, city.osm_id),
     bbox: city.boundingbox.map(Number),
     cityName: city.display_name.split(',')[0].trim(),
@@ -77,14 +85,22 @@ export async function fetchCity(searchQuery) {
       lon: Number.parseFloat(city.lon),
     },
   };
+
+  cityCache.set(queryKey, result);
+  return result;
 }
 
 export async function fetchStreetWays(areaId) {
+  if (mapDataCache.has(areaId)) {
+    return mapDataCache.get(areaId);
+  }
+
   const overpassData = await fetchOverpassData(areaId);
 
   if (!overpassData.elements || overpassData.elements.length === 0) {
     throw new Error('No street network found inside this boundary.');
   }
 
+  mapDataCache.set(areaId, overpassData.elements);
   return overpassData.elements;
 }
