@@ -35,10 +35,25 @@ const ringsList   = document.getElementById('rings-list');
 const originInfo  = document.getElementById('origin-info');
 const gjInput     = document.getElementById('geojson-input');
 const dropZone    = document.getElementById('drop-zone');
+const resultsPanel = document.getElementById('results-panel');
+const resultsClose = document.getElementById('results-close');
 
 function setStatus(type, html) { statusEl.className = type; statusEl.innerHTML = html; }
 function spin(msg) { setStatus('busy', '<span class="spin"></span>' + msg); }
 function updateRunBtn() { btnRun.disabled = origins.length === 0 || isRunning; }
+
+// RESULTS PANEL
+resultsClose.addEventListener('click', () => {
+  resultsPanel.classList.remove('visible');
+});
+
+function showResultsPanel() {
+  resultsPanel.classList.add('visible');
+}
+
+function hideResultsPanel() {
+  resultsPanel.classList.remove('visible');
+}
 
 // SPEED
 speedInput.addEventListener('input', e => {
@@ -94,13 +109,34 @@ document.getElementById('btn-add-ring').addEventListener('click', () => {
   renderRings();
 });
 
-// ORIGINS — map click
-map.on('click', ({ latlng: { lat, lng } }) => {
+// ORIGINS — map click (Ctrl+click = add, normal click = replace)
+map.on('click', (e) => {
   if (isRunning) return;
-  setOrigins([{ lat, lon:lng, label: lat.toFixed(5) + ', ' + lng.toFixed(5) }]);
+  const { lat, lng } = e.latlng;
+  const newOrigin = { lat, lon: lng, label: lat.toFixed(5) + ', ' + lng.toFixed(5) };
+
+  if (e.originalEvent.ctrlKey || e.originalEvent.metaKey) {
+    // Ctrl+click: ADD to existing origins
+    addOrigin(newOrigin);
+    setStatus('', origins.length + ' origin' + (origins.length > 1 ? 's' : '') + ' — click &#9654; Run.');
+  } else {
+    // Normal click: REPLACE all origins
+    setOrigins([newOrigin]);
+    setStatus('', 'Origin set — click &#9654; Run.');
+  }
   hintEl.classList.add('hidden');
-  setStatus('', 'Origin set — click &#9654; Run.');
 });
+
+function addOrigin(o) {
+  origins.push(o);
+  originMarkers.push(
+    L.circleMarker([o.lat, o.lon], {
+      radius:7, color:'#fff', weight:2, fillColor:'#4fffb0', fillOpacity:1
+    }).addTo(map)
+  );
+  updateOriginInfo();
+  updateRunBtn();
+}
 
 function setOrigins(list) {
   clearOriginMarkers();
@@ -171,11 +207,37 @@ function updateOriginInfo() {
   });
 }
 
+// THEMED SVG ICONS for amenities
+const AMENITY_SVGS = {
+  Education: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M22 10v6M2 10l10-5 10 5-10 5z"/><path d="M6 12v5c0 1.1 2.7 3 6 3s6-1.9 6-3v-5"/>
+  </svg>`,
+  Health: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M12 6v12M6 12h12"/><rect x="3" y="3" width="18" height="18" rx="3"/>
+  </svg>`,
+  Public: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M3 21h18M5 21V7l7-4 7 4v14"/><path d="M9 21v-4h6v4"/><path d="M9 10h1M14 10h1M9 14h1M14 14h1"/>
+  </svg>`,
+  Groceries: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 01-8 0"/>
+  </svg>`,
+  Parks: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M12 22V8"/><path d="M5 12l7-9 7 9"/><path d="M8 17l4-5 4 5"/>
+  </svg>`
+};
+
+function getAmenityIcon(category) {
+  return AMENITY_SVGS[category] || AMENITY_SVGS.Public;
+}
+
+function getAmenityCssClass(category) {
+  return 'cat-' + category.toLowerCase();
+}
+
 function displayAnalysis(results) {
   const container = document.getElementById('results-view');
   if (!container) return;
   
-  // Sort smallest rings first for the charts
   const sorted = [...results].sort((a,b) => a.min - b.min);
   const categories = ['Education', 'Health', 'Public', 'Groceries', 'Parks'];
   
@@ -184,7 +246,7 @@ function displayAnalysis(results) {
     html += `
       <div class="result-ring">
         <div class="ring-title" style="border-left: 3px solid ${res.color}">
-          Accessible within ${res.min} mins
+          Within ${res.min} min
         </div>
         <div class="stats-grid">
     `;
@@ -210,15 +272,15 @@ function displayAnalysis(results) {
   
   html += '</div>';
   container.innerHTML = html;
-  container.style.display = 'block';
+  showResultsPanel();
 }
 
 function clearAnalysis() {
   const container = document.getElementById('results-view');
   if (container) {
     container.innerHTML = '';
-    container.style.display = 'none';
   }
+  hideResultsPanel();
 }
 
 function clearAmenityMarkers() {
@@ -343,12 +405,18 @@ function makeIsochrone(nodes, distMap, maxSec) {
   catch { return turf.convex(fc); }
 }
 
-// OVERPASS
+// OVERPASS — multiple mirrors for resilience
 const MIRRORS=[
-  'https://overpass-api.de/api/interpreter',
   'https://overpass.kumi.systems/api/interpreter',
+  'https://overpass-api.de/api/interpreter',
+  'https://overpass.openstreetmap.fr/api/interpreter',
+  'https://overpass.nchc.org.tw/api/interpreter',
+  'https://overpass.openstreetmap.ru/api/interpreter',
   'https://maps.mail.ru/osm/tools/overpass/api/interpreter',
 ];
+
+// Utility: wait ms
+const delay = ms => new Promise(r => setTimeout(r, ms));
 
 const AMENITY_QUERY = `
   node["amenity"~"^(school|kindergarten|university|hospital|clinic|pharmacy|doctors|townhall|library|post_office)$"](around:{{radius}},{{lat}},{{lon}});
@@ -383,40 +451,45 @@ function getAmenityCategory(tags) {
   return null;
 }
 
-function getAmenityEmoji(category) {
-  const emojis = {
-    'Education': '🎓',
-    'Health': '🏥',
-    'Public': '🏛️',
-    'Groceries': '🛒',
-    'Parks': '🌳'
-  };
-  return emojis[category] || '📍';
-}
 async function fetchOSM(lat, lon, radiusM, idx, total) {
   const cap=Math.min(radiusM,2000);
   const errors=[];
-  for (const mirror of MIRRORS) {
-    for (const [attempt,tSec] of [[1,25],[2,45]]) {
+  for (let mi = 0; mi < MIRRORS.length; mi++) {
+    const mirror = MIRRORS[mi];
+    for (const [attempt,tSec] of [[1,30],[2,60]]) {
       try {
-        spin('Fetching OSM (origin '+idx+'/'+total+', '+cap+'m radius) — mirror '+(MIRRORS.indexOf(mirror)+1)+', attempt '+attempt+'…');
+        spin('Fetching OSM (origin '+idx+'/'+total+') — mirror '+(mi+1)+'/'+MIRRORS.length+', attempt '+attempt+'…');
         const ctrl=new AbortController();
-        const timer=setTimeout(()=>ctrl.abort(),(tSec+5)*1000);
+        const timer=setTimeout(()=>ctrl.abort(),(tSec+10)*1000);
         const res=await fetch(mirror,{method:'POST',body:'data='+encodeURIComponent(buildQuery(lat,lon,cap,tSec)),signal:ctrl.signal});
         clearTimeout(timer);
-        if (!res.ok) { errors.push(mirror+'→HTTP '+res.status); break; }
+        if (res.status === 429) {
+          // Rate limited — wait then try next mirror
+          errors.push('mirror '+(mi+1)+'→429 rate limited');
+          spin('Rate limited — waiting 3s before next mirror…');
+          await delay(3000);
+          break;
+        }
+        if (res.status === 403) {
+          // Forbidden — skip this mirror entirely
+          errors.push('mirror '+(mi+1)+'→403 forbidden');
+          break;
+        }
+        if (!res.ok) { errors.push('mirror '+(mi+1)+'→HTTP '+res.status); break; }
         const data=await res.json();
         if (!data.elements?.length) throw new Error('No roads found near this point.');
         return data;
       } catch(e) {
-        if (e.name==='AbortError') { errors.push(mirror+'→timeout'); break; }
-        errors.push(mirror+'→'+e.message);
-        if (attempt===1) continue;
+        if (e.name==='AbortError') { errors.push('mirror '+(mi+1)+'→timeout'); break; }
+        errors.push('mirror '+(mi+1)+'→'+e.message);
+        if (attempt===1) { await delay(1000); continue; }
         break;
       }
     }
+    // Small courtesy delay between mirrors
+    if (mi < MIRRORS.length - 1) await delay(500);
   }
-  throw new Error('Origin '+idx+': all mirrors failed — '+errors.join(' | '));
+  throw new Error('Origin '+idx+': all '+MIRRORS.length+' mirrors failed.\n'+errors.join('\n'));
 }
 
 // MERGE DIST MAPS (min across origins)
@@ -491,7 +564,6 @@ async function runAnalysis() {
       if (e.type === 'node') {
         lat = e.lat; lon = e.lon;
       } else {
-        // Simple centroid for ways/areas
         const wayNodes = e.nodes.map(nid => nodes.get(nid)).filter(n => !!n);
         if (wayNodes.length === 0) return null;
         lat = wayNodes.reduce((sum, n) => sum + n.lat, 0) / wayNodes.length;
@@ -510,7 +582,6 @@ async function runAnalysis() {
       const poly=makeIsochrone(nodes,merged,ring.min*60);
       if (!poly) continue;
       
-      // Analyze amenities in this ring
       const inRing = amenities.filter(a => turf.booleanPointInPolygon(turf.point([a.lon, a.lat]), poly));
       const stats = {};
       inRing.forEach(a => stats[a.category] = (stats[a.category] || 0) + 1);
@@ -538,19 +609,21 @@ async function runAnalysis() {
 
     if (!rendered) throw new Error('No isochrones generated — too few reachable nodes.');
 
-    // Add amenity markers for the largest ring
-    const largestRing = features[0]; // sortedRings was sorted b.min - a.min, so largest is first
+    // Add themed amenity markers for the largest ring
+    const largestRing = features[0];
     if (largestRing) {
       const inLargest = amenities.filter(a => turf.booleanPointInPolygon(turf.point([a.lon, a.lat]), largestRing));
       inLargest.forEach(a => {
+        const cssClass = getAmenityCssClass(a.category);
+        const svgIcon = getAmenityIcon(a.category);
         const marker = L.marker([a.lat, a.lon], {
           icon: L.divIcon({
-            html: `<div style="font-size:16px; line-height:1; filter: drop-shadow(0 0 2px white);">${getAmenityEmoji(a.category)}</div>`,
+            html: `<div class="amenity-marker ${cssClass}">${svgIcon}</div>`,
             className: 'amenity-icon',
-            iconSize: [20, 20],
-            iconAnchor: [10, 10]
+            iconSize: [24, 24],
+            iconAnchor: [12, 12]
           })
-        }).bindPopup(`<strong>${a.name}</strong><br>${a.category}`).addTo(map);
+        }).bindPopup(`<strong>${a.name}</strong><br><span style="opacity:0.7">${a.category}</span>`).addTo(map);
         amenityMarkers.push(marker);
       });
       
