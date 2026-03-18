@@ -178,19 +178,28 @@ function createProjection(bbox, width, height, mapConfig) {
   const mapShiftY = mapConfig.mapShiftY ?? 0;
   const margin = mapConfig.margin ?? 80;
 
+  // Cosine correction: at higher latitudes, 1° of longitude covers less
+  // ground distance. Scale the lon axis by cos(centerLat) so the map
+  // isn't squashed (e.g. London at ~51.5°N).
+  const centerLat = (latMin + latMax) / 2;
+  const cosCorrection = Math.cos((centerLat * Math.PI) / 180);
+
+  const correctedLonSpan = (lonMax - lonMin) * cosCorrection;
+  const latSpan = latMax - latMin;
+
   const baseScale = Math.min(
-    (width - margin * 2) / (lonMax - lonMin),
-    (height - margin * 2) / (latMax - latMin),
+    (width - margin * 2) / correctedLonSpan,
+    (height - margin * 2) / latSpan,
   );
 
   const scale = baseScale * mapZoom;
   const offsetX =
-    (width - (lonMax - lonMin) * scale) / 2 + mapShiftX * width * 0.25;
+    (width - correctedLonSpan * scale) / 2 + mapShiftX * width * 0.25;
   const offsetY =
-    (height - (latMax - latMin) * scale) / 2 + mapShiftY * height * 0.25;
+    (height - latSpan * scale) / 2 + mapShiftY * height * 0.25;
 
   return (lat, lon) => [
-    offsetX + (lon - lonMin) * scale,
+    offsetX + (lon - lonMin) * cosCorrection * scale,
     offsetY + (latMax - lat) * scale,
   ];
 }
