@@ -73,7 +73,7 @@ body {
 .slider-val   { font-size:11px; color:var(--accent); font-weight:500; }
 
 input[type=range] {
-  width:100%; -webkit-appearance:none; height:2px;
+  width:100%; appearance:none; -webkit-appearance:none; height:2px;
   background:var(--border); outline:none; cursor:pointer; border-radius:1px;
 }
 
@@ -191,3 +191,14 @@ input[type=range]::-webkit-slider-thumb {
   background:rgba(8,11,22,.7)!important; color:var(--muted)!important; font-size:8px!important;
 }
 .leaflet-control-attribution a { color:var(--muted)!important; }
+
+/* ANALYSIS RESULTS */
+.analysis-results { display: flex; flex-direction: column; gap: 20px; }
+.result-ring { display: flex; flex-direction: column; gap: 10px; }
+.ring-title { font-size: 10px; font-weight: 600; padding-left: 8px; color: var(--text); text-transform: uppercase; letter-spacing: 0.1em; }
+.stats-grid { display: flex; flex-direction: column; gap: 6px; }
+.stat-row { display: flex; align-items: center; gap: 10px; height: 16px; }
+.stat-label { width: 70px; font-size: 9px; color: var(--dim); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.stat-bar-wrap { flex: 1; height: 4px; background: var(--border); border-radius: 2px; overflow: hidden; }
+.stat-bar { height: 100%; border-radius: 2px; transition: width 0.3s ease; }
+.stat-val { width: 20px; font-size: 9px; color: var(--accent); text-align: right; font-weight: 500; }

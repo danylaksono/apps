@@ -10,6 +10,7 @@ L.control.zoom({ position:'bottomright' }).addTo(map);
 let origins       = [];
 let originMarkers = [];
 let isoLayers     = [];
+let amenityMarkers = [];
 let lastGeoJSON   = null;
 let isRunning     = false;
 let walkSpeedKmh  = 4.5;
@@ -170,9 +171,66 @@ function updateOriginInfo() {
   });
 }
 
+function displayAnalysis(results) {
+  const container = document.getElementById('results-view');
+  if (!container) return;
+  
+  // Sort smallest rings first for the charts
+  const sorted = [...results].sort((a,b) => a.min - b.min);
+  const categories = ['Education', 'Health', 'Public', 'Groceries', 'Parks'];
+  
+  let html = '<div class="analysis-results">';
+  sorted.forEach(res => {
+    html += `
+      <div class="result-ring">
+        <div class="ring-title" style="border-left: 3px solid ${res.color}">
+          Accessible within ${res.min} mins
+        </div>
+        <div class="stats-grid">
+    `;
+    
+    categories.forEach(cat => {
+      const val = res.stats[cat] || 0;
+      const maxVal = Math.max(...sorted.flatMap(r => Object.values(r.stats)), 1);
+      const width = (val / maxVal) * 100;
+      
+      html += `
+        <div class="stat-row">
+          <div class="stat-label">${cat}</div>
+          <div class="stat-bar-wrap">
+            <div class="stat-bar" style="width: ${width}%; background: ${res.color}"></div>
+          </div>
+          <div class="stat-val">${val}</div>
+        </div>
+      `;
+    });
+    
+    html += `</div></div>`;
+  });
+  
+  html += '</div>';
+  container.innerHTML = html;
+  container.style.display = 'block';
+}
+
+function clearAnalysis() {
+  const container = document.getElementById('results-view');
+  if (container) {
+    container.innerHTML = '';
+    container.style.display = 'none';
+  }
+}
+
+function clearAmenityMarkers() {
+  amenityMarkers.forEach(m => map.removeLayer(m));
+  amenityMarkers = [];
+}
+
 // CLEAR
 btnClear.addEventListener('click', () => {
   clearIsoLayers(); lastGeoJSON = null; btnDownload.disabled = true;
+  clearAmenityMarkers();
+  clearAnalysis();
   setStatus('', 'Cleared.');
 });
 function clearIsoLayers() { isoLayers.forEach(l => map.removeLayer(l)); isoLayers = []; }
@@ -291,10 +349,49 @@ const MIRRORS=[
   'https://overpass.kumi.systems/api/interpreter',
   'https://maps.mail.ru/osm/tools/overpass/api/interpreter',
 ];
+
+const AMENITY_QUERY = `
+  node["amenity"~"^(school|kindergarten|university|hospital|clinic|pharmacy|doctors|townhall|library|post_office)$"](around:{{radius}},{{lat}},{{lon}});
+  way["amenity"~"^(school|kindergarten|university|hospital|clinic|pharmacy|doctors|townhall|library|post_office)$"](around:{{radius}},{{lat}},{{lon}});
+  node["shop"~"^(supermarket|convenience|bakery)$"](around:{{radius}},{{lat}},{{lon}});
+  way["shop"~"^(supermarket|convenience|bakery)$"](around:{{radius}},{{lat}},{{lon}});
+  node["leisure"~"^(park|playground|garden)$"](around:{{radius}},{{lat}},{{lon}});
+  way["leisure"~"^(park|playground|garden)$"](around:{{radius}},{{lat}},{{lon}});
+`;
+
 function buildQuery(lat, lon, radiusM, tSec) {
+  const amenityQ = AMENITY_QUERY.replace(/{{radius}}/g, radiusM).replace(/{{lat}}/g, lat).replace(/{{lon}}/g, lon);
   return '[out:json][timeout:'+tSec+'];'
-    +'(way["highway"~"^(residential|living_street|pedestrian|footway|path|cycleway|service|secondary|tertiary|unclassified|primary)$"]'
-    +'(around:'+radiusM+','+lat+','+lon+'););(._;>;);out body qt;';
+    +'('
+    +'way["highway"~"^(residential|living_street|pedestrian|footway|path|cycleway|service|secondary|tertiary|unclassified|primary)$"]'
+    +'(around:'+radiusM+','+lat+','+lon+');'
+    + amenityQ
+    +');out body qt;>;out skel qt;';
+}
+
+function getAmenityCategory(tags) {
+  if (!tags) return null;
+  const a = tags.amenity;
+  const s = tags.shop;
+  const l = tags.leisure;
+
+  if (['school', 'kindergarten', 'university'].includes(a)) return 'Education';
+  if (['hospital', 'clinic', 'pharmacy', 'doctors'].includes(a)) return 'Health';
+  if (['townhall', 'library', 'post_office'].includes(a)) return 'Public';
+  if (['supermarket', 'convenience', 'bakery'].includes(s)) return 'Groceries';
+  if (['park', 'playground', 'garden'].includes(l)) return 'Parks';
+  return null;
+}
+
+function getAmenityEmoji(category) {
+  const emojis = {
+    'Education': '🎓',
+    'Health': '🏥',
+    'Public': '🏛️',
+    'Groceries': '🛒',
+    'Parks': '🌳'
+  };
+  return emojis[category] || '📍';
 }
 async function fetchOSM(lat, lon, radiusM, idx, total) {
   const cap=Math.min(radiusM,2000);
@@ -338,6 +435,7 @@ async function runAnalysis() {
   if (isRunning||!origins.length) return;
   isRunning=true; btnRun.disabled=true; btnDownload.disabled=true;
   clearIsoLayers(); lastGeoJSON=null;
+  clearAmenityMarkers();
 
   const activeRings=rings.filter(r=>r.on&&r.min>0);
   if (!activeRings.length) {
@@ -376,20 +474,59 @@ async function runAnalysis() {
     }
     if (!distMaps.length) throw new Error('No origins could be routed.');
 
-    spin('Computing isochrones…');
+    spin('Computing isochrones and analysis…');
     const merged=mergeDistMaps(distMaps);
+
+    // Extract amenities with coordinates
+    const amenities = elements.filter(e => {
+      if (e.type === 'way' && e.nodes && e.tags) {
+        return !!getAmenityCategory(e.tags);
+      }
+      if (e.type === 'node' && e.tags) {
+        return !!getAmenityCategory(e.tags);
+      }
+      return false;
+    }).map(e => {
+      let lat, lon;
+      if (e.type === 'node') {
+        lat = e.lat; lon = e.lon;
+      } else {
+        // Simple centroid for ways/areas
+        const wayNodes = e.nodes.map(nid => nodes.get(nid)).filter(n => !!n);
+        if (wayNodes.length === 0) return null;
+        lat = wayNodes.reduce((sum, n) => sum + n.lat, 0) / wayNodes.length;
+        lon = wayNodes.reduce((sum, n) => sum + n.lon, 0) / wayNodes.length;
+      }
+      return { lat, lon, category: getAmenityCategory(e.tags), name: e.tags.name || 'Unnamed' };
+    }).filter(a => !!a);
 
     // Render largest ring first so smaller rings sit on top
     const sortedRings=[...activeRings].sort((a,b)=>b.min-a.min);
     const features=[];
     let rendered=0;
+    const ringResults = [];
 
     for (const ring of sortedRings) {
       const poly=makeIsochrone(nodes,merged,ring.min*60);
       if (!poly) continue;
+      
+      // Analyze amenities in this ring
+      const inRing = amenities.filter(a => turf.booleanPointInPolygon(turf.point([a.lon, a.lat]), poly));
+      const stats = {};
+      inRing.forEach(a => stats[a.category] = (stats[a.category] || 0) + 1);
+      
+      ringResults.push({
+        min: ring.min,
+        color: ring.color,
+        count: inRing.length,
+        stats
+      });
+
       poly.properties={
         time_min:ring.min, color:ring.color,
-        origins_count:origins.length, walk_speed_kmh:walkSpeedKmh
+        origins_count:origins.length, walk_speed_kmh:walkSpeedKmh,
+        amenities_count: inRing.length,
+        amenities_stats: stats
       };
       features.push(poly);
       const layer=L.geoJSON(poly,{
@@ -400,6 +537,31 @@ async function runAnalysis() {
     }
 
     if (!rendered) throw new Error('No isochrones generated — too few reachable nodes.');
+
+    // Add amenity markers for the largest ring
+    const largestRing = features[0]; // sortedRings was sorted b.min - a.min, so largest is first
+    if (largestRing) {
+      const inLargest = amenities.filter(a => turf.booleanPointInPolygon(turf.point([a.lon, a.lat]), largestRing));
+      inLargest.forEach(a => {
+        const marker = L.marker([a.lat, a.lon], {
+          icon: L.divIcon({
+            html: `<div style="font-size:16px; line-height:1; filter: drop-shadow(0 0 2px white);">${getAmenityEmoji(a.category)}</div>`,
+            className: 'amenity-icon',
+            iconSize: [20, 20],
+            iconAnchor: [10, 10]
+          })
+        }).bindPopup(`<strong>${a.name}</strong><br>${a.category}`).addTo(map);
+        amenityMarkers.push(marker);
+      });
+      
+      // Zoom to show all rings
+      const bounds = L.featureGroup(isoLayers).getBounds();
+      if (bounds.isValid()) {
+        map.fitBounds(bounds, { padding: [50, 50], animate: true });
+      }
+    }
+
+    displayAnalysis(ringResults);
 
     lastGeoJSON={
       type:'FeatureCollection',
