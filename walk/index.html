@@ -4,7 +4,8 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Isochrone Generator</title>
+  <title>Isochrone Generator — Walking Accessibility Analysis</title>
+  <meta name="description" content="Generate walking isochrones from any location using OpenStreetMap data. Analyze walkability and amenity accessibility.">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css">
   <link rel="stylesheet" href="styles.css">
 </head>
@@ -22,6 +23,7 @@
   <div id="map-wrap">
     <div id="map"></div>
 
+    <!-- LEFT PANEL: Controls -->
     <div id="panel">
       <div id="panel-scroll">
 
@@ -62,14 +64,21 @@
           </div>
         </div>
 
-        <div class="psec" id="results-view" style="display:none;">
-          <!-- Analysis results will be injected here -->
-        </div>
-
       </div>
     </div>
 
-    <div id="hint">Click the map to set origin — or upload a GeoJSON</div>
+    <!-- RIGHT PANEL: Analysis Results -->
+    <div id="results-panel">
+      <div id="results-panel-header">
+        <div class="sec-label" style="margin-bottom:0;">Analysis</div>
+        <button id="results-close" title="Close">&times;</button>
+      </div>
+      <div id="results-panel-scroll">
+        <div id="results-view"></div>
+      </div>
+    </div>
+
+    <div id="hint">Click map to set origin · Ctrl+click to add multiple · or upload GeoJSON</div>
   </div>
 
   <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
