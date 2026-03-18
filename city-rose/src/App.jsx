@@ -9,6 +9,7 @@ import {
 } from "./lib/canvasRenderer";
 import { fetchCity, fetchStreetWays } from "./lib/overpass";
 import { processRoseData } from "./lib/rose";
+import { saveCityData, loadCityData } from "./lib/storage";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 const DEFAULT_QUERY = "Yogyakarta, Indonesia";
@@ -25,6 +26,7 @@ const DEFAULT_PRINT_CONFIG = {
 };
 
 export default function App() {
+  // "idle" | "loading" | "success" | "error"
   const [status, setStatus] = useState("idle");
   const [errorMessage, setErrorMessage] = useState("");
   const [cityName, setCityName] = useState("");
@@ -47,14 +49,32 @@ export default function App() {
   const roseCanvasRef = useRef(null);
   const printCanvasRef = useRef(null);
 
+  // Derived: do we have data to show (even if currently loading a new city)?
+  const hasData = Boolean(bbox && roseData && osmElements.length);
+
+  // ── Hydrate from IndexedDB on mount ──
+  useEffect(() => {
+    loadCityData().then((cached) => {
+      if (!cached) return;
+      setCityName(cached.cityName);
+      setBbox(cached.bbox);
+      setCoords(cached.coords);
+      setOsmElements(cached.osmElements);
+      setRoseData(cached.roseData);
+      setSearchQuery(cached.cityName);
+      setStatus("success");
+    });
+  }, []);
+
+  // ── Persist print config to localStorage ──
   useEffect(() => {
     localStorage.setItem("city-rose-config", JSON.stringify(printConfig));
   }, [printConfig]);
 
+  // ── Redraw canvases whenever data or config change ──
   useEffect(() => {
-    if (status !== "success") {
-      return;
-    }
+    // Draw whenever we have data, regardless of loading status
+    if (!hasData) return;
 
     drawExploreMap(mapCanvasRef.current, {
       bbox,
@@ -76,7 +96,7 @@ export default function App() {
       roseData,
       layout: printConfig,
     });
-  }, [bbox, cityName, coords, osmElements, printConfig, roseData, status]);
+  }, [bbox, cityName, coords, osmElements, printConfig, roseData, hasData, mode]);
 
   async function generate() {
     const query = searchQuery.trim();
@@ -86,6 +106,7 @@ export default function App() {
       return;
     }
 
+    // Only go to "loading" — we keep the existing data visible
     setStatus("loading");
     setErrorMessage("");
 
@@ -94,14 +115,29 @@ export default function App() {
       const streetElements = await fetchStreetWays(city.areaId);
       const nextRoseData = processRoseData(streetElements);
 
+      // Update state with new city
       setCityName(city.cityName);
       setBbox(city.bbox);
       setCoords(city.coords);
       setOsmElements(streetElements);
       setRoseData(nextRoseData);
       setStatus("success");
+
+      // Persist to IndexedDB in background
+      saveCityData({
+        cityName: city.cityName,
+        bbox: city.bbox,
+        coords: city.coords,
+        osmElements: streetElements,
+        roseData: nextRoseData,
+      });
     } catch (error) {
-      setStatus("error");
+      // On error revert to "success" if we still have old data, otherwise "error"
+      if (hasData) {
+        setStatus("success");
+      } else {
+        setStatus("error");
+      }
       setErrorMessage(error.message || "Unexpected processing error.");
     }
   }
@@ -145,9 +181,9 @@ export default function App() {
           </div>
 
           <Tabs value={mode} onValueChange={setMode}>
-            <TabsList>
-              <TabsTrigger value="explore" className="text-sm font-medium">Explore</TabsTrigger>
-              <TabsTrigger value="print" className="text-sm font-medium">Print</TabsTrigger>
+            <TabsList className="h-9 p-1 bg-gray-100">
+              <TabsTrigger value="explore" className="text-sm font-semibold px-4 py-1.5 data-[state=active]:bg-gray-900 data-[state=active]:text-white data-[state=active]:shadow-sm">Explore</TabsTrigger>
+              <TabsTrigger value="print" className="text-sm font-semibold px-4 py-1.5 data-[state=active]:bg-gray-900 data-[state=active]:text-white data-[state=active]:shadow-sm">Print</TabsTrigger>
             </TabsList>
           </Tabs>
         </div>
@@ -157,6 +193,7 @@ export default function App() {
       <main className="flex-1 min-h-0 w-full p-3 sm:p-4">
         <PosterPanel
           status={status}
+          hasData={hasData}
           errorMessage={errorMessage}
           mode={mode}
           mapCanvasRef={mapCanvasRef}

@@ -2,6 +2,7 @@ import {
   AlertCircle,
   Compass,
   Download,
+  Loader2,
   Map,
   PieChart,
   RefreshCw,
@@ -16,7 +17,15 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 
-function StatusOverlay({ status, errorMessage, onRetry }) {
+/**
+ * Shows the idle / first-time-loading / error overlay.
+ * When `hasData` is true we never block the view — a subtle loading bar
+ * is rendered separately via `LoadingBar`.
+ */
+function StatusOverlay({ status, hasData, errorMessage, onRetry }) {
+  // If data already exists, don't show full-screen overlays for loading
+  if (hasData && status !== "error") return null;
+
   if (status === "idle") {
     return (
       <div className="absolute inset-0 flex flex-col items-center justify-center gap-3 text-gray-400">
@@ -53,6 +62,19 @@ function StatusOverlay({ status, errorMessage, onRetry }) {
   return null;
 }
 
+/**
+ * Subtle indeterminate progress bar shown at the top of a panel
+ * when loading new data while old data is still visible.
+ */
+function LoadingBar({ isLoading }) {
+  if (!isLoading) return null;
+  return (
+    <div className="absolute top-0 left-0 right-0 z-30 h-1 bg-gray-200 overflow-hidden">
+      <div className="h-full w-1/3 bg-gray-800 rounded-full animate-loading-bar" />
+    </div>
+  );
+}
+
 function ControlGroup({ label, value, min, max, step, onChange }) {
   return (
     <div className="space-y-2">
@@ -76,6 +98,7 @@ function ControlGroup({ label, value, min, max, step, onChange }) {
 
 export default function PosterPanel({
   status,
+  hasData,
   errorMessage,
   mode,
   mapCanvasRef,
@@ -89,16 +112,21 @@ export default function PosterPanel({
   onDownload,
   onRetry,
 }) {
+  // Show canvases whenever data exists
+  const showCanvas = hasData;
+  const isRefreshing = hasData && status === "loading";
+
   const renderOverlay = () => (
     <StatusOverlay
       status={status}
+      hasData={hasData}
       errorMessage={errorMessage}
       onRetry={onRetry}
     />
   );
 
   const handleWheel = (e) => {
-    if (status !== "success") return;
+    if (!hasData) return;
     const zoomDelta = e.deltaY > 0 ? -0.05 : 0.05;
     const newZoom = Math.max(0.7, Math.min(3, printConfig.mapZoom + zoomDelta));
     onPrintConfigChange({ mapZoom: Number(newZoom.toFixed(2)) });
@@ -107,7 +135,7 @@ export default function PosterPanel({
   const [isDragging, setIsDragging] = useState(false);
   
   const handlePointerDown = (e) => {
-    if (status !== "success") return;
+    if (!hasData) return;
     setIsDragging(true);
     e.currentTarget.setPointerCapture(e.pointerId);
   };
@@ -142,7 +170,7 @@ export default function PosterPanel({
     onPointerLeave: handlePointerUp,
     style: { 
       touchAction: 'none',
-      cursor: status === "success" ? (isDragging ? "grabbing" : "grab") : "default" 
+      cursor: hasData ? (isDragging ? "grabbing" : "grab") : "default" 
     }
   };
 
@@ -151,30 +179,34 @@ export default function PosterPanel({
     return (
       <div className="h-full grid grid-cols-1 md:grid-cols-2 gap-3 min-h-0">
         {/* Rose Chart — LEFT */}
-        <div className="flex flex-col min-h-[300px] md:min-h-0 bg-white border border-gray-200 rounded-lg overflow-hidden">
+        <div className="flex flex-col min-h-[300px] md:min-h-0 bg-white border border-gray-200 rounded-lg overflow-hidden relative">
+          <LoadingBar isLoading={isRefreshing} />
           <div className="shrink-0 py-2.5 px-4 border-b border-gray-100 flex items-center gap-2">
             <PieChart size={14} className="text-gray-400" />
             <span className="text-xs font-semibold uppercase tracking-wide text-gray-500">Rose Chart</span>
+            {isRefreshing && <Loader2 size={12} className="animate-spin text-gray-400 ml-auto" />}
           </div>
-          <div className="flex-1 relative bg-gray-50/50">
+          <div className={`flex-1 relative bg-gray-50/50 transition-opacity duration-200 ${isRefreshing ? "opacity-50" : ""}`}>
             <canvas
               ref={roseCanvasRef}
-              className={`preview-canvas ${status === "success" ? "visible" : ""}`}
+              className={`preview-canvas ${showCanvas ? "visible" : ""}`}
             />
             {renderOverlay()}
           </div>
         </div>
 
         {/* Map — RIGHT */}
-        <div className="flex flex-col min-h-[300px] md:min-h-0 bg-white border border-gray-200 rounded-lg overflow-hidden">
+        <div className="flex flex-col min-h-[300px] md:min-h-0 bg-white border border-gray-200 rounded-lg overflow-hidden relative">
+          <LoadingBar isLoading={isRefreshing} />
           <div className="shrink-0 py-2.5 px-4 border-b border-gray-100 flex items-center gap-2">
             <Map size={14} className="text-gray-400" />
             <span className="text-xs font-semibold uppercase tracking-wide text-gray-500">Street Network Map</span>
+            {isRefreshing && <Loader2 size={12} className="animate-spin text-gray-400 ml-auto" />}
           </div>
-          <div className="flex-1 relative bg-gray-50/50 overflow-hidden" {...canvasInteractionProps}>
+          <div className={`flex-1 relative bg-gray-50/50 overflow-hidden transition-opacity duration-200 ${isRefreshing ? "opacity-50" : ""}`} {...canvasInteractionProps}>
             <canvas
               ref={mapCanvasRef}
-              className={`preview-canvas ${status === "success" ? "visible" : ""}`}
+              className={`preview-canvas ${showCanvas ? "visible" : ""}`}
             />
             {renderOverlay()}
           </div>
@@ -343,10 +375,11 @@ export default function PosterPanel({
       {/* Poster Preview Area */}
       <div className="flex-1 flex flex-col min-h-0 relative">
         <div className="flex-1 relative flex items-center justify-center p-4 lg:p-6 bg-gray-100 rounded-lg overflow-hidden border border-gray-200">
+          <LoadingBar isLoading={isRefreshing} />
           <div 
             className={`relative bg-white shadow-lg transition-all duration-300 ${
               printConfig.orientation === "portrait" ? "aspect-[4/5] h-full" : "aspect-[10/7] w-full"
-            }`}
+            } ${isRefreshing ? "opacity-50" : ""}`}
             style={{ 
               maxHeight: '100%', 
               maxWidth: '100%',
@@ -363,17 +396,24 @@ export default function PosterPanel({
               ref={printCanvasRef}
               width={posterDimensions.width}
               height={posterDimensions.height}
-              className={`w-full h-full object-contain transition-opacity duration-300 ${status === "success" ? "opacity-100" : "opacity-0"}`}
+              className={`w-full h-full object-contain transition-opacity duration-300 ${showCanvas ? "opacity-100" : "opacity-0"}`}
             />
             {renderOverlay()}
           </div>
 
-          {status === "success" && (
-            <div className="absolute top-4 right-4">
+          {showCanvas && (
+            <div className="absolute top-4 right-4 flex items-center gap-2">
+              {isRefreshing && (
+                <span className="text-xs text-gray-500 font-medium flex items-center gap-1.5 bg-white/90 px-2 py-1 rounded">
+                  <Loader2 size={12} className="animate-spin" />
+                  Loading…
+                </span>
+              )}
               <Button
                 size="sm"
                 className="shadow-md bg-gray-900 hover:bg-gray-800 text-white font-medium text-xs h-8 px-4"
                 onClick={onDownload}
+                disabled={isRefreshing}
               >
                 <Download size={14} className="mr-2" />
                 Export {cityName}
