@@ -167,9 +167,16 @@ export default function App() {
       <header className="shrink-0 border-b border-gray-200 bg-white">
         <div className="w-full px-4 sm:px-6 h-14 flex items-center justify-between gap-4">
           <div className="flex items-center gap-4 flex-1">
-            <h1 className="text-lg font-bold tracking-tight hidden sm:block">
-              City Rose
-            </h1>
+            <div className="hidden sm:block">
+              <h1 className="text-lg font-bold tracking-tight leading-tight">
+                City Rose
+              </h1>
+              <p className="text-[11px] text-gray-400 leading-tight">
+                Inspired by{" "}
+                <a href="https://geoffboeing.com/publications/urban-street-network-orientation/" target="_blank" rel="noopener noreferrer" className="underline hover:text-gray-600">Geoff Boeing</a>
+                {" "}· Data © <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener noreferrer" className="underline hover:text-gray-600">OpenStreetMap</a>
+              </p>
+            </div>
             <div className="flex-1 max-w-md">
               <SearchControls
                 searchQuery={searchQuery}
