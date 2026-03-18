@@ -10,19 +10,51 @@ import {
   Type,
   Palette
 } from "lucide-react";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Slider } from "@/components/ui/slider";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 
+const LOADING_MESSAGES = [
+  "Extracting urban geometry…",
+  "Counting every street corner…",
+  "Asking OpenStreetMap nicely…",
+  "Untangling spaghetti intersections…",
+  "Herding map tiles into formation…",
+  "Measuring roads with a tiny ruler…",
+  "Bribing the Overpass API with cookies…",
+  "Almost there… probably…",
+  "Still faster than actual city planning…",
+  "Contemplating the meaning of roundabouts…",
+  "Teaching GPS satellites new tricks…",
+  "Whispering sweet nothings to the server…",
+];
+
+function useRotatingMessage(isActive, messages, intervalMs = 3000) {
+  const [index, setIndex] = useState(0);
+
+  useEffect(() => {
+    if (!isActive) {
+      setIndex(0);
+      return;
+    }
+    const id = setInterval(() => {
+      setIndex((prev) => (prev + 1) % messages.length);
+    }, intervalMs);
+    return () => clearInterval(id);
+  }, [isActive, messages, intervalMs]);
+
+  return messages[index];
+}
+
 /**
  * Shows the idle / first-time-loading / error overlay.
  * When `hasData` is true we never block the view — a subtle loading bar
  * is rendered separately via `LoadingBar`.
  */
-function StatusOverlay({ status, hasData, errorMessage, onRetry }) {
+function StatusOverlay({ status, hasData, errorMessage, onRetry, loadingMessage }) {
   // If data already exists, don't show full-screen overlays for loading
   if (hasData && status !== "error") return null;
 
@@ -39,7 +71,7 @@ function StatusOverlay({ status, hasData, errorMessage, onRetry }) {
     return (
       <div className="absolute inset-0 flex flex-col items-center justify-center gap-4 bg-white/80 z-10">
         <div className="spinner" />
-        <p className="text-sm font-medium text-gray-600">Extracting urban geometry…</p>
+        <p className="text-sm font-medium text-gray-600 transition-opacity duration-300">{loadingMessage}</p>
       </div>
     );
   }
@@ -116,12 +148,18 @@ export default function PosterPanel({
   const showCanvas = hasData;
   const isRefreshing = hasData && status === "loading";
 
+  const loadingMessage = useRotatingMessage(
+    status === "loading",
+    LOADING_MESSAGES,
+  );
+
   const renderOverlay = () => (
     <StatusOverlay
       status={status}
       hasData={hasData}
       errorMessage={errorMessage}
       onRetry={onRetry}
+      loadingMessage={loadingMessage}
     />
   );
 
@@ -186,12 +224,20 @@ export default function PosterPanel({
             <span className="text-xs font-semibold uppercase tracking-wide text-gray-500">Rose Chart</span>
             {isRefreshing && <Loader2 size={12} className="animate-spin text-gray-400 ml-auto" />}
           </div>
-          <div className={`flex-1 relative bg-gray-50/50 transition-opacity duration-200 ${isRefreshing ? "opacity-50" : ""}`}>
+          <div className={`flex-1 relative bg-gray-50/50 transition-opacity duration-200 ${isRefreshing ? "opacity-40" : ""}`}>
             <canvas
               ref={roseCanvasRef}
               className={`preview-canvas ${showCanvas ? "visible" : ""}`}
             />
             {renderOverlay()}
+            {isRefreshing && (
+              <div className="absolute inset-0 flex items-center justify-center z-10">
+                <div className="flex flex-col items-center gap-3">
+                  <div className="spinner" />
+                  <p className="text-sm font-medium text-gray-600 bg-white/80 px-3 py-1 rounded">{loadingMessage}</p>
+                </div>
+              </div>
+            )}
           </div>
         </div>
 
@@ -203,12 +249,20 @@ export default function PosterPanel({
             <span className="text-xs font-semibold uppercase tracking-wide text-gray-500">Street Network Map</span>
             {isRefreshing && <Loader2 size={12} className="animate-spin text-gray-400 ml-auto" />}
           </div>
-          <div className={`flex-1 relative bg-gray-50/50 overflow-hidden transition-opacity duration-200 ${isRefreshing ? "opacity-50" : ""}`} {...canvasInteractionProps}>
+          <div className={`flex-1 relative bg-gray-50/50 overflow-hidden transition-opacity duration-200 ${isRefreshing ? "opacity-40" : ""}`} {...canvasInteractionProps}>
             <canvas
               ref={mapCanvasRef}
               className={`preview-canvas ${showCanvas ? "visible" : ""}`}
             />
             {renderOverlay()}
+            {isRefreshing && (
+              <div className="absolute inset-0 flex items-center justify-center z-10">
+                <div className="flex flex-col items-center gap-3">
+                  <div className="spinner" />
+                  <p className="text-sm font-medium text-gray-600 bg-white/80 px-3 py-1 rounded">{loadingMessage}</p>
+                </div>
+              </div>
+            )}
           </div>
         </div>
       </div>
