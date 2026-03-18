@@ -169,10 +169,10 @@ export default function App() {
           <div className="flex items-center gap-4 flex-1">
             <div className="hidden sm:block">
               <h1 className="text-lg font-bold tracking-tight leading-tight">
-                City Rose
+                City Rose Generator
               </h1>
               <p className="text-[11px] text-gray-400 leading-tight">
-                Inspired by{" "}
+                by <a href="https://github.com/danylaksono" target="_blank" rel="noopener noreferrer" className="underline hover:text-gray-600">Dany Laksono</a> · Inspired by{" "}
                 <a href="https://geoffboeing.com/publications/urban-street-network-orientation/" target="_blank" rel="noopener noreferrer" className="underline hover:text-gray-600">Geoff Boeing</a>
                 {" "}· Data © <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener noreferrer" className="underline hover:text-gray-600">OpenStreetMap</a>
               </p>

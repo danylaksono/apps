@@ -31,6 +31,7 @@ export default function SearchControls({
     
     const timeoutId = setTimeout(async () => {
       try {
+        // Using Photon geocoding API for suggestions
         const res = await fetch(`https://photon.komoot.io/api/?q=${encodeURIComponent(searchQuery)}&layer=city&limit=5`);
         if (!res.ok) return;
         const data = await res.json();
@@ -57,7 +58,7 @@ export default function SearchControls({
         <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-gray-400" />
         <Input
           type="text"
-          placeholder="City (e.g. Barcelona, Spain)"
+          placeholder="City (e.g. Surabaya, Indonesia)"
           className="pl-8 h-9 bg-white"
           value={searchQuery}
           onFocus={() => setShowSuggestions(true)}
