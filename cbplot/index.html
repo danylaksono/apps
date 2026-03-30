@@ -1,0 +1,425 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Circular Barplot Generator</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://d3js.org/d3.v7.min.js"></script>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            background-color: #f9fafb;
+        }
+
+        /* Custom scrollbar for text area */
+        textarea::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        textarea::-webkit-scrollbar-track {
+            background: #f1f1f1;
+        }
+
+        textarea::-webkit-scrollbar-thumb {
+            background: #cbd5e1;
+            border-radius: 4px;
+        }
+
+        textarea::-webkit-scrollbar-thumb:hover {
+            background: #94a3b8;
+        }
+    </style>
+</head>
+
+<body class="h-screen flex flex-col overflow-hidden">
+
+    <!-- Header -->
+    <header class="bg-white border-b border-gray-200 px-6 py-4 flex justify-between items-center shrink-0">
+        <div>
+            <h1 class="text-xl font-bold text-gray-800">Circular Barplot Generator</h1>
+            <p class="text-sm text-gray-500">Edit data, customize, and export your chart</p>
+        </div>
+        <div class="flex space-x-3">
+            <button id="exportSvgBtn"
+                class="flex items-center px-4 py-2 bg-indigo-50 text-indigo-600 rounded-lg hover:bg-indigo-100 transition font-medium text-sm">
+                <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path>
+                </svg>
+                Export SVG
+            </button>
+            <button id="exportPngBtn"
+                class="flex items-center px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition font-medium text-sm shadow-sm">
+                <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path>
+                </svg>
+                Export PNG
+            </button>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="flex-1 flex overflow-hidden">
+
+        <!-- Sidebar / Controls -->
+        <aside class="w-96 bg-white border-r border-gray-200 flex flex-col shrink-0">
+            <div class="p-6 flex-1 flex flex-col">
+                <h2 class="text-sm font-semibold text-gray-700 uppercase tracking-wider mb-4">Input Data (CSV format)
+                </h2>
+
+                <div class="flex justify-between items-center mb-2">
+                    <label class="text-xs text-gray-500">item, group, value</label>
+                    <label class="cursor-pointer text-xs text-indigo-600 hover:text-indigo-800 font-medium">
+                        Load CSV File
+                        <input type="file" id="fileInput" accept=".csv" class="hidden">
+                    </label>
+                </div>
+
+                <textarea id="csvInput"
+                    class="flex-1 w-full border border-gray-300 rounded-lg p-3 text-sm font-mono focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 resize-none mb-4"
+                    placeholder="item,group,value..."></textarea>
+
+                <button id="updateBtn"
+                    class="w-full py-3 bg-gray-800 text-white rounded-lg hover:bg-gray-900 transition font-medium shadow-sm">
+                    Update Chart
+                </button>
+                <div id="errorMsg" class="mt-3 text-sm text-red-600 hidden"></div>
+            </div>
+        </aside>
+
+        <!-- Chart Area -->
+        <section class="flex-1 bg-gray-50 relative flex items-center justify-center overflow-auto p-8">
+            <div id="chart-container"
+                class="bg-white rounded-xl shadow-sm border border-gray-200 p-8 flex items-center justify-center min-w-max min-h-max">
+                <div id="chart"></div>
+            </div>
+        </section>
+
+    </main>
+
+    <script>
+        // Dummy Data mimicking the provided image
+        const defaultCsvData = `item,group,value
+item 1,A,35
+item 2,A,90
+item 3,A,65
+item 4,A,55
+item 5,A,95
+item 6,A,40
+item 7,A,30
+item 8,A,35
+item 9,A,40
+item 10,A,35
+item 11,B,20
+item 12,B,85
+item 13,B,25
+item 14,B,70
+item 15,B,65
+item 16,B,50
+item 17,B,80
+item 18,B,75
+item 19,B,95
+item 20,B,100
+item 21,B,40
+item 22,B,85
+item 23,B,55
+item 24,B,50
+item 25,B,65
+item 26,B,95
+item 27,B,85
+item 28,B,50
+item 29,B,75
+item 30,B,80
+item 31,C,25
+item 32,C,55
+item 33,C,50
+item 34,C,75
+item 35,C,80
+item 36,C,60
+item 37,C,95
+item 38,C,95
+item 39,C,65
+item 40,C,80
+item 41,C,100
+item 42,C,65
+item 43,D,35
+item 44,D,40
+item 45,D,55
+item 46,D,65
+item 47,D,40
+item 48,D,95
+item 49,D,85
+item 50,D,40`;
+
+        // Initialize DOM Elements
+        const csvInput = document.getElementById('csvInput');
+        const updateBtn = document.getElementById('updateBtn');
+        const fileInput = document.getElementById('fileInput');
+        const errorMsg = document.getElementById('errorMsg');
+        const exportSvgBtn = document.getElementById('exportSvgBtn');
+        const exportPngBtn = document.getElementById('exportPngBtn');
+
+        // Setup initial text
+        csvInput.value = defaultCsvData;
+
+        // Colors mapping similar to the image
+        const colorPalette = {
+            "A": "#1f77b4", // Blue
+            "B": "#ff7f0e", // Orange
+            "C": "#2ca02c", // Green
+            "D": "#d62728", // Red
+        };
+        const defaultColor = "#888888";
+
+        // Chart dimensions
+        const margin = { top: 100, right: 100, bottom: 100, left: 100 };
+        const width = 800 - margin.left - margin.right;
+        const height = 800 - margin.top - margin.bottom;
+        const innerRadius = 150;
+        const outerRadius = Math.min(width, height) / 2;
+
+        function drawChart(csvString) {
+            try {
+                // Clear previous chart and errors
+                d3.select("#chart").selectAll("*").remove();
+                errorMsg.classList.add('hidden');
+
+                // Parse Data
+                let data = d3.csvParse(csvString, d => {
+                    return {
+                        item: d.item.trim(),
+                        group: d.group.trim(),
+                        value: +d.value
+                    };
+                });
+
+                if (data.length === 0) throw new Error("No valid data found.");
+
+                // Process data to add visual gaps between groups
+                let paddedData = [];
+                let currentGroup = null;
+
+                data.forEach((d, i) => {
+                    if (currentGroup !== null && d.group !== currentGroup) {
+                        // Insert a dummy item for the gap
+                        paddedData.push({ item: `gap_${i}`, group: 'gap', value: 0 });
+                    }
+                    paddedData.push(d);
+                    currentGroup = d.group;
+                });
+                // Add one final gap at the end to separate the last and first group
+                paddedData.push({ item: `gap_end`, group: 'gap', value: 0 });
+
+                // SVG Container
+                const svg = d3.select("#chart")
+                    .append("svg")
+                    .attr("xmlns", "http://www.w3.org/2000/svg") // Needed for correct export
+                    .attr("width", width + margin.left + margin.right)
+                    .attr("height", height + margin.top + margin.bottom)
+                    .style("font-family", "sans-serif")
+                    .append("g")
+                    .attr("transform", `translate(${width / 2 + margin.left},${height / 2 + margin.top})`);
+
+                // Scales
+                const x = d3.scaleBand()
+                    .range([0, 2 * Math.PI])
+                    .align(0)
+                    .domain(paddedData.map(d => d.item));
+
+                const y = d3.scaleRadial()
+                    .range([innerRadius, outerRadius])
+                    .domain([0, d3.max(data, d => d.value)]);
+
+                const color = d3.scaleOrdinal()
+                    .domain(Array.from(new Set(data.map(d => d.group))))
+                    .range(Object.values(colorPalette));
+
+                // Draw background faint bars (light grey extensions as seen in image)
+                svg.append("g")
+                    .selectAll("path")
+                    .data(paddedData.filter(d => d.group !== 'gap'))
+                    .join("path")
+                    .attr("fill", "#e5e7eb") // Faint grey
+                    .attr("d", d3.arc()
+                        .innerRadius(innerRadius)
+                        .outerRadius(outerRadius)
+                        .startAngle(d => x(d.item))
+                        .endAngle(d => x(d.item) + x.bandwidth())
+                        .padAngle(0.01)
+                        .padRadius(innerRadius));
+
+                // Draw main colored bars
+                svg.append("g")
+                    .selectAll("path")
+                    .data(paddedData.filter(d => d.group !== 'gap'))
+                    .join("path")
+                    .attr("fill", d => colorPalette[d.group] || color(d.group))
+                    .attr("d", d3.arc()
+                        .innerRadius(innerRadius)
+                        .outerRadius(d => y(d.value))
+                        .startAngle(d => x(d.item))
+                        .endAngle(d => x(d.item) + x.bandwidth())
+                        .padAngle(0.01)
+                        .padRadius(innerRadius));
+
+                // Add item labels
+                svg.append("g")
+                    .selectAll("g")
+                    .data(paddedData.filter(d => d.group !== 'gap'))
+                    .join("g")
+                    .attr("text-anchor", d => {
+                        return (x(d.item) + x.bandwidth() / 2 + Math.PI) % (2 * Math.PI) < Math.PI ? "end" : "start";
+                    })
+                    .attr("transform", d => {
+                        return "rotate(" + ((x(d.item) + x.bandwidth() / 2) * 180 / Math.PI - 90) + ")"
+                            + "translate(" + (outerRadius + 10) + ",0)";
+                    })
+                    .append("text")
+                    .text(d => d.item)
+                    .attr("transform", d => {
+                        return (x(d.item) + x.bandwidth() / 2 + Math.PI) % (2 * Math.PI) < Math.PI ? "rotate(180)" : "rotate(0)";
+                    })
+                    .style("font-size", "10px")
+                    .style("fill", "#374151")
+                    .attr("alignment-baseline", "middle");
+
+                // Draw Inner Group Indicators (Arcs & Text)
+                const groups = d3.group(paddedData, d => d.group);
+                groups.delete("gap");
+
+                for (let [groupName, groupData] of groups) {
+                    const startAngle = x(groupData[0].item);
+                    const endAngle = x(groupData[groupData.length - 1].item) + x.bandwidth();
+
+                    // Inner Arc Line
+                    const innerArcGenerator = d3.arc()
+                        .innerRadius(innerRadius - 10)
+                        .outerRadius(innerRadius - 10)
+                        .startAngle(startAngle)
+                        .endAngle(endAngle);
+
+                    svg.append("path")
+                        .attr("d", innerArcGenerator())
+                        .attr("fill", "none")
+                        .attr("stroke", "#1f2937") // Dark grey
+                        .attr("stroke-width", 1.5);
+
+                    // Group Text (Centered inside the arc)
+                    const midAngle = (startAngle + endAngle) / 2;
+                    // Coordinate conversion from polar to cartesian
+                    const textX = Math.cos(midAngle - Math.PI / 2) * (innerRadius - 35);
+                    const textY = Math.sin(midAngle - Math.PI / 2) * (innerRadius - 35);
+
+                    svg.append("text")
+                        .attr("x", textX)
+                        .attr("y", textY)
+                        .text(groupName)
+                        .attr("text-anchor", "middle")
+                        .attr("alignment-baseline", "middle")
+                        .style("font-size", "16px")
+                        .style("font-weight", "bold")
+                        .style("fill", "#111827");
+                }
+
+            } catch (err) {
+                console.error(err);
+                errorMsg.textContent = "Error parsing data: " + err.message;
+                errorMsg.classList.remove('hidden');
+            }
+        }
+
+        // --- Event Listeners ---
+
+        // Initial Draw
+        drawChart(csvInput.value);
+
+        // Update button
+        updateBtn.addEventListener('click', () => {
+            drawChart(csvInput.value);
+        });
+
+        // File upload handling
+        fileInput.addEventListener('change', (e) => {
+            const file = e.target.files[0];
+            if (!file) return;
+
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                const contents = e.target.result;
+                csvInput.value = contents;
+                drawChart(contents);
+            };
+            reader.readAsText(file);
+        });
+
+        // --- Export Functions ---
+
+        function getSvgString() {
+            const svgNode = document.querySelector("#chart svg");
+            const serializer = new XMLSerializer();
+            let svgString = serializer.serializeToString(svgNode);
+            // Add missing namespaces just in case
+            if (!svgString.match(/^<svg[^>]+xmlns="http\:\/\/www\.w3\.org\/2000\/svg"/)) {
+                svgString = svgString.replace(/^<svg/, '<svg xmlns="http://www.w3.org/2000/svg"');
+            }
+            if (!svgString.match(/^<svg[^>]+"http\:\/\/www\.w3\.org\/1999\/xlink"/)) {
+                svgString = svgString.replace(/^<svg/, '<svg xmlns:xlink="http://www.w3.org/1999/xlink"');
+            }
+            return svgString;
+        }
+
+        exportSvgBtn.addEventListener('click', () => {
+            const svgString = getSvgString();
+            const blob = new Blob([svgString], { type: "image/svg+xml;charset=utf-8" });
+            const url = URL.createObjectURL(blob);
+
+            const link = document.createElement("a");
+            link.href = url;
+            link.download = "circular_barplot.svg";
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            URL.revokeObjectURL(url);
+        });
+
+        exportPngBtn.addEventListener('click', () => {
+            const svgString = getSvgString();
+            const canvas = document.createElement("canvas");
+            const svgNode = document.querySelector("#chart svg");
+
+            // Get exact dimensions from SVG
+            canvas.width = parseInt(svgNode.getAttribute("width"));
+            canvas.height = parseInt(svgNode.getAttribute("height"));
+            const ctx = canvas.getContext("2d");
+
+            // Fill white background (otherwise PNG has transparent background)
+            ctx.fillStyle = "white";
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+            const img = new Image();
+            // Encode SVG string to base64
+            const svg64 = btoa(unescape(encodeURIComponent(svgString)));
+            const b64Start = 'data:image/svg+xml;base64,';
+            const image64 = b64Start + svg64;
+
+            img.onload = function () {
+                ctx.drawImage(img, 0, 0);
+                const pngData = canvas.toDataURL("image/png");
+
+                const link = document.createElement("a");
+                link.href = pngData;
+                link.download = "circular_barplot.png";
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+            };
+            img.src = image64;
+        });
+
+    </script>
+</body>
+
+</html>
