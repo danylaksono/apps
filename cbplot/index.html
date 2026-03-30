@@ -71,7 +71,7 @@
                 </h2>
 
                 <div class="flex justify-between items-center mb-2">
-                    <label class="text-xs text-gray-500">item, group, value</label>
+                    <label class="text-xs text-gray-500">item, group, value[, error]</label>
                     <label class="cursor-pointer text-xs text-indigo-600 hover:text-indigo-800 font-medium">
                         Load CSV File
                         <input type="file" id="fileInput" accept=".csv" class="hidden">
@@ -80,7 +80,14 @@
 
                 <textarea id="csvInput"
                     class="flex-1 w-full border border-gray-300 rounded-lg p-3 text-sm font-mono focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 resize-none mb-4"
-                    placeholder="item,group,value..."></textarea>
+                    placeholder="item,group,value[,error]..."></textarea>
+
+                <div class="mb-4">
+                    <label class="flex items-center">
+                        <input type="checkbox" id="showErrorBars" class="mr-2">
+                        <span class="text-sm text-gray-700">Show Error Bars (requires 'error' column in CSV)</span>
+                    </label>
+                </div>
 
                 <button id="updateBtn"
                     class="w-full py-3 bg-gray-800 text-white rounded-lg hover:bg-gray-900 transition font-medium shadow-sm">
@@ -101,7 +108,7 @@
     </main>
 
     <script>
-        // Dummy Data mimicking the provided image
+        // Dummy Data
         const defaultCsvData = `item,group,value
 item 1,A,35
 item 2,A,90
@@ -161,6 +168,7 @@ item 50,D,40`;
         const errorMsg = document.getElementById('errorMsg');
         const exportSvgBtn = document.getElementById('exportSvgBtn');
         const exportPngBtn = document.getElementById('exportPngBtn');
+        const showErrorBars = document.getElementById('showErrorBars');
 
         // Setup initial text
         csvInput.value = defaultCsvData;
@@ -192,9 +200,17 @@ item 50,D,40`;
                     return {
                         item: d.item.trim(),
                         group: d.group.trim(),
-                        value: +d.value
+                        value: +d.value,
+                        error: d.error ? +d.error : null
                     };
                 });
+
+                // Add dummy error bars if toggle is on and no error data exists
+                if (showErrorBars.checked && !data.some(d => d.error != null)) {
+                    data.forEach(d => {
+                        d.error = Math.floor(Math.random() * 10) + 1; // Random error between 1 and 10
+                    });
+                }
 
                 if (data.length === 0) throw new Error("No valid data found.");
 
@@ -231,7 +247,7 @@ item 50,D,40`;
 
                 const y = d3.scaleRadial()
                     .range([innerRadius, outerRadius])
-                    .domain([0, d3.max(data, d => d.value)]);
+                    .domain([0, d3.max(data, d => d.value + (d.error || 0))]);
 
                 const color = d3.scaleOrdinal()
                     .domain(Array.from(new Set(data.map(d => d.group))))
@@ -264,6 +280,95 @@ item 50,D,40`;
                         .endAngle(d => x(d.item) + x.bandwidth())
                         .padAngle(0.01)
                         .padRadius(innerRadius));
+
+                // Draw error bars if enabled
+                if (showErrorBars.checked) {
+                    const errorStroke = "#1f2937";
+                    const errorStrokeWidth = 2;
+
+                    // Lower error arcs (narrower than bar width)
+                    svg.append("g")
+                        .selectAll("path")
+                        .data(paddedData.filter(d => d.group !== 'gap' && d.error != null && d.value - d.error > 0 && y(d.value - d.error) > innerRadius))
+                        .join("path")
+                        .attr("fill", "none")
+                        .attr("stroke", errorStroke)
+                        .attr("stroke-width", errorStrokeWidth)
+                        .attr("stroke-linecap", "round")
+                        .attr("d", d3.arc()
+                            .innerRadius(d => y(d.value - d.error))
+                            .outerRadius(d => y(d.value - d.error))
+                            .startAngle(d => x(d.item) + x.bandwidth() * 0.25)
+                            .endAngle(d => x(d.item) + x.bandwidth() * 0.75)
+                            .padAngle(0.0)
+                            .padRadius(innerRadius));
+
+                    // Upper error arcs (narrower than bar width)
+                    svg.append("g")
+                        .selectAll("path")
+                        .data(paddedData.filter(d => d.group !== 'gap' && d.error != null))
+                        .join("path")
+                        .attr("fill", "none")
+                        .attr("stroke", errorStroke)
+                        .attr("stroke-width", errorStrokeWidth)
+                        .attr("stroke-linecap", "round")
+                        .attr("d", d3.arc()
+                            .innerRadius(d => Math.min(y(d.value + d.error), outerRadius))
+                            .outerRadius(d => Math.min(y(d.value + d.error), outerRadius))
+                            .startAngle(d => x(d.item) + x.bandwidth() * 0.15)
+                            .endAngle(d => x(d.item) + x.bandwidth() * 0.85)
+                            .padAngle(0.0)
+                            .padRadius(innerRadius));
+
+                    // Caps at upper and lower ends (small radial lines)
+                    svg.append("g")
+                        .selectAll("line")
+                        .data(paddedData.filter(d => d.group !== 'gap' && d.error != null))
+                        .join("line")
+                        .attr("x1", d => {
+                            const angle = x(d.item) + x.bandwidth() / 2 - Math.PI / 2;
+                            return Math.cos(angle) * y(d.value + d.error);
+                        })
+                        .attr("y1", d => {
+                            const angle = x(d.item) + x.bandwidth() / 2 - Math.PI / 2;
+                            return Math.sin(angle) * y(d.value + d.error);
+                        })
+                        .attr("x2", d => {
+                            const angle = x(d.item) + x.bandwidth() / 2 - Math.PI / 2;
+                            return Math.cos(angle) * (y(d.value + d.error) + 8);
+                        })
+                        .attr("y2", d => {
+                            const angle = x(d.item) + x.bandwidth() / 2 - Math.PI / 2;
+                            return Math.sin(angle) * (y(d.value + d.error) + 8);
+                        })
+                        .attr("stroke", errorStroke)
+                        .attr("stroke-width", errorStrokeWidth)
+                        .attr("stroke-linecap", "round");
+
+                    svg.append("g")
+                        .selectAll("line")
+                        .data(paddedData.filter(d => d.group !== 'gap' && d.error != null))
+                        .join("line")
+                        .attr("x1", d => {
+                            const angle = x(d.item) + x.bandwidth() / 2 - Math.PI / 2;
+                            return Math.cos(angle) * y(d.value - d.error);
+                        })
+                        .attr("y1", d => {
+                            const angle = x(d.item) + x.bandwidth() / 2 - Math.PI / 2;
+                            return Math.sin(angle) * y(d.value - d.error);
+                        })
+                        .attr("x2", d => {
+                            const angle = x(d.item) + x.bandwidth() / 2 - Math.PI / 2;
+                            return Math.cos(angle) * (y(d.value - d.error) - 8);
+                        })
+                        .attr("y2", d => {
+                            const angle = x(d.item) + x.bandwidth() / 2 - Math.PI / 2;
+                            return Math.sin(angle) * (y(d.value - d.error) - 8);
+                        })
+                        .attr("stroke", errorStroke)
+                        .attr("stroke-width", errorStrokeWidth)
+                        .attr("stroke-linecap", "round");
+                }
 
                 // Add item labels
                 svg.append("g")
@@ -338,6 +443,11 @@ item 50,D,40`;
 
         // Update button
         updateBtn.addEventListener('click', () => {
+            drawChart(csvInput.value);
+        });
+
+        // Update on error bars toggle
+        showErrorBars.addEventListener('change', () => {
             drawChart(csvInput.value);
         });
 
