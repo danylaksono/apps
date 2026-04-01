@@ -7,7 +7,24 @@ import Controls from './components/Controls';
 import JoyplotCanvas from './components/JoyplotCanvas';
 
 function App() {
-  const { city, resolution, heightScale, isLoading, setLoading, statusMessage } = useAppStore();
+  const {
+    city,
+    resolution,
+    heightScale,
+    clipToBoundary,
+    printMode,
+    customTitle,
+    customSubtitle,
+    titlePosition,
+    mapScalePosition,
+    cityCenter,
+    isLoading,
+    setLoading,
+    statusMessage,
+    setCityCenter,
+    setCustomTitle,
+    setCustomSubtitle,
+  } = useAppStore();
   const [data, setData] = useState<JoySlice[]>([]);
   const [bbox, setBbox] = useState<number[] | null>(null);
   const [geojson, setGeojson] = useState<any>(null);
@@ -35,6 +52,9 @@ function App() {
       setBbox(null);
       setGeojson(null);
       setMaxPop(1);
+      setCityCenter(null);
+      setCustomTitle('');
+      setCustomSubtitle('');
       setLoading(false, '');
       return;
     }
@@ -49,6 +69,7 @@ function App() {
 
         setBbox(bbox);
         setGeojson(geojson);
+        setCityCenter([(bbox[1] + bbox[3]) / 2, (bbox[0] + bbox[2]) / 2]);
 
         const numSlices = resolution;
         const pointsPerSlice = Math.floor(resolution * 1.5);
@@ -92,7 +113,17 @@ function App() {
     return () => {
       cancelled = true;
     };
-  }, [city, resolution, isDbReady, setLoading]);
+  }, [city, resolution, isDbReady, setLoading, setCityCenter, setCustomTitle, setCustomSubtitle]);
+
+  useEffect(() => {
+    if (!city.trim()) return;
+    const title = city.trim();
+    const subtitle = cityCenter
+      ? `Population ridgeline map | ${cityCenter[0].toFixed(4)}°, ${cityCenter[1].toFixed(4)}°`
+      : 'Population ridgeline map';
+    setCustomTitle(title);
+    setCustomSubtitle(subtitle);
+  }, [city, cityCenter, setCustomTitle, setCustomSubtitle]);
 
   return (
     <div className="app-container">
@@ -102,6 +133,14 @@ function App() {
         geojson={geojson} 
         maxPop={maxPop}
         heightScale={heightScale}
+        clipToBoundary={clipToBoundary}
+        printMode={printMode}
+        city={city}
+        cityCenter={cityCenter}
+        customTitle={customTitle}
+        customSubtitle={customSubtitle}
+        titlePosition={titlePosition}
+        mapScalePosition={mapScalePosition}
       />
       
       <Controls />
