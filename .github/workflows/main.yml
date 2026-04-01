@@ -27,6 +27,14 @@ jobs:
         run: npm run build
         working-directory: city-rose
 
+      - name: Install dependencies (joyplot)
+        run: npm ci
+        working-directory: joyplot
+
+      - name: Build joyplot
+        run: npm run build
+        working-directory: joyplot
+
       - name: Prepare deploy directory
         run: |
           bash scripts/prepare-deploy.sh

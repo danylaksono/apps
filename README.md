@@ -11,6 +11,7 @@ The project is published to GitHub Pages at:
 This site includes:
 
 - **City Rose** (React + Vite) — `/apps/city-rose/`
+- **Joyplot** (React + DeckGL) — `/apps/joyplot/`
 - **Walk (Isochrone)** (static JS) — `/apps/walk/`
 - **Sector 7** (canvas game) — `/apps/sector7/`
 - **Archived ObservableHQ site** — `/apps/archive/observablehq/`
