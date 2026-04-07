@@ -10,10 +10,13 @@ interface AppState {
   projectionScale: number;
   offsetX: number;
   offsetY: number;
-  rotation: number;
+  rotateX: number;
+  rotateY: number;
+  rotateZ: number;
   clipToBoundary: boolean;
   panelMode: 'explore' | 'print';
   printMode: boolean;
+  printTheme: 'light' | 'dark';
   customTitle: string;
   customSubtitle: string;
   titlePosition: 'top-left' | 'top-center' | 'top-right' | 'bottom-left' | 'bottom-center' | 'bottom-right' | 'center';
@@ -31,11 +34,14 @@ interface AppState {
   setProjectionScale: (projectionScale: number) => void;
   setOffsetX: (offsetX: number) => void;
   setOffsetY: (offsetY: number) => void;
-  setRotation: (rotation: number) => void;
+  setRotateX: (rotateX: number) => void;
+  setRotateY: (rotateY: number) => void;
+  setRotateZ: (rotateZ: number) => void;
   setClipToBoundary: (clip: boolean) => void;
   setPanelMode: (mode: 'explore' | 'print') => void;
   setCustomTitle: (title: string) => void;
   setCustomSubtitle: (subtitle: string) => void;
+  setPrintTheme: (theme: 'light' | 'dark') => void;
   setTitlePosition: (position: 'top-left' | 'top-center' | 'top-right' | 'bottom-left' | 'bottom-center' | 'bottom-right' | 'center') => void;
   setMapScalePosition: (position: 'off' | 'top-left' | 'top-center' | 'top-right' | 'bottom-left' | 'bottom-center' | 'bottom-right') => void;
   setCityCenter: (center: [number, number] | null) => void;
@@ -52,10 +58,13 @@ export const useAppStore = create<AppState>((set) => ({
   projectionScale: 1,
   offsetX: 0,
   offsetY: 0,
-  rotation: 0,
+  rotateX: 20,
+  rotateY: -20,
+  rotateZ: 0,
   clipToBoundary: true,
   panelMode: 'explore',
   printMode: false,
+  printTheme: 'light',
   customTitle: '',
   customSubtitle: '',
   titlePosition: 'top-left',
@@ -73,11 +82,14 @@ export const useAppStore = create<AppState>((set) => ({
   setProjectionScale: (projectionScale) => set({ projectionScale }),
   setOffsetX: (offsetX) => set({ offsetX }),
   setOffsetY: (offsetY) => set({ offsetY }),
-  setRotation: (rotation) => set({ rotation }),
+  setRotateX: (rotateX) => set({ rotateX }),
+  setRotateY: (rotateY) => set({ rotateY }),
+  setRotateZ: (rotateZ) => set({ rotateZ }),
   setClipToBoundary: (clipToBoundary) => set({ clipToBoundary }),
   setPanelMode: (panelMode) => set({ panelMode, printMode: panelMode === 'print' }),
   setCustomTitle: (customTitle) => set({ customTitle }),
   setCustomSubtitle: (customSubtitle) => set({ customSubtitle }),
+  setPrintTheme: (printTheme) => set({ printTheme }),
   setTitlePosition: (titlePosition) => set({ titlePosition }),
   setMapScalePosition: (mapScalePosition) => set({ mapScalePosition }),
   setCityCenter: (cityCenter) => set({ cityCenter }),

@@ -16,9 +16,12 @@ function App() {
     projectionScale,
     offsetX,
     offsetY,
-    rotation,
+    rotateX,
+    rotateY,
+    rotateZ,
     clipToBoundary,
     printMode,
+    printTheme,
     customTitle,
     customSubtitle,
     titlePosition,
@@ -163,9 +166,12 @@ function App() {
         projectionScale={projectionScale}
         offsetX={offsetX}
         offsetY={offsetY}
-        rotation={rotation}
+        rotateX={rotateX}
+        rotateY={rotateY}
+        rotateZ={rotateZ}
         clipToBoundary={clipToBoundary}
         printMode={printMode}
+        printTheme={printTheme}
         city={city}
         cityCenter={cityCenter}
         customTitle={customTitle}

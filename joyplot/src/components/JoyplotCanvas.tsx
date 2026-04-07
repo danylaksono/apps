@@ -12,9 +12,12 @@ interface JoyplotCanvasProps {
   projectionScale: number;
   offsetX: number;
   offsetY: number;
-  rotation: number;
+  rotateX: number;
+  rotateY: number;
+  rotateZ: number;
   clipToBoundary: boolean;
   printMode: boolean;
+  printTheme: 'light' | 'dark';
   city: string;
   cityCenter: [number, number] | null;
   customTitle: string;
@@ -31,6 +34,7 @@ const JoyplotCanvas: React.FC<JoyplotCanvasProps> = ({
   heightScale,
   clipToBoundary,
   printMode,
+  printTheme,
   city,
   cityCenter,
   customTitle,
@@ -42,7 +46,9 @@ const JoyplotCanvas: React.FC<JoyplotCanvasProps> = ({
   projectionScale,
   offsetX,
   offsetY,
-  rotation,
+  rotateX,
+  rotateY,
+  rotateZ,
 }) => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
 
@@ -56,8 +62,11 @@ const JoyplotCanvas: React.FC<JoyplotCanvasProps> = ({
     const width = canvas.width;
     const height = canvas.height;
 
+    const isPrintLight = printMode && printTheme === 'light';
+    const isPrintDark = printMode && printTheme === 'dark';
+
     // Clear background
-    ctx.fillStyle = printMode ? '#f8fafc' : '#0a0f1a';
+    ctx.fillStyle = isPrintLight ? '#f8fafc' : isPrintDark ? '#020617' : '#0a0f1a';
     ctx.fillRect(0, 0, width, height);
 
     const [minLon, minLat, maxLon, maxLat] = bbox;
@@ -77,21 +86,42 @@ const JoyplotCanvas: React.FC<JoyplotCanvasProps> = ({
     const finalOffsetX = baseOffsetX + offsetX;
     const finalOffsetY = baseOffsetY + offsetY;
 
-    const rotationRad = (rotation * Math.PI) / 180;
-    const cosR = Math.cos(rotationRad);
-    const sinR = Math.sin(rotationRad);
+    const rotateXRad = (rotateX * Math.PI) / 180;
+    const rotateYRad = (rotateY * Math.PI) / 180;
+    const rotateZRad = (rotateZ * Math.PI) / 180;
+    const cosX = Math.cos(rotateXRad);
+    const sinX = Math.sin(rotateXRad);
+    const cosY = Math.cos(rotateYRad);
+    const sinY = Math.sin(rotateYRad);
+    const cosZ = Math.cos(rotateZRad);
+    const sinZ = Math.sin(rotateZRad);
     const mapCenterX = drawnWidth / 2;
     const mapCenterY = drawnHeight / 2;
 
     const project = (lon: number, lat: number, pop: number) => {
       const rawX = (lon - minLon) * scale;
-      const rawY = (maxLat - lat) * scale * clampedPitch;
-      const dx = rawX - mapCenterX;
-      const dy = rawY - mapCenterY;
-      const rotatedX = dx * cosR - dy * sinR + mapCenterX + finalOffsetX;
-      const rotatedY = dx * sinR + dy * cosR + mapCenterY + finalOffsetY;
-      const z = (pop / maxPop) * (heightScale * 15);
-      return { x: rotatedX, y: rotatedY - z };
+      const rawY = (maxLat - lat) * scale;
+      const rawZ = (pop / maxPop) * (heightScale * 15);
+      const pitchedY = rawY * clampedPitch;
+
+      const cx = rawX - mapCenterX;
+      const cy = pitchedY - mapCenterY;
+      const cz = rawZ;
+
+      const x1 = cx;
+      const y1 = cy * cosX - cz * sinX;
+      const z1 = cy * sinX + cz * cosX;
+
+      const x2 = x1 * cosY + z1 * sinY;
+      const y2 = y1;
+
+      const x3 = x2 * cosZ - y2 * sinZ;
+      const y3 = x2 * sinZ + y2 * cosZ;
+
+      return {
+        x: x3 + mapCenterX + finalOffsetX,
+        y: y3 + mapCenterY + finalOffsetY,
+      };
     };
 
     const isPointInRing = (lon: number, lat: number, ring: number[][]) => {
@@ -188,8 +218,16 @@ const JoyplotCanvas: React.FC<JoyplotCanvasProps> = ({
 
     // 1. Draw Boundary
     if (geojson) {
-      ctx.strokeStyle = printMode ? 'rgba(15, 23, 42, 0.25)' : 'rgba(255, 255, 255, 0.08)';
-      ctx.fillStyle = printMode ? 'rgba(15, 23, 42, 0.03)' : 'rgba(255, 255, 255, 0.01)';
+      ctx.strokeStyle = isPrintLight
+        ? 'rgba(15, 23, 42, 0.25)'
+        : isPrintDark
+          ? 'rgba(255, 255, 255, 0.12)'
+          : 'rgba(255, 255, 255, 0.08)';
+      ctx.fillStyle = isPrintLight
+        ? 'rgba(15, 23, 42, 0.03)'
+        : isPrintDark
+          ? 'rgba(255, 255, 255, 0.03)'
+          : 'rgba(255, 255, 255, 0.01)';
       ctx.lineWidth = 1;
 
       traceBoundaryPath();
@@ -277,7 +315,7 @@ const JoyplotCanvas: React.FC<JoyplotCanvasProps> = ({
 
         ctx.lineTo(endPt.x, endPt.y);
         ctx.lineTo(startPt.x, startPt.y);
-        ctx.fillStyle = printMode ? 'rgba(148, 163, 184, 0.22)' : '#0f172a';
+        ctx.fillStyle = isPrintLight ? 'rgba(148, 163, 184, 0.22)' : '#0f172a';
         ctx.fill();
 
         ctx.beginPath();
@@ -287,9 +325,9 @@ const JoyplotCanvas: React.FC<JoyplotCanvasProps> = ({
           else ctx.lineTo(x, y);
         });
 
-        const strokeColor = printMode
+        const strokeColor = isPrintLight
           ? `rgba(${Math.round(20 + r * 0.5)}, ${Math.round(30 + g * 0.3)}, ${Math.round(40 + b * 0.2)}, 0.95)`
-          : `rgba(${r}, ${g}, ${b}, 0.9)`;
+          : `rgba(${r}, ${g}, ${b}, 0.95)`;
         ctx.strokeStyle = strokeColor;
         ctx.lineWidth = 1.5;
         ctx.stroke();
@@ -415,15 +453,15 @@ const JoyplotCanvas: React.FC<JoyplotCanvasProps> = ({
         }
       }
 
-      ctx.fillStyle = '#0f172a';
+      ctx.fillStyle = isPrintLight ? '#0f172a' : '#f8fafc';
       ctx.font = '700 34px "Georgia", "Times New Roman", serif';
       ctx.fillText(title, anchorX, anchorY);
 
-      ctx.fillStyle = '#475569';
+      ctx.fillStyle = isPrintLight ? '#475569' : '#cbd5e1';
       ctx.font = '500 16px "Segoe UI", sans-serif';
       ctx.fillText(subtitle, anchorX, anchorY + 42);
 
-      ctx.strokeStyle = 'rgba(15, 23, 42, 0.22)';
+      ctx.strokeStyle = isPrintLight ? 'rgba(15, 23, 42, 0.22)' : 'rgba(248, 250, 252, 0.18)';
       ctx.lineWidth = 2;
       ctx.beginPath();
       ctx.moveTo(anchorX, anchorY + 72);
@@ -440,7 +478,7 @@ const JoyplotCanvas: React.FC<JoyplotCanvasProps> = ({
         const scaleX = scalePlacement?.x ?? 48;
         const scaleY = scalePlacement?.y ?? 48;
 
-        ctx.strokeStyle = '#0f172a';
+        ctx.strokeStyle = isPrintLight ? '#0f172a' : '#f8fafc';
         ctx.lineWidth = 3;
         ctx.beginPath();
         ctx.moveTo(scaleX, scaleY);
@@ -455,12 +493,12 @@ const JoyplotCanvas: React.FC<JoyplotCanvasProps> = ({
         ctx.lineTo(scaleX + scaleBarPx, scaleY + 6);
         ctx.stroke();
 
-        ctx.fillStyle = '#334155';
+        ctx.fillStyle = isPrintLight ? '#334155' : '#e2e8f0';
         ctx.font = '500 14px "Segoe UI", sans-serif';
         ctx.fillText(`${scaleLabel}  |  1:${approxScale.toLocaleString()}`, scaleX, scaleY + 10);
       }
     }
-  }, [bbox, slices, maxPop, heightScale, pitch, padding, projectionScale, offsetX, offsetY, rotation, geojson, clipToBoundary, printMode, city, cityCenter, customTitle, customSubtitle, titlePosition, mapScalePosition]);
+  }, [bbox, slices, maxPop, heightScale, pitch, padding, projectionScale, offsetX, offsetY, rotateX, rotateY, rotateZ, printTheme, geojson, clipToBoundary, printMode, city, cityCenter, customTitle, customSubtitle, titlePosition, mapScalePosition]);
 
   useEffect(() => {
     const handleResize = () => {

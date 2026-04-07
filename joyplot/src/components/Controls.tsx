@@ -21,12 +21,18 @@ const Controls: React.FC = () => {
     setOffsetX,
     offsetY,
     setOffsetY,
-    rotation,
-    setRotation,
+    rotateX,
+    setRotateX,
+    rotateY,
+    setRotateY,
+    rotateZ,
+    setRotateZ,
     clipToBoundary,
     setClipToBoundary,
     panelMode,
     setPanelMode,
+    printTheme,
+    setPrintTheme,
     customTitle,
     setCustomTitle,
     customSubtitle,
@@ -313,16 +319,50 @@ const Controls: React.FC = () => {
 
               <div className="control-group">
                 <div className="slider-header">
-                  <label className="control-label">Rotation</label>
-                  <span className="slider-value value-pink">{rotation}°</span>
+                  <label className="control-label">Rotation X</label>
+                  <span className="slider-value value-pink">{rotateX}°</span>
                 </div>
                 <input
                   type="range"
-                  min="-45"
-                  max="45"
+                  min="-60"
+                  max="60"
                   step="1"
-                  value={rotation}
-                  onChange={e => setRotation(Number(e.target.value))}
+                  value={rotateX}
+                  onChange={e => setRotateX(Number(e.target.value))}
+                  className="range-input"
+                  style={{ color: '#f472b6' }}
+                />
+              </div>
+
+              <div className="control-group">
+                <div className="slider-header">
+                  <label className="control-label">Rotation Y</label>
+                  <span className="slider-value value-cyan">{rotateY}°</span>
+                </div>
+                <input
+                  type="range"
+                  min="-60"
+                  max="60"
+                  step="1"
+                  value={rotateY}
+                  onChange={e => setRotateY(Number(e.target.value))}
+                  className="range-input"
+                  style={{ color: '#22d3ee' }}
+                />
+              </div>
+
+              <div className="control-group">
+                <div className="slider-header">
+                  <label className="control-label">Rotation Z</label>
+                  <span className="slider-value value-pink">{rotateZ}°</span>
+                </div>
+                <input
+                  type="range"
+                  min="-180"
+                  max="180"
+                  step="1"
+                  value={rotateZ}
+                  onChange={e => setRotateZ(Number(e.target.value))}
                   className="range-input"
                   style={{ color: '#f472b6' }}
                 />
@@ -358,6 +398,20 @@ const Controls: React.FC = () => {
               onChange={(e) => setCustomSubtitle(e.target.value)}
               placeholder="Population ridgeline map"
             />
+          </div>
+
+          <div className="control-group">
+            <label className="control-label">
+              <Type size={14} /> Print Theme
+            </label>
+            <select
+              className="city-select"
+              value={printTheme}
+              onChange={(e) => setPrintTheme(e.target.value as 'light' | 'dark')}
+            >
+              <option value="light">Light</option>
+              <option value="dark">Dark</option>
+            </select>
           </div>
 
           <div className="control-group">
