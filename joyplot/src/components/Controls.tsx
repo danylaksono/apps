@@ -1,5 +1,5 @@
 import React, { useRef, useState } from 'react';
-import { MapPin, Layers, SlidersHorizontal, Activity, Crop, Download, Type, AlignLeft, Upload, Trash2 } from 'lucide-react';
+import { MapPin, Layers, SlidersHorizontal, Activity, Crop, Download, Type, AlignLeft, Upload, Trash2, Menu, X } from 'lucide-react';
 import { useAppStore } from '../store/useAppStore';
 import { parseBoundaryGeojson } from '../services/dataService';
 
@@ -51,6 +51,8 @@ const Controls: React.FC = () => {
   const [cityInput, setCityInput] = useState(city);
   const [boundaryMessage, setBoundaryMessage] = useState('');
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const [isPanelOpen, setIsPanelOpen] = useState(true);
+
   const boundaryStatusText = boundaryOverride
     ? `Active: ${boundaryLabel || boundaryOverride.name || 'Custom boundary'}`
     : !isLoading && statusMessage
@@ -99,8 +101,19 @@ const Controls: React.FC = () => {
   };
 
   return (
-    <div className="controls-panel">
-      <div className="header">
+    <div className="controls-panel-wrapper">
+      <button
+        type="button"
+        className="controls-toggle-btn"
+        aria-expanded={isPanelOpen}
+        onClick={() => setIsPanelOpen((open) => !open)}
+      >
+        {isPanelOpen ? <X size={18} /> : <Menu size={18} />}
+        <span>{isPanelOpen ? 'Hide controls' : 'Show controls'}</span>
+      </button>
+
+      <div className={`controls-panel ${isPanelOpen ? 'open' : 'closed'}`}>
+        <div className="header">
         <Activity size={24} color="#22d3ee" />
         <div>
           <h1>Indonesia Joyplot Map</h1>
@@ -476,6 +489,7 @@ const Controls: React.FC = () => {
           </div>
         </>
       )}
+      </div>
     </div>
   );
 };
