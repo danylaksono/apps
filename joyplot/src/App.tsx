@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { Loader2 } from 'lucide-react';
 import { useAppStore } from './store/useAppStore';
-import { initializeDuckDB, fetchBoundary, queryPopulation, generateJoyplot } from './services/dataService';
+import { initializeDuckDB, fetchBoundary, fetchLocalFeaturedBoundary, queryPopulation, generateJoyplot } from './services/dataService';
 import type { JoySlice } from './services/dataService';
 import Controls from './components/Controls';
 import JoyplotCanvas from './components/JoyplotCanvas';
@@ -64,6 +64,7 @@ function App() {
   const [geojson, setGeojson] = useState<any>(null);
   const [maxPop, setMaxPop] = useState(1);
   const [isDbReady, setIsDbReady] = useState(false);
+  const carouselDelayMs = 6000;
 
   useEffect(() => {
     setLoading(true, 'Initializing DuckDB...');
@@ -89,24 +90,31 @@ function App() {
   }, [isDbReady, userSelected, boundaryOverride, city, setCity, setRotateY]);
 
   useEffect(() => {
-    if (!isDbReady || userSelected || boundaryOverride) return;
-    if (!city.trim()) return;
+    if (!isDbReady || userSelected || boundaryOverride || isLoading) return;
 
-    const interval = window.setInterval(() => {
+    const currentCity = city.trim();
+    if (!currentCity) return;
+
+    const currentIndex = featuredCities.indexOf(currentCity);
+    if (currentIndex === -1) return;
+
+    featuredIndexRef.current = currentIndex;
+
+    const timeout = window.setTimeout(() => {
       const nextIndex = (featuredIndexRef.current + 1) % featuredCities.length;
       featuredIndexRef.current = nextIndex;
       setRotateY(0);
       setCity(featuredCities[nextIndex]);
-    }, 8000);
+    }, carouselDelayMs);
 
-    return () => window.clearInterval(interval);
-  }, [isDbReady, userSelected, boundaryOverride, city, setCity, setRotateY]);
+    return () => window.clearTimeout(timeout);
+  }, [isDbReady, userSelected, boundaryOverride, isLoading, city, setCity, setRotateY]);
 
   rotateYRef.current = rotateY;
 
   useEffect(() => {
-    if (!isDbReady || userSelected || boundaryOverride) return;
-    if (!city.trim()) return;
+    if (!isDbReady || userSelected || boundaryOverride || isLoading) return;
+    if (!city.trim() || !featuredCities.includes(city.trim())) return;
 
     const rotationTimer = window.setInterval(() => {
       setRotateY(rotateYRef.current + 0.3);
@@ -131,13 +139,23 @@ function App() {
     }
 
     let cancelled = false;
+    const isCarouselCity = !userSelected && !boundaryOverride && featuredCities.includes(city.trim());
 
     const loadData = async () => {
-      const activeBoundary = boundaryOverride || (city.trim() ? await fetchBoundary(city) : null);
+      const activeBoundary = boundaryOverride
+        || (isCarouselCity
+          ? await fetchLocalFeaturedBoundary(city)
+          : city.trim()
+            ? await fetchBoundary(city)
+            : null);
       if (!activeBoundary || cancelled) return;
 
       const { geojson: boundaryGeojson, bbox: boundaryBbox } = activeBoundary;
-      setLoading(true, boundaryOverride ? 'Loading uploaded boundary...' : `Fetching boundary for ${city}...`);
+      setLoading(true, boundaryOverride
+        ? 'Loading uploaded boundary...'
+        : isCarouselCity
+          ? `Loading featured boundary for ${city}...`
+          : `Fetching boundary for ${city}...`);
 
       try {
         if (cancelled) return;

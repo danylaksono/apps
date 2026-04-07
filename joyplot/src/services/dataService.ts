@@ -246,6 +246,46 @@ function parseNominatimBoundary(data: any[]): BoundaryResult {
   };
 }
 
+function slugifyCityName(cityName: string) {
+  return cityName
+    .trim()
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/(^-|-$)/g, '');
+}
+
+const localBoundaryCache = new Map<string, BoundaryResult>();
+
+export async function fetchLocalFeaturedBoundary(cityName: string): Promise<BoundaryResult> {
+  const cacheKey = normalizeCityKey(cityName);
+  const cached = localBoundaryCache.get(cacheKey);
+  if (cached) {
+    return cached;
+  }
+
+  const slug = slugifyCityName(cityName);
+  if (!slug) {
+    throw new Error('Invalid featured city name');
+  }
+
+  const base = import.meta.env.BASE_URL || '/';
+  const url = `${base}data_source/boundaries/${slug}.geojson`;
+  const res = await fetch(url, {
+    headers: {
+      Accept: 'application/geo+json, application/json',
+    },
+  });
+
+  if (!res.ok) {
+    throw new Error(`Local boundary file not found for ${cityName}`);
+  }
+
+  const rawGeojson = await res.json();
+  const result = parseBoundaryGeojson(rawGeojson, cityName.trim());
+  localBoundaryCache.set(cacheKey, result);
+  return result;
+}
+
 async function fetchNominatimBoundary(cityName: string): Promise<BoundaryResult> {
   const base = import.meta.env.DEV
     ? '/api/nominatim/search'
