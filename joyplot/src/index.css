@@ -248,6 +248,36 @@ body {
   flex-wrap: wrap;
 }
 
+.featured-cities-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+}
+
+.btn-featured {
+  border-radius: 0.5rem;
+  border: 1px solid #475569;
+  background: #0f172a;
+  color: #cbd5e1;
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+  padding: 0.4rem 0.6rem;
+  cursor: pointer;
+  transition: border-color 0.2s ease, color 0.2s ease, background-color 0.2s ease;
+}
+
+.btn-featured:hover:not(:disabled) {
+  border-color: #22d3ee;
+  color: #67e8f9;
+}
+
+.btn-featured:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
 .boundary-file-input {
   display: none;
 }

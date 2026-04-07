@@ -17,6 +17,7 @@ interface AppState {
   panelMode: 'explore' | 'print';
   printMode: boolean;
   printTheme: 'light' | 'dark';
+  userSelected: boolean;
   customTitle: string;
   customSubtitle: string;
   titlePosition: 'top-left' | 'top-center' | 'top-right' | 'bottom-left' | 'bottom-center' | 'bottom-right' | 'center';
@@ -42,6 +43,7 @@ interface AppState {
   setCustomTitle: (title: string) => void;
   setCustomSubtitle: (subtitle: string) => void;
   setPrintTheme: (theme: 'light' | 'dark') => void;
+  setUserSelected: (selected: boolean) => void;
   setTitlePosition: (position: 'top-left' | 'top-center' | 'top-right' | 'bottom-left' | 'bottom-center' | 'bottom-right' | 'center') => void;
   setMapScalePosition: (position: 'off' | 'top-left' | 'top-center' | 'top-right' | 'bottom-left' | 'bottom-center' | 'bottom-right') => void;
   setCityCenter: (center: [number, number] | null) => void;
@@ -65,6 +67,7 @@ export const useAppStore = create<AppState>((set) => ({
   panelMode: 'explore',
   printMode: false,
   printTheme: 'light',
+  userSelected: false,
   customTitle: '',
   customSubtitle: '',
   titlePosition: 'top-left',
@@ -90,6 +93,7 @@ export const useAppStore = create<AppState>((set) => ({
   setCustomTitle: (customTitle) => set({ customTitle }),
   setCustomSubtitle: (customSubtitle) => set({ customSubtitle }),
   setPrintTheme: (printTheme) => set({ printTheme }),
+  setUserSelected: (userSelected) => set({ userSelected }),
   setTitlePosition: (titlePosition) => set({ titlePosition }),
   setMapScalePosition: (mapScalePosition) => set({ mapScalePosition }),
   setCityCenter: (cityCenter) => set({ cityCenter }),

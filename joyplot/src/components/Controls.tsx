@@ -37,13 +37,14 @@ const Controls: React.FC = () => {
     setCustomTitle,
     customSubtitle,
     setCustomSubtitle,
+    setUserSelected,
+    setBoundaryOverride,
     titlePosition,
     setTitlePosition,
     mapScalePosition,
     setMapScalePosition,
     boundaryOverride,
     boundaryLabel,
-    setBoundaryOverride,
     isLoading,
   } = useAppStore();
   const [cityInput, setCityInput] = useState(city);
@@ -74,6 +75,7 @@ const Controls: React.FC = () => {
       const boundary = parseBoundaryGeojson(parsed, label);
       setBoundaryOverride(boundary, label);
       setBoundaryMessage(`Loaded ${label}`);
+      setUserSelected(true);
     } catch (error) {
       setBoundaryMessage(error instanceof Error ? error.message : 'Failed to load GeoJSON boundary');
     } finally {
@@ -87,6 +89,7 @@ const Controls: React.FC = () => {
     setBoundaryOverride(null);
     setBoundaryMessage('Using city boundary again');
     setCity(cityInput.trim());
+    setUserSelected(true);
   };
 
   return (
@@ -142,6 +145,7 @@ const Controls: React.FC = () => {
             Search
           </button>
         </div>
+
         <div className="boundary-upload-row">
           <input
             ref={fileInputRef}

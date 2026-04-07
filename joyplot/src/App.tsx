@@ -1,10 +1,26 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { Loader2 } from 'lucide-react';
 import { useAppStore } from './store/useAppStore';
 import { initializeDuckDB, fetchBoundary, queryPopulation, generateJoyplot } from './services/dataService';
 import type { JoySlice } from './services/dataService';
 import Controls from './components/Controls';
 import JoyplotCanvas from './components/JoyplotCanvas';
+
+const featuredCities = [
+  'Jakarta',
+  'Surabaya',
+  'Bandung',
+  'Madiun',
+  'Medan',
+  'Gresik',
+  'Denpasar',
+  'Solo',
+  'Semarang',
+  'Yogyakarta',
+  'Manokwari',
+  'Makassar',
+  'Bekasi',
+];
 
 function App() {
   const {
@@ -35,9 +51,15 @@ function App() {
     setCityCenter,
     setCustomTitle,
     setCustomSubtitle,
+    setCity,
+    userSelected,
+    setRotateY,
+    setRotateZ,
   } = useAppStore();
 
   const [data, setData] = useState<JoySlice[]>([]);
+  const featuredIndexRef = useRef(0);
+  const rotateYRef = useRef(rotateY);
   const [bbox, setBbox] = useState<number[] | null>(null);
   const [geojson, setGeojson] = useState<any>(null);
   const [maxPop, setMaxPop] = useState(1);
@@ -55,6 +77,43 @@ function App() {
         setLoading(false, 'Failed to initialize DuckDB');
       });
   }, [setLoading]);
+
+  useEffect(() => {
+    if (!isDbReady || userSelected || boundaryOverride) return;
+    if (!city.trim()) {
+      featuredIndexRef.current = 0;
+      setRotateY(0);
+      setCity(featuredCities[0]);
+      return;
+    }
+  }, [isDbReady, userSelected, boundaryOverride, city, setCity, setRotateY]);
+
+  useEffect(() => {
+    if (!isDbReady || userSelected || boundaryOverride) return;
+    if (!city.trim()) return;
+
+    const interval = window.setInterval(() => {
+      const nextIndex = (featuredIndexRef.current + 1) % featuredCities.length;
+      featuredIndexRef.current = nextIndex;
+      setRotateY(0);
+      setCity(featuredCities[nextIndex]);
+    }, 8000);
+
+    return () => window.clearInterval(interval);
+  }, [isDbReady, userSelected, boundaryOverride, city, setCity, setRotateY]);
+
+  rotateYRef.current = rotateY;
+
+  useEffect(() => {
+    if (!isDbReady || userSelected || boundaryOverride) return;
+    if (!city.trim()) return;
+
+    const rotationTimer = window.setInterval(() => {
+      setRotateY(rotateYRef.current + 0.3);
+    }, 30);
+
+    return () => window.clearInterval(rotationTimer);
+  }, [isDbReady, userSelected, boundaryOverride, city, setRotateY, setRotateZ]);
 
   useEffect(() => {
     if (!isDbReady) return;

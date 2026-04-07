@@ -493,6 +493,19 @@ const JoyplotCanvas: React.FC<JoyplotCanvasProps> = ({
         ctx.font = '500 14px "Segoe UI", sans-serif';
         ctx.fillText(`${scaleLabel}  |  1:${approxScale.toLocaleString()}`, scaleX, scaleY + 10);
       }
+    } else if (city.trim()) {
+      const title = city.trim();
+      ctx.textBaseline = 'top';
+      ctx.fillStyle = '#f8fafc';
+      ctx.font = '700 28px "Georgia", "Times New Roman", serif';
+      ctx.fillText(title, 48, 36);
+
+      ctx.strokeStyle = 'rgba(248, 250, 252, 0.18)';
+      ctx.lineWidth = 2;
+      ctx.beginPath();
+      ctx.moveTo(48, 70);
+      ctx.lineTo(48 + Math.min(ctx.measureText(title).width, 320), 70);
+      ctx.stroke();
     }
   }, [bbox, slices, maxPop, heightScale, pitch, padding, projectionScale, offsetX, offsetY, rotateX, rotateY, rotateZ, printTheme, geojson, clipToBoundary, printMode, city, cityCenter, customTitle, customSubtitle, titlePosition, mapScalePosition]);
 
