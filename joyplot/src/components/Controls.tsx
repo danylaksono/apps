@@ -119,67 +119,69 @@ const Controls: React.FC = () => {
         </button>
       </div>
 
-      <div className="control-group">
-        <label className="control-label">
-          <MapPin size={14} /> Administrative Boundary
-        </label>
-        <div className="city-search-row">
-          <input
-            type="text"
-            value={cityInput}
-            onChange={(e) => setCityInput(e.target.value)}
-            onKeyDown={(e) => {
-              if (e.key === 'Enter' && cityInput.trim() && !isLoading) {
-                handleCitySearch();
-              }
-            }}
-            placeholder="Search city, e.g. Kota Bandung"
-            disabled={isLoading}
-            className="city-input"
-          />
-          <button
-            onClick={handleCitySearch}
-            disabled={!cityInput.trim() || isLoading}
-            className="btn-search"
-          >
-            Search
-          </button>
-        </div>
+      {panelMode === 'explore' && (
+        <div className="control-group">
+          <label className="control-label">
+            <MapPin size={14} /> Administrative Boundary
+          </label>
+          <div className="city-search-row">
+            <input
+              type="text"
+              value={cityInput}
+              onChange={(e) => setCityInput(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter' && cityInput.trim() && !isLoading) {
+                  handleCitySearch();
+                }
+              }}
+              placeholder="Search city, e.g. Kota Bandung"
+              disabled={isLoading}
+              className="city-input"
+            />
+            <button
+              onClick={handleCitySearch}
+              disabled={!cityInput.trim() || isLoading}
+              className="btn-search"
+            >
+              Search
+            </button>
+          </div>
 
-        <div className="boundary-upload-row">
-          <input
-            ref={fileInputRef}
-            type="file"
-            accept=".geojson,.json,application/geo+json,application/json"
-            onChange={handleBoundaryUpload}
-            className="boundary-file-input"
-          />
-          <button
-            type="button"
-            className="btn-upload"
-            onClick={() => fileInputRef.current?.click()}
-            disabled={isLoading}
-          >
-            <Upload size={14} /> Upload GeoJSON
-          </button>
-          {boundaryOverride && (
+          <div className="boundary-upload-row">
+            <input
+              ref={fileInputRef}
+              type="file"
+              accept=".geojson,.json,application/geo+json,application/json"
+              onChange={handleBoundaryUpload}
+              className="boundary-file-input"
+            />
             <button
               type="button"
-              className="btn-clear"
-              onClick={() => {
-                setBoundaryOverride(null);
-                setBoundaryMessage('Using city boundary again');
-              }}
+              className="btn-upload"
+              onClick={() => fileInputRef.current?.click()}
               disabled={isLoading}
             >
-              <Trash2 size={14} /> Clear
+              <Upload size={14} /> Upload GeoJSON
             </button>
-          )}
+            {boundaryOverride && (
+              <button
+                type="button"
+                className="btn-clear"
+                onClick={() => {
+                  setBoundaryOverride(null);
+                  setBoundaryMessage('Using city boundary again');
+                }}
+                disabled={isLoading}
+              >
+                <Trash2 size={14} /> Clear
+              </button>
+            )}
+          </div>
+          <span className="boundary-status">
+            {boundaryOverride ? `Active: ${boundaryLabel || boundaryOverride.name || 'Custom boundary'}` : 'Search a boundary from available APIs, or upload a Polygon or MultiPolygon GeoJSON file.'}
+          </span>
         </div>
-        <span className="boundary-status">
-          {boundaryOverride ? `Active: ${boundaryLabel || boundaryOverride.name || 'Custom boundary'}` : 'Search a boundary from available APIs, or upload a Polygon or MultiPolygon GeoJSON file.'}
-        </span>
-      </div>
+      )}
 
       {panelMode === 'explore' && (
         <>
