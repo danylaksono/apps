@@ -444,12 +444,8 @@ const JoyplotCanvas: React.FC<JoyplotCanvasProps> = ({
         };
 
         if (intersects(titleRect, scaleRect)) {
-          if (mapScalePosition.startsWith('bottom')) {
-            anchorY = scaleRect.y - blockHeight - 16;
-          } else {
-            anchorY = scaleRect.y + scaleRect.height + 16;
-          }
-          clampTitleAnchor();
+          scalePlacement.y = titleRect.y + titleRect.height + 16;
+          scalePlacement.y = Math.max(24, Math.min(scalePlacement.y, height - scalePlacement.height - 24));
         }
       }
 
