@@ -46,10 +46,16 @@ const Controls: React.FC = () => {
     boundaryOverride,
     boundaryLabel,
     isLoading,
+    statusMessage,
   } = useAppStore();
   const [cityInput, setCityInput] = useState(city);
   const [boundaryMessage, setBoundaryMessage] = useState('');
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const boundaryStatusText = boundaryOverride
+    ? `Active: ${boundaryLabel || boundaryOverride.name || 'Custom boundary'}`
+    : !isLoading && statusMessage
+      ? statusMessage
+      : 'Search a boundary from available APIs, or upload a Polygon or MultiPolygon GeoJSON file.';
 
   const handleExport = () => {
     const canvas = document.querySelector<HTMLCanvasElement>('.joyplot-canvas');
@@ -178,7 +184,7 @@ const Controls: React.FC = () => {
             )}
           </div>
           <span className="boundary-status">
-            {boundaryOverride ? `Active: ${boundaryLabel || boundaryOverride.name || 'Custom boundary'}` : 'Search a boundary from available APIs, or upload a Polygon or MultiPolygon GeoJSON file.'}
+            {boundaryStatusText}
           </span>
         </div>
       )}
@@ -212,7 +218,7 @@ const Controls: React.FC = () => {
             </div>
             <input 
               type="range" 
-              min="1" max="15" step="0.5"
+              min="1" max="20" step="0.5"
               value={heightScale} 
               onChange={e => setHeightScale(Number(e.target.value))}
               className="range-input"

@@ -54,7 +54,7 @@ interface AppState {
 export const useAppStore = create<AppState>((set) => ({
   city: '',
   resolution: 80,
-  heightScale: 5,
+  heightScale: 12,
   pitch: 0.6,
   padding: 100,
   projectionScale: 1,

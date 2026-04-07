@@ -5,6 +5,27 @@ import { initializeDuckDB, fetchBoundary, fetchLocalFeaturedBoundary, queryPopul
 import type { JoySlice } from './services/dataService';
 import Controls from './components/Controls';
 import JoyplotCanvas from './components/JoyplotCanvas';
+import WelcomeJoyplotBackdrop from './components/WelcomeJoyplotBackdrop';
+
+interface SerializedJoySlice {
+  index: number;
+  baseLat: number;
+  points: [number, number, number][];
+}
+
+interface CarouselCacheCity {
+  city: string;
+  bbox: number[];
+  cityCenter: [number, number];
+  maxPop: number;
+  slices: SerializedJoySlice[];
+}
+
+interface CarouselCache {
+  version: number;
+  resolution: number;
+  cities: Record<string, CarouselCacheCity>;
+}
 
 const featuredCities = [
   'Jakarta',
@@ -64,7 +85,9 @@ function App() {
   const [geojson, setGeojson] = useState<any>(null);
   const [maxPop, setMaxPop] = useState(1);
   const [isDbReady, setIsDbReady] = useState(false);
-  const carouselDelayMs = 6000;
+  const [carouselCache, setCarouselCache] = useState<CarouselCache | null | undefined>(undefined);
+  const carouselDelayMs = 12000;
+  const carouselEnabled = false;
 
   useEffect(() => {
     setLoading(true, 'Initializing DuckDB...');
@@ -80,6 +103,7 @@ function App() {
   }, [setLoading]);
 
   useEffect(() => {
+    if (!carouselEnabled) return;
     if (!isDbReady || userSelected || boundaryOverride) return;
     if (!city.trim()) {
       featuredIndexRef.current = 0;
@@ -87,9 +111,10 @@ function App() {
       setCity(featuredCities[0]);
       return;
     }
-  }, [isDbReady, userSelected, boundaryOverride, city, setCity, setRotateY]);
+  }, [carouselEnabled, isDbReady, userSelected, boundaryOverride, city, setCity, setRotateY]);
 
   useEffect(() => {
+    if (!carouselEnabled) return;
     if (!isDbReady || userSelected || boundaryOverride || isLoading) return;
 
     const currentCity = city.trim();
@@ -108,11 +133,12 @@ function App() {
     }, carouselDelayMs);
 
     return () => window.clearTimeout(timeout);
-  }, [isDbReady, userSelected, boundaryOverride, isLoading, city, setCity, setRotateY]);
+  }, [carouselEnabled, isDbReady, userSelected, boundaryOverride, isLoading, city, setCity, setRotateY]);
 
   rotateYRef.current = rotateY;
 
   useEffect(() => {
+    if (!carouselEnabled) return;
     if (!isDbReady || userSelected || boundaryOverride || isLoading) return;
     if (!city.trim() || !featuredCities.includes(city.trim())) return;
 
@@ -121,7 +147,24 @@ function App() {
     }, 30);
 
     return () => window.clearInterval(rotationTimer);
-  }, [isDbReady, userSelected, boundaryOverride, city, setRotateY, setRotateZ]);
+  }, [carouselEnabled, isDbReady, userSelected, boundaryOverride, city, setRotateY, setRotateZ]);
+
+  useEffect(() => {
+    if (!carouselEnabled) return;
+    const url = `${import.meta.env.BASE_URL}data_source/joyplot-carousel-cache.json`;
+    fetch(url)
+      .then((res) => res.ok ? res.json() : null)
+      .then((data) => {
+        if (data && typeof data === 'object') {
+          setCarouselCache(data as CarouselCache);
+        }
+      })
+      .catch(() => {
+        setCarouselCache(null);
+      });
+  }, []);
+
+  const isInitialGuidanceActive = !userSelected && !boundaryOverride && !city.trim() && !isLoading;
 
   useEffect(() => {
     if (!isDbReady) return;
@@ -139,7 +182,9 @@ function App() {
     }
 
     let cancelled = false;
+    let loadingMessage = '';
     const isCarouselCity = !userSelected && !boundaryOverride && featuredCities.includes(city.trim());
+    if (isCarouselCity && carouselCache === undefined) return;
 
     const loadData = async () => {
       const activeBoundary = boundaryOverride
@@ -160,9 +205,30 @@ function App() {
       try {
         if (cancelled) return;
 
+        const normalizedCityKey = city.trim().toLowerCase();
+        const carouselEntry = isCarouselCity && carouselCache?.resolution === resolution
+          ? carouselCache.cities[normalizedCityKey]
+          : null;
+
+        if (carouselEntry) {
+          setBbox(carouselEntry.bbox);
+          setGeojson(boundaryGeojson);
+          setCityCenter(carouselEntry.cityCenter);
+          setMaxPop(carouselEntry.maxPop);
+          setData(carouselEntry.slices.map((slice) => ({
+            index: slice.index,
+            baseLat: slice.baseLat,
+            points: slice.points.map(([lon, lat, pop]) => ({ lon, lat, pop })),
+          })));
+          return;
+        }
+
+        if (cancelled) return;
+
+        const currentCityCenter: [number, number] = [(boundaryBbox[1] + boundaryBbox[3]) / 2, (boundaryBbox[0] + boundaryBbox[2]) / 2];
         setBbox(boundaryBbox);
         setGeojson(boundaryGeojson);
-        setCityCenter([(boundaryBbox[1] + boundaryBbox[3]) / 2, (boundaryBbox[0] + boundaryBbox[2]) / 2]);
+        setCityCenter(currentCityCenter);
 
         const numSlices = resolution;
         const pointsPerSlice = Math.floor(resolution * 1.5);
@@ -193,11 +259,16 @@ function App() {
 
         setMaxPop(maxP || 1);
         setData(slices);
+
       } catch (err) {
         console.error(err);
+        const errorMessage = err instanceof Error ? err.message : '';
+        loadingMessage = /not found/i.test(errorMessage) || /invalid featured city name/i.test(errorMessage)
+          ? 'City is not available.'
+          : 'Unable to load boundary.';
       } finally {
         if (!cancelled) {
-          setLoading(false);
+          setLoading(false, loadingMessage);
         }
       }
     };
@@ -207,7 +278,7 @@ function App() {
     return () => {
       cancelled = true;
     };
-  }, [city, resolution, isDbReady, boundaryOverride, setLoading, setCityCenter, setCustomTitle, setCustomSubtitle]);
+  }, [city, resolution, isDbReady, boundaryOverride, setLoading, setCityCenter, setCustomTitle, setCustomSubtitle, carouselCache, userSelected]);
 
   useEffect(() => {
     const hasCity = city.trim().length > 0;
@@ -256,6 +327,22 @@ function App() {
         titlePosition={titlePosition}
         mapScalePosition={mapScalePosition}
       />
+
+      {isInitialGuidanceActive && (
+        <div className="initial-guidance-overlay">
+          <WelcomeJoyplotBackdrop />
+          <div className="initial-guidance-card">
+            <span className="guidance-badge">Welcome</span>
+            <h2>Get started with your first joyplot</h2>
+            <p>Search a city name or upload a GeoJSON boundary to render Indonesia's population ridgeline view.</p>
+            <ul className="guidance-list">
+              <li>Search for a city, e.g. <strong>Bandung</strong> or <strong>Jakarta</strong>.</li>
+              <li>Upload your own <strong>GeoJSON</strong> boundary if you want custom regions.</li>
+              <li>Adjust resolution, height scale, clipping, and export when ready.</li>
+            </ul>
+          </div>
+        </div>
+      )}
 
       <Controls />
 
