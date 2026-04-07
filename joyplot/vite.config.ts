@@ -4,7 +4,6 @@ import react from '@vitejs/plugin-react'
 // https://vite.dev/config/
 export default defineConfig({
   // Supports GitHub Pages-style nested deployment path in this monorepo.
-  // City Rose uses '/apps/city-rose/' so Joyplot should mirror that.
   base: '/apps/joyplot/',
   plugins: [react()],
   server: {

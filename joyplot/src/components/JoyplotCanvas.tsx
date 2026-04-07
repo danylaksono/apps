@@ -7,6 +7,12 @@ interface JoyplotCanvasProps {
   geojson: any;
   maxPop: number;
   heightScale: number;
+  pitch: number;
+  padding: number;
+  projectionScale: number;
+  offsetX: number;
+  offsetY: number;
+  rotation: number;
   clipToBoundary: boolean;
   printMode: boolean;
   city: string;
@@ -31,6 +37,12 @@ const JoyplotCanvas: React.FC<JoyplotCanvasProps> = ({
   customSubtitle,
   titlePosition,
   mapScalePosition,
+  pitch,
+  padding,
+  projectionScale,
+  offsetX,
+  offsetY,
+  rotation,
 }) => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
 
@@ -52,22 +64,34 @@ const JoyplotCanvas: React.FC<JoyplotCanvasProps> = ({
     const mapWidth = maxLon - minLon;
     const mapHeight = maxLat - minLat;
 
-    // Isometric projection logic
-    const pitch = 0.6;
-    const padding = 100;
-    const scale = Math.min((width - padding) / mapWidth, (height - padding) / (mapHeight * pitch)) * 0.8;
+    const clampedPitch = Math.max(0.15, Math.min(1, pitch));
+    const clampedPadding = Math.max(0, padding);
+    const baseScale = Math.min((width - clampedPadding) / mapWidth, (height - clampedPadding) / (mapHeight * clampedPitch)) * 0.8;
+    const scale = Math.max(0.05, baseScale * Math.max(0.1, projectionScale));
     
     const drawnWidth = mapWidth * scale;
-    const drawnHeight = mapHeight * scale * pitch;
+    const drawnHeight = mapHeight * scale * clampedPitch;
     
-    const offsetX = (width - drawnWidth) / 2;
-    const offsetY = (height - drawnHeight) / 2 + (heightScale * 8);
+    const baseOffsetX = (width - drawnWidth) / 2;
+    const baseOffsetY = (height - drawnHeight) / 2 + (heightScale * 8);
+    const finalOffsetX = baseOffsetX + offsetX;
+    const finalOffsetY = baseOffsetY + offsetY;
+
+    const rotationRad = (rotation * Math.PI) / 180;
+    const cosR = Math.cos(rotationRad);
+    const sinR = Math.sin(rotationRad);
+    const mapCenterX = drawnWidth / 2;
+    const mapCenterY = drawnHeight / 2;
 
     const project = (lon: number, lat: number, pop: number) => {
-      const x = offsetX + (lon - minLon) * scale;
-      const flatY = offsetY + (maxLat - lat) * scale * pitch;
+      const rawX = (lon - minLon) * scale;
+      const rawY = (maxLat - lat) * scale * clampedPitch;
+      const dx = rawX - mapCenterX;
+      const dy = rawY - mapCenterY;
+      const rotatedX = dx * cosR - dy * sinR + mapCenterX + finalOffsetX;
+      const rotatedY = dx * sinR + dy * cosR + mapCenterY + finalOffsetY;
       const z = (pop / maxPop) * (heightScale * 15);
-      return { x, y: flatY - z };
+      return { x: rotatedX, y: rotatedY - z };
     };
 
     const isPointInRing = (lon: number, lat: number, ring: number[][]) => {
@@ -436,7 +460,7 @@ const JoyplotCanvas: React.FC<JoyplotCanvasProps> = ({
         ctx.fillText(`${scaleLabel}  |  1:${approxScale.toLocaleString()}`, scaleX, scaleY + 10);
       }
     }
-  }, [bbox, slices, maxPop, heightScale, geojson, clipToBoundary, printMode, city, cityCenter, customTitle, customSubtitle, titlePosition, mapScalePosition]);
+  }, [bbox, slices, maxPop, heightScale, pitch, padding, projectionScale, offsetX, offsetY, rotation, geojson, clipToBoundary, printMode, city, cityCenter, customTitle, customSubtitle, titlePosition, mapScalePosition]);
 
   useEffect(() => {
     const handleResize = () => {

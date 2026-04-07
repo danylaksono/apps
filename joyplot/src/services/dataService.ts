@@ -13,9 +13,10 @@ export interface JoySlice {
   points: JoyPoint[];
 }
 
-interface BoundaryResult {
+export interface BoundaryResult {
   geojson: any;
   bbox: number[];
+  name?: string;
 }
 
 interface BoundaryProviderError {
@@ -149,6 +150,71 @@ function normalizeGeojsonBoundary(geometry: any): BoundaryResult {
   return {
     geojson,
     bbox: toBboxFromCoords(allCoords),
+  };
+}
+
+function collectPolygonGeometry(geometry: any, polygons: number[][][][]) {
+  if (!geometry || typeof geometry !== 'object') return;
+
+  if (geometry.type === 'Feature') {
+    collectPolygonGeometry(geometry.geometry, polygons);
+    return;
+  }
+
+  if (geometry.type === 'FeatureCollection') {
+    for (const feature of geometry.features || []) {
+      collectPolygonGeometry(feature, polygons);
+    }
+    return;
+  }
+
+  if (geometry.type === 'GeometryCollection') {
+    for (const item of geometry.geometries || []) {
+      collectPolygonGeometry(item, polygons);
+    }
+    return;
+  }
+
+  if (geometry.type === 'Polygon') {
+    const rings = (geometry.coordinates || [])
+      .map((ring: any) => {
+        if (!Array.isArray(ring)) return [];
+        const coords = ring
+          .map((coord: any) => (Array.isArray(coord) && coord.length >= 2 ? [coord[0], coord[1]] : null))
+          .filter((coord: number[] | null): coord is number[] => coord !== null);
+        return closeRing(coords);
+      })
+      .filter((ring: number[][]) => ring.length >= 4);
+
+    if (rings.length > 0) {
+      polygons.push(rings);
+    }
+    return;
+  }
+
+  if (geometry.type === 'MultiPolygon') {
+    for (const polygon of geometry.coordinates || []) {
+      collectPolygonGeometry({ type: 'Polygon', coordinates: polygon }, polygons);
+    }
+  }
+}
+
+export function parseBoundaryGeojson(rawGeojson: any, name = 'Custom boundary'): BoundaryResult {
+  const polygons: number[][][][] = [];
+  collectPolygonGeometry(rawGeojson, polygons);
+
+  if (polygons.length === 0) {
+    throw new Error('GeoJSON file must contain Polygon or MultiPolygon geometry');
+  }
+
+  const allCoords = polygons.flat(2);
+
+  return {
+    geojson: polygons.length === 1
+      ? { type: 'Polygon', coordinates: polygons[0] }
+      : { type: 'MultiPolygon', coordinates: polygons },
+    bbox: toBboxFromCoords(allCoords),
+    name,
   };
 }
 

@@ -11,6 +11,12 @@ function App() {
     city,
     resolution,
     heightScale,
+    pitch,
+    padding,
+    projectionScale,
+    offsetX,
+    offsetY,
+    rotation,
     clipToBoundary,
     printMode,
     customTitle,
@@ -18,6 +24,8 @@ function App() {
     titlePosition,
     mapScalePosition,
     cityCenter,
+    boundaryOverride,
+    boundaryLabel,
     isLoading,
     setLoading,
     statusMessage,
@@ -25,6 +33,7 @@ function App() {
     setCustomTitle,
     setCustomSubtitle,
   } = useAppStore();
+
   const [data, setData] = useState<JoySlice[]>([]);
   const [bbox, setBbox] = useState<number[] | null>(null);
   const [geojson, setGeojson] = useState<any>(null);
@@ -38,16 +47,16 @@ function App() {
         setIsDbReady(true);
         setLoading(false);
       })
-      .catch(err => {
+      .catch((err) => {
         console.error(err);
         setLoading(false, 'Failed to initialize DuckDB');
       });
-  }, []);
+  }, [setLoading]);
 
   useEffect(() => {
     if (!isDbReady) return;
 
-    if (!city.trim()) {
+    if (!city.trim() && !boundaryOverride) {
       setData([]);
       setBbox(null);
       setGeojson(null);
@@ -62,41 +71,46 @@ function App() {
     let cancelled = false;
 
     const loadData = async () => {
-      setLoading(true, `Fetching boundary for ${city}...`);
+      const activeBoundary = boundaryOverride || (city.trim() ? await fetchBoundary(city) : null);
+      if (!activeBoundary || cancelled) return;
+
+      const { geojson: boundaryGeojson, bbox: boundaryBbox } = activeBoundary;
+      setLoading(true, boundaryOverride ? 'Loading uploaded boundary...' : `Fetching boundary for ${city}...`);
+
       try {
-        const { geojson, bbox } = await fetchBoundary(city);
         if (cancelled) return;
 
-        setBbox(bbox);
-        setGeojson(geojson);
-        setCityCenter([(bbox[1] + bbox[3]) / 2, (bbox[0] + bbox[2]) / 2]);
+        setBbox(boundaryBbox);
+        setGeojson(boundaryGeojson);
+        setCityCenter([(boundaryBbox[1] + boundaryBbox[3]) / 2, (boundaryBbox[0] + boundaryBbox[2]) / 2]);
 
         const numSlices = resolution;
         const pointsPerSlice = Math.floor(resolution * 1.5);
-        const latStep = (bbox[3] - bbox[1]) / numSlices;
-        const lonStep = (bbox[2] - bbox[0]) / pointsPerSlice;
-        
+        const latStep = (boundaryBbox[3] - boundaryBbox[1]) / numSlices;
+        const lonStep = (boundaryBbox[2] - boundaryBbox[0]) / pointsPerSlice;
+
         const h3Set = new Set<string>();
         const h3js = await import('h3-js');
-        
+
         for (let i = 0; i <= numSlices; i++) {
-          const lat = bbox[3] - i * latStep;
+          const lat = boundaryBbox[3] - i * latStep;
           for (let j = 0; j <= pointsPerSlice; j++) {
-            const lon = bbox[0] + j * lonStep;
-            const h3Index = h3js.latLngToCell(lat, lon, 8);
-            h3Set.add(h3Index);
+            const lon = boundaryBbox[0] + j * lonStep;
+            h3Set.add(h3js.latLngToCell(lat, lon, 8));
           }
         }
 
         setLoading(true, `Querying ${h3Set.size} cells...`);
         const popMap = await queryPopulation(Array.from(h3Set));
         if (cancelled) return;
-        
-        const slices = generateJoyplot(geojson, bbox, resolution, popMap);
-        
+
+        const slices = generateJoyplot(boundaryGeojson, boundaryBbox, resolution, popMap);
+
         let maxP = 0;
-        slices.forEach(s => s.points.forEach(p => { if (p.pop > maxP) maxP = p.pop; }));
-        
+        slices.forEach((slice) => slice.points.forEach((point) => {
+          if (point.pop > maxP) maxP = point.pop;
+        }));
+
         setMaxPop(maxP || 1);
         setData(slices);
       } catch (err) {
@@ -113,26 +127,43 @@ function App() {
     return () => {
       cancelled = true;
     };
-  }, [city, resolution, isDbReady, setLoading, setCityCenter, setCustomTitle, setCustomSubtitle]);
+  }, [city, resolution, isDbReady, boundaryOverride, setLoading, setCityCenter, setCustomTitle, setCustomSubtitle]);
 
   useEffect(() => {
-    if (!city.trim()) return;
-    const title = city.trim();
+    const hasCity = city.trim().length > 0;
+    const hasBoundary = Boolean(boundaryOverride);
+
+    if (!hasCity && !hasBoundary) {
+      setCustomTitle('');
+      setCustomSubtitle('');
+      return;
+    }
+
+    const title = hasBoundary ? boundaryLabel || 'Custom boundary' : city.trim();
     const subtitle = cityCenter
-      ? `Population ridgeline map | ${cityCenter[0].toFixed(4)}°, ${cityCenter[1].toFixed(4)}°`
-      : 'Population ridgeline map';
+      ? `${hasBoundary ? 'Uploaded GeoJSON boundary' : 'Population ridgeline map'} | ${cityCenter[0].toFixed(4)}°, ${cityCenter[1].toFixed(4)}°`
+      : hasBoundary
+        ? 'Uploaded GeoJSON boundary'
+        : 'Population ridgeline map';
+
     setCustomTitle(title);
     setCustomSubtitle(subtitle);
-  }, [city, cityCenter, setCustomTitle, setCustomSubtitle]);
+  }, [city, cityCenter, boundaryOverride, boundaryLabel, setCustomTitle, setCustomSubtitle]);
 
   return (
     <div className="app-container">
-      <JoyplotCanvas 
-        slices={data} 
-        bbox={bbox} 
-        geojson={geojson} 
+      <JoyplotCanvas
+        slices={data}
+        bbox={bbox}
+        geojson={geojson}
         maxPop={maxPop}
         heightScale={heightScale}
+        pitch={pitch}
+        padding={padding}
+        projectionScale={projectionScale}
+        offsetX={offsetX}
+        offsetY={offsetY}
+        rotation={rotation}
         clipToBoundary={clipToBoundary}
         printMode={printMode}
         city={city}
@@ -142,7 +173,7 @@ function App() {
         titlePosition={titlePosition}
         mapScalePosition={mapScalePosition}
       />
-      
+
       <Controls />
 
       {isLoading && (
@@ -150,8 +181,8 @@ function App() {
           <div className="loading-card">
             <Loader2 className="animate-spin" size={24} color="#22d3ee" />
             <div className="loading-info">
-               <span className="loading-title">Processing...</span>
-               <span className="loading-status">{statusMessage}</span>
+              <span className="loading-title">Processing...</span>
+              <span className="loading-status">{statusMessage}</span>
             </div>
           </div>
         </div>
