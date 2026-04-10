@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Winchester LAEP - Grid Allocation Dashboard</title>
+
+    <!-- MapLibre GL JS -->
+    <script src="https://unpkg.com/maplibre-gl@3.6.2/dist/maplibre-gl.js"></script>
+    <link href="https://unpkg.com/maplibre-gl@3.6.2/dist/maplibre-gl.css" rel="stylesheet" />
+
+    <!-- Turf.js -->
+    <script src="https://unpkg.com/@turf/turf@6.5.0/turf.min.js"></script>
+
+    <!-- Apache ECharts -->
+    <script src="https://cdn.jsdelivr.net/npm/echarts@5.5.0/dist/echarts.min.js"></script>
+
+    <!-- noUiSlider -->
+    <link href="https://cdn.jsdelivr.net/npm/nouislider@15.7.1/dist/nouislider.min.css" rel="stylesheet" />
+    <script src="https://cdn.jsdelivr.net/npm/nouislider@15.7.1/dist/nouislider.min.js"></script>
+
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+    <!-- ═══════ FULL PAGE GRID ═══════════════════════════════════════ -->
+
+    <!-- ── HEADER BAR ───────────────────────────────────────────────── -->
+    <header id="header">
+        <div class="header-title">
+            <h1>Winchester LAEP</h1>
+            <span class="subtitle">Grid-Scale Generation Deployment</span>
+        </div>
+
+        <div class="header-controls">
+            <!-- Technology filter -->
+            <div class="control-group">
+                <label>Technology</label>
+                <div class="btn-group" id="tech-filter">
+                    <button class="btn active" data-value="all">All</button>
+                    <button class="btn" data-value="PV">PV</button>
+                    <button class="btn" data-value="Wind">Wind</button>
+                </div>
+            </div>
+
+            <!-- Connection level filter -->
+            <div class="control-group">
+                <label>Connection</label>
+                <div class="btn-group" id="level-filter">
+                    <button class="btn active" data-value="all">All</button>
+                    <button class="btn" data-value="primary">33kV</button>
+                    <button class="btn" data-value="bsp">132kV</button>
+                </div>
+            </div>
+
+            <!-- Map colour mode -->
+            <div class="control-group">
+                <label>Colour by</label>
+                <div class="btn-group" id="colour-mode">
+                    <button class="btn active" data-value="technology">Tech</button>
+                    <button class="btn" data-value="suitability">Suit.</button>
+                    <button class="btn" data-value="status">Status</button>
+                </div>
+            </div>
+
+            <!-- Toggle layers -->
+            <div class="control-group">
+                <label>Layers</label>
+                <div class="toggle-row">
+                    <label class="toggle-label"><input type="checkbox" id="toggle-connections" checked> Lines</label>
+                    <label class="toggle-label"><input type="checkbox" id="toggle-unallocated"> Excluded</label>
+                </div>
+            </div>
+
+            <button class="btn btn-reset" id="btn-reset">Reset</button>
+        </div>
+    </header>
+
+    <!-- ── MIDDLE ROW: sidebar + map ────────────────────────────────── -->
+    <div id="middle">
+        <!-- Sidebar: KPIs + narrative -->
+        <aside id="sidebar">
+            <div id="kpi-panel">
+                <div class="kpi-card">
+                    <div class="kpi-value" id="kpi-parcels">--</div>
+                    <div class="kpi-label">Sites Selected</div>
+                    <div class="kpi-sub" id="kpi-parcels-sub"></div>
+                </div>
+                <div class="kpi-card">
+                    <div class="kpi-value" id="kpi-capacity">--</div>
+                    <div class="kpi-label">Capacity (MW)</div>
+                    <div class="kpi-sub" id="kpi-capacity-sub"></div>
+                </div>
+                <div class="kpi-card">
+                    <div class="kpi-value" id="kpi-potential-pct">--</div>
+                    <div class="kpi-label">of Total Potential</div>
+                    <div class="kpi-sub" id="kpi-potential-sub"></div>
+                </div>
+                <div class="kpi-card">
+                    <div class="kpi-value" id="kpi-headroom">--</div>
+                    <div class="kpi-label">Headroom Used</div>
+                    <div class="kpi-sub" id="kpi-headroom-sub"></div>
+                </div>
+                <div class="kpi-card">
+                    <div class="kpi-value" id="kpi-substations">--</div>
+                    <div class="kpi-label">Substations</div>
+                    <div class="kpi-sub" id="kpi-substations-sub"></div>
+                </div>
+                <div class="kpi-card">
+                    <div class="kpi-value" id="kpi-generation">--</div>
+                    <div class="kpi-label">Est. GWh/yr</div>
+                    <div class="kpi-sub" id="kpi-generation-sub"></div>
+                </div>
+            </div>
+
+            <div id="narrative-panel">
+                <h3>Summary</h3>
+                <p id="narrative-text">Loading data&hellip;</p>
+            </div>
+        </aside>
+
+        <!-- Map + floating overlays -->
+        <div id="map-container">
+            <div id="map"></div>
+
+            <!-- Floating legend (top-left of map) -->
+            <div id="legend-panel">
+                <h3>Legend</h3>
+                <div id="legend-content"></div>
+            </div>
+
+            <!-- Floating time control (bottom-centre of map) -->
+            <div id="time-control">
+                <div class="tc-top-row">
+                    <button id="btn-play" class="tc-btn" title="Play / Pause">&#9654;</button>
+                    <span id="year-label" class="tc-year-label">2025 &ndash; 2050</span>
+                    <div class="tc-mode-toggle">
+                        <button class="tc-mode-btn active" id="mode-range" title="Range mode">Range</button>
+                        <button class="tc-mode-btn" id="mode-single" title="Single year">Year</button>
+                    </div>
+                </div>
+                <div class="tc-slider-row">
+                    <span class="tc-tick-label">2025</span>
+                    <div id="time-slider"></div>
+                    <span class="tc-tick-label">2050</span>
+                </div>
+            </div>
+
+            <!-- Substation detail (top-right of map) -->
+            <div id="detail-panel" class="hidden">
+                <button id="detail-close">&times;</button>
+                <div id="detail-content"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ── CHARTS PANEL (always visible) ────────────────────────────── -->
+    <div id="charts-panel">
+        <div class="chart-box" id="chart-annual"></div>
+        <div class="chart-box" id="chart-cumulative"></div>
+        <div class="chart-box" id="chart-tech-mix"></div>
+        <div class="chart-box" id="chart-substation"></div>
+    </div>
+
+    <!-- Scripts (order matters) -->
+    <script src="dashboard.js"></script>
+    <script src="charts.js"></script>
+    <script src="app.js"></script>
+</body>
+
+</html>
