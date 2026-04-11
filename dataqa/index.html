@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>GeoParquet QA · Statistical Summary</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link
+    href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=Source+Code+Pro:wght@400;500;600&display=swap"
+    rel="stylesheet" />
+  <link rel="stylesheet" href="styles.css" />
+</head>
+
+<body class="light">
+
+  <header>
+    <div class="logo">
+      <div class="logo-icon">⬡</div>
+      GEOPARQUET QA
+    </div>
+    <div class="header-meta">Statistical Summary · DuckDB WASM</div>
+  </header>
+
+  <div class="container">
+
+    <!-- Drop Zone -->
+    <div class="drop-zone" id="drop-zone">
+      <input type="file" id="file-input" multiple accept=".parquet" />
+      <div class="drop-icon">📂</div>
+      <div class="drop-title">Drop GeoParquet files here</div>
+      <div class="drop-sub">or click to browse · .parquet files only · multiple supported</div>
+    </div>
+
+    <div class="file-list" id="file-list"></div>
+
+    <div class="controls">
+      <button class="btn btn-primary" id="run-btn" disabled>▶ Run Analysis</button>
+      <button class="btn btn-ghost" id="clear-btn" disabled>✕ Clear All</button>
+      <button class="btn btn-ghost" id="csv-btn" disabled>↓ Export CSV</button>
+      <button class="btn btn-ghost" id="theme-btn" type="button">Dark theme</button>
+      <label class="sentinel-label">
+
+        Sentinel value
+        <input class="sentinel-input" id="sentinel-input" type="text" value="-123456" />
+      </label>
+    </div>
+
+    <div class="progress-wrap" id="progress-wrap">
+      <div class="progress-bar-bg">
+        <div class="progress-bar-fill" id="progress-fill"></div>
+      </div>
+    </div>
+
+    <div class="log" id="log"></div>
+
+    <!-- Results -->
+    <div id="results-section" style="display:none">
+      <div class="section-header">
+        <span class="section-title">Statistical Summary</span>
+        <span class="section-count" id="results-count"></span>
+      </div>
+      <div id="la-blocks"></div>
+    </div>
+
+    <div class="empty" id="empty-state">
+      <div class="empty-icon">◈</div>
+      No data yet — upload .parquet files and run analysis
+    </div>
+
+  </div>
+
+  <div class="toast" id="toast">
+    <div class="toast-dot" id="toast-dot"></div>
+    <span id="toast-msg"></span>
+  </div>
+
+  <script type="module" src="app.js"></script>
+</body>
+
+</html>
