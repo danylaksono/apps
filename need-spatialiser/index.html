@@ -1,0 +1,491 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NEED Dataset Spatializer</title>
+
+    <!-- Tailwind CSS for UI styling -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Leaflet for Mapping -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
+    <!-- Turf.js for Geospatial Operations (Point in Polygon, Bounding Box) -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Turf.js/6.5.0/turf.min.js"></script>
+
+    <!-- PapaParse for parsing CSV data exports -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
+
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+
+    <style>
+        /* Custom scrollbar for data tables */
+        ::-webkit-scrollbar { width: 8px; height: 8px; }
+        ::-webkit-scrollbar-track { background: #f1f1f1; }
+        ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
+        
+        .spinner {
+            border: 3px solid rgba(0,0,0,0.1);
+            width: 20px; height: 20px; border-radius: 50%;
+            border-left-color: #3b82f6;
+            animation: spin 1s linear infinite;
+        }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+        
+        #dbStatusBadge { transition: all 0.3s ease; }
+    </style>
+</head>
+<body class="bg-slate-50 text-slate-800 font-sans h-screen flex flex-col overflow-hidden">
+
+    <!-- Header -->
+    <header class="h-16 bg-white border-b border-slate-200 shadow-sm flex items-center justify-between px-6 z-20 relative">
+        <div class="flex items-center gap-3">
+            <i data-lucide="map" class="text-blue-600"></i>
+            <h1 class="text-xl font-bold text-slate-900">NEED Data Spatializer</h1>
+            <span id="dbStatusBadge" class="ml-4 inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium bg-amber-100 text-amber-800 border border-amber-200">
+                <div class="spinner w-3 h-3 border-amber-800" style="border-width: 2px;"></div> Initializing DuckDB...
+            </span>
+        </div>
+        <div class="text-sm text-slate-500 flex items-center gap-2">
+            <i data-lucide="info" class="w-4 h-4"></i>
+            Powered by DuckDB-WASM & ONS Open Geography
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <div class="flex-1 flex overflow-hidden">
+        
+        <!-- Sidebar Controls -->
+        <div class="w-96 bg-white shadow-lg z-10 flex flex-col relative overflow-y-auto">
+            
+            <div class="p-6 space-y-6 flex-1">
+                
+                <!-- Step 1: Input Data -->
+                <section>
+                    <h2 class="text-sm font-bold uppercase tracking-wider text-slate-500 mb-3">1. Load Data</h2>
+                    <div class="space-y-3">
+                        <button id="btnMockData" disabled class="w-full flex items-center justify-center gap-2 bg-slate-100 hover:bg-slate-200 disabled:opacity-50 disabled:cursor-not-allowed text-slate-700 py-2.5 rounded-lg transition text-sm font-medium border border-slate-200">
+                            <i data-lucide="database" class="w-4 h-4"></i> Use Mock NEED Dataset
+                        </button>
+                        <div class="relative">
+                            <div class="absolute inset-0 flex items-center"><div class="w-full border-t border-slate-200"></div></div>
+                            <div class="relative flex justify-center text-xs uppercase"><span class="bg-white px-2 text-slate-400">Or</span></div>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-slate-700 mb-1">Upload Parquet / CSV</label>
+                            <input type="file" id="fileUpload" disabled accept=".parquet,.csv" class="block w-full disabled:opacity-50 text-sm text-slate-500 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100 border border-slate-200 rounded-lg cursor-pointer bg-slate-50"/>
+                            <p class="text-[11px] text-slate-400 mt-1">Parquet is highly recommended for large >100MB files.</p>
+                        </div>
+                        <div id="dataStatus" class="text-xs text-slate-500 mt-2 hidden bg-blue-50 p-3 rounded-lg border border-blue-100">
+                            <i data-lucide="check-circle" class="w-4 h-4 inline text-blue-600 mr-1"></i>
+                            <span id="rowCount" class="font-bold text-slate-800">0</span> rows registered in virtual filesystem.
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Step 2: Configure & Process -->
+                <section>
+                    <h2 class="text-sm font-bold uppercase tracking-wider text-slate-500 mb-3">2. Spatial Processing</h2>
+                    <div class="space-y-4">
+                        <div>
+                            <label class="block text-sm font-medium text-slate-700 mb-1">Target Region</label>
+                            <select id="regionSelect" class="w-full bg-slate-50 border border-slate-200 text-slate-700 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block p-2.5 outline-none">
+                                <option value="ALL">All Regions</option>
+                                <option value="E12000001">North East (E12000001)</option>
+                                <option value="E12000002">North West (E12000002)</option>
+                                <option value="E12000003">Yorkshire and The Humber (E12000003)</option>
+                                <option value="E12000004">East Midlands (E12000004)</option>
+                                <option value="E12000005">West Midlands (E12000005)</option>
+                                <option value="E12000006">East (E12000006)</option>
+                                <option value="E12000007">London (E12000007)</option>
+                                <option value="E12000008">South East (E12000008)</option>
+                                <option value="E12000009">South West (E12000009)</option>
+                                <option value="W92000004">Wales (W92000004)</option>
+                            </select>
+                        </div>
+                        
+                        <div class="bg-amber-50 text-amber-800 p-3 rounded-lg text-[11px] border border-amber-200">
+                            <strong>Note:</strong> To prevent browser crashes, output is limited to a maximum of <strong>25,000</strong> points per run. Select specific regions to process subsets.
+                        </div>
+
+                        <button id="btnProcess" disabled class="w-full flex items-center justify-center gap-2 bg-blue-600 hover:bg-blue-700 disabled:bg-blue-300 disabled:cursor-not-allowed text-white py-2.5 rounded-lg transition font-medium shadow-sm">
+                            <i data-lucide="zap" class="w-4 h-4"></i> Query & Randomize
+                        </button>
+
+                        <!-- Progress indicator -->
+                        <div id="progressContainer" class="hidden flex flex-col gap-2 mt-3">
+                            <div class="flex items-center justify-between text-xs font-medium text-slate-600">
+                                <span id="progressLabel">Querying DuckDB...</span>
+                                <span id="progressText">0%</span>
+                            </div>
+                            <div class="w-full bg-slate-200 rounded-full h-2">
+                                <div id="progressBar" class="bg-blue-600 h-2 rounded-full transition-all" style="width: 0%"></div>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Step 3: Export Output -->
+                <section>
+                    <h2 class="text-sm font-bold uppercase tracking-wider text-slate-500 mb-3">3. Export</h2>
+                    <button id="btnExport" disabled class="w-full flex items-center justify-center gap-2 bg-emerald-600 hover:bg-emerald-700 disabled:bg-slate-200 disabled:text-slate-400 disabled:cursor-not-allowed text-white py-2.5 rounded-lg transition text-sm font-medium shadow-sm">
+                        <i data-lucide="download" class="w-4 h-4"></i> Download Spatialize CSV
+                    </button>
+                </section>
+            </div>
+        </div>
+
+        <!-- Map Container -->
+        <div class="flex-1 relative bg-slate-200 z-0 flex flex-col">
+            <div id="map" class="flex-1 w-full h-full"></div>
+            
+            <!-- Floating overlay for errors/info -->
+            <div id="toast" class="absolute top-4 right-4 bg-slate-800 text-white px-4 py-3 rounded-lg shadow-xl text-sm transition-opacity duration-300 opacity-0 pointer-events-none z-50 max-w-sm">
+                Message goes here
+            </div>
+        </div>
+    </div>
+
+    <!-- Application Module -->
+    <script type="module">
+        import * as duckdb from 'https://cdn.jsdelivr.net/npm/@duckdb/duckdb-wasm@1.28.0/+esm';
+        
+        // Initialize Lucide Icons
+        lucide.createIcons();
+
+        // Region Names Dictionary
+        const REGIONS = {
+            "E12000001": "North East", "E12000002": "North West", "E12000003": "Yorkshire and The Humber",
+            "E12000004": "East Midlands", "E12000005": "West Midlands", "E12000006": "East",
+            "E12000007": "London", "E12000008": "South East", "E12000009": "South West", "W92000004": "Wales"
+        };
+
+        // UI Helpers
+        function showToast(message, type = 'info') {
+            const toast = document.getElementById('toast');
+            toast.textContent = message;
+            toast.className = `absolute top-4 right-4 px-4 py-3 rounded-lg shadow-xl text-sm transition-opacity duration-300 z-[9999] max-w-sm opacity-100 ${
+                type === 'error' ? 'bg-red-600 text-white' : 'bg-slate-800 text-white'
+            }`;
+            setTimeout(() => toast.style.opacity = '0', 4000);
+        }
+
+        function setDbReady(ready) {
+            const badge = document.getElementById('dbStatusBadge');
+            if (ready) {
+                badge.className = "ml-4 inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium bg-emerald-100 text-emerald-800 border border-emerald-200";
+                badge.innerHTML = `<i data-lucide="check" class="w-3 h-3"></i> Engine Ready`;
+                lucide.createIcons();
+                document.getElementById('btnMockData').disabled = false;
+                document.getElementById('fileUpload').disabled = false;
+            }
+        }
+
+        // --- Core Application State ---
+        let db = null;
+        let conn = null;
+        let map, pointsLayer, boundaryLayer;
+        let finalDataset = [];
+        let hasDataLoaded = false;
+        
+        // --- 1. DuckDB Initialization ---
+        async function initDuckDB() {
+            try {
+                const JSDELIVR_BUNDLES = duckdb.getJsDelivrBundles();
+                const bundle = await duckdb.selectBundle(JSDELIVR_BUNDLES);
+                
+                const worker_url = URL.createObjectURL(
+                    new Blob([`importScripts("${bundle.mainWorker}");`], { type: 'text/javascript' })
+                );
+                
+                const worker = new Worker(worker_url);
+                const logger = new duckdb.ConsoleLogger();
+                db = new duckdb.AsyncDuckDB(logger, worker);
+                
+                await db.instantiate(bundle.mainModule, bundle.pthreadWorker);
+                URL.revokeObjectURL(worker_url);
+                
+                conn = await db.connect();
+                console.log("DuckDB initialized successfully.");
+                setDbReady(true);
+            } catch (err) {
+                console.error("DuckDB Init Failed:", err);
+                showToast("Failed to start analytical engine.", "error");
+            }
+        }
+
+        // --- 2. Leaflet Setup ---
+        function initMap() {
+            map = L.map('map', { zoomControl: false }).setView([52.5, -1.5], 6);
+            L.control.zoom({ position: 'bottomright' }).addTo(map);
+            L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png', {
+                attribution: '&copy; OSM contributors &copy; CARTO', maxZoom: 19
+            }).addTo(map);
+
+            boundaryLayer = L.geoJSON(null, {
+                style: { color: '#3b82f6', weight: 2, opacity: 0.6, fillOpacity: 0.1, fillColor: '#3b82f6' }
+            }).addTo(map);
+            pointsLayer = L.layerGroup().addTo(map);
+        }
+
+        // --- 3. Spatializer Class (ONS Fetch & Turf logic) ---
+        class NEEDDataSpatializer {
+            constructor() {
+                this.boundaryCache = {};
+                this.ONS_URLS = {
+                    englandRegions: "https://services1.arcgis.com/ESMARspQHYMw9BZ9/arcgis/rest/services/Regions_December_2023_Boundaries_EN_BUC/FeatureServer/0/query?where=1%3D1&outFields=*&outSR=4326&f=geojson",
+                    walesCountry: "https://services1.arcgis.com/ESMARspQHYMw9BZ9/arcgis/rest/services/Countries_December_2023_Boundaries_UK_BUC/FeatureServer/0/query?where=1%3D1&outFields=*&outSR=4326&f=geojson"
+                };
+            }
+
+            async fetchBoundary(regionCode) {
+                if (this.boundaryCache[regionCode]) return this.boundaryCache[regionCode];
+                try {
+                    const isWales = regionCode === 'W92000004';
+                    const response = await fetch(isWales ? this.ONS_URLS.walesCountry : this.ONS_URLS.englandRegions);
+                    const data = await response.json();
+                    
+                    const feature = data.features.find(f => Object.values(f.properties).includes(regionCode));
+                    if (feature) {
+                        this.boundaryCache[regionCode] = feature;
+                        return feature;
+                    }
+                    throw new Error(`Region code ${regionCode} not found.`);
+                } catch (error) { throw error; }
+            }
+
+            generatePointInsideFeature(boundaryFeature) {
+                const bbox = turf.bbox(boundaryFeature);
+                for (let i = 0; i < 200; i++) { // Optimization: Reduced max attempts to 200 for speed
+                    const pt = turf.randomPoint(1, { bbox: bbox }).features[0];
+                    if (turf.booleanPointInPolygon(pt, boundaryFeature)) return pt.geometry.coordinates;
+                }
+                return turf.pointOnFeature(boundaryFeature).geometry.coordinates;
+            }
+        }
+        const spatializer = new NEEDDataSpatializer();
+
+        // --- 4. Event Listeners & Logic ---
+
+        // A. File Upload (Parquet / CSV -> DuckDB Virtual FS)
+        document.getElementById('fileUpload').addEventListener('change', async (e) => {
+            const file = e.target.files[0];
+            if (!file || !db) return;
+
+            showToast("Mounting file to database...", "info");
+            document.getElementById('fileUpload').disabled = true;
+
+            try {
+                // Register file in DuckDB WASM Virtual Filesystem
+                await db.registerFileHandle(file.name, file, duckdb.DuckDBDataProtocol.BROWSER_FILEREADER, true);
+                
+                const isCSV = file.name.toLowerCase().endsWith('.csv');
+                const readFunc = isCSV ? 'read_csv_auto' : 'parquet_scan';
+                
+                // Create a global view pointing to the virtual file
+                await conn.query(`CREATE OR REPLACE VIEW current_data AS SELECT * FROM ${readFunc}('${file.name}')`);
+                
+                // Fast Count Query
+                const res = await conn.query(`SELECT count(*) as c FROM current_data`);
+                const count = Number(res.toArray()[0].toJSON().c);
+                
+                hasDataLoaded = true;
+                document.getElementById('dataStatus').classList.remove('hidden');
+                document.getElementById('rowCount').textContent = count.toLocaleString();
+                document.getElementById('btnProcess').disabled = count === 0;
+                
+                showToast(`Successfully mounted file. ${count.toLocaleString()} rows available.`, "info");
+            } catch(err) {
+                console.error(err);
+                showToast("Error loading file: " + err.message, "error");
+            } finally {
+                document.getElementById('fileUpload').disabled = false;
+            }
+        });
+
+        // B. Mock Data Generation (Inserted directly into DuckDB)
+        document.getElementById('btnMockData').addEventListener('click', async () => {
+            if (!db) return;
+            const types = ['Detached', 'Semi-Detached', 'Terraced', 'Flat'];
+            const ages = ['Pre-1919', '1919-1944', '1945-1964', '1965-1982', '1983-1992', '1993-1999', 'Post-1999'];
+            const epcs = ['A', 'B', 'C', 'D', 'E', 'F', 'G'];
+            const regionCodes = Object.keys(REGIONS);
+            
+            let mockJson = [];
+            for (let i = 0; i < 5000; i++) {
+                mockJson.push({
+                    ID: `MOCK-${i}`,
+                    PROP_TYPE: types[Math.floor(Math.random() * types.length)],
+                    PROP_AGE_BAND: ages[Math.floor(Math.random() * ages.length)],
+                    REGION: regionCodes[Math.floor(Math.random() * regionCodes.length)],
+                    EPC: epcs[Math.floor(Math.random() * epcs.length)],
+                    FLOOR_AREA_BAND: `${Math.floor(Math.random() * 100) + 50}m2`,
+                    MAIN_HEAT_FUEL: Math.random() > 0.2 ? 'Gas' : 'Electricity'
+                });
+            }
+            
+            try {
+                await db.registerFileText('mock.json', JSON.stringify(mockJson));
+                await conn.query(`CREATE OR REPLACE VIEW current_data AS SELECT * FROM read_json_auto('mock.json')`);
+                
+                hasDataLoaded = true;
+                document.getElementById('dataStatus').classList.remove('hidden');
+                document.getElementById('rowCount').textContent = "5,000";
+                document.getElementById('btnProcess').disabled = false;
+                
+                showToast("Generated 5,000 mock records in database.", "info");
+            } catch(err) {
+                showToast("Failed to create mock data.", "error");
+            }
+        });
+
+        // C. Process Button (Query DuckDB -> Spatialize -> Map)
+        document.getElementById('btnProcess').addEventListener('click', async () => {
+            if (!hasDataLoaded) return;
+            
+            const btnProcess = document.getElementById('btnProcess');
+            const targetRegionCode = document.getElementById('regionSelect').value;
+            const progressContainer = document.getElementById('progressContainer');
+            const progressBar = document.getElementById('progressBar');
+            const progressLabel = document.getElementById('progressLabel');
+            const progressText = document.getElementById('progressText');
+            
+            // Limit to 25k to protect the browser DOM when drawing leaflet circles
+            const MAX_ROWS = 25000; 
+
+            // UI Setup
+            btnProcess.disabled = true;
+            btnProcess.innerHTML = `<div class="spinner border-t-white mr-2"></div> Processing...`;
+            progressContainer.classList.remove('hidden');
+            document.getElementById('btnExport').disabled = true;
+            pointsLayer.clearLayers();
+            boundaryLayer.clearLayers();
+            progressLabel.textContent = "Querying DuckDB...";
+            progressBar.style.width = `10%`;
+
+            try {
+                // 1. Execute SQL against DuckDB
+                // Use try_cast to ensure case insensitivity on column names just in case
+                let query = `SELECT * FROM current_data`;
+                if (targetRegionCode !== 'ALL') {
+                    // Check standard column variations
+                    query += ` WHERE REGION = '${targetRegionCode}' OR Region = '${targetRegionCode}' OR region = '${targetRegionCode}'`;
+                }
+                query += ` LIMIT ${MAX_ROWS}`;
+
+                const t0 = performance.now();
+                const resultArrow = await conn.query(query);
+                const queryTime = ((performance.now() - t0) / 1000).toFixed(2);
+                
+                // Convert Apache Arrow Table to standard JS Objects
+                const subset = resultArrow.toArray().map(row => row.toJSON());
+                
+                if (subset.length === 0) {
+                    showToast("Query returned 0 rows for this region.", "info");
+                    return;
+                }
+
+                showToast(`SQL completed in ${queryTime}s. Spatializing ${subset.length.toLocaleString()} points...`, "info");
+                
+                // 2. Spatialize Coordinates via Turf.js
+                progressLabel.textContent = "Generating Geometries...";
+                const results = [];
+                const usedBoundaries = new Set();
+                const BATCH_SIZE = 100; // Batch size to prevent UI thread blocking
+                
+                for (let i = 0; i < subset.length; i += BATCH_SIZE) {
+                    const batch = subset.slice(i, i + BATCH_SIZE);
+                    for (const row of batch) {
+                        const code = row['REGION'] || row['Region'] || row['region'];
+                        if (!code || (!code.startsWith('E') && code !== 'W92000004')) continue; 
+                        
+                        try {
+                            const boundary = await spatializer.fetchBoundary(code);
+                            usedBoundaries.add(code);
+                            const [lng, lat] = spatializer.generatePointInsideFeature(boundary);
+                            
+                            results.push({
+                                ...row,
+                                'Latitude': lat.toFixed(6),
+                                'Longitude': lng.toFixed(6)
+                            });
+                        } catch(e) { } // Silently skip bad region codes to not interrupt flow
+                    }
+
+                    // Update UI gracefully
+                    const percent = Math.min(10 + Math.round((i / subset.length) * 90), 100);
+                    progressBar.style.width = `${percent}%`;
+                    progressText.textContent = `${percent}%`;
+                    await new Promise(resolve => setTimeout(resolve, 0)); // Yield to main thread
+                }
+
+                finalDataset = results;
+
+                // 3. Render map
+                progressLabel.textContent = "Rendering Map...";
+                const boundariesToDraw = Array.from(usedBoundaries).map(code => spatializer.boundaryCache[code]);
+                if (boundariesToDraw.length > 0) {
+                    boundaryLayer.addData(boundariesToDraw);
+                    map.fitBounds(boundaryLayer.getBounds(), { padding: [50, 50] });
+                }
+
+                // Chunk DOM insertions for performance
+                for (let i = 0; i < finalDataset.length; i += 500) {
+                     const batch = finalDataset.slice(i, i + 500);
+                     batch.forEach(item => {
+                         const marker = L.circleMarker([parseFloat(item.Latitude), parseFloat(item.Longitude)], {
+                            radius: 3, fillColor: getEpcColor(item.EPC), color: "#fff", weight: 0.5, opacity: 1, fillOpacity: 0.8
+                         });
+                         marker.bindPopup(`<b>EPC:</b> ${item.EPC || 'N/A'}<br><b>Type:</b> ${item.PROP_TYPE || 'N/A'}`);
+                         pointsLayer.addLayer(marker);
+                     });
+                     await new Promise(resolve => setTimeout(resolve, 0));
+                }
+
+                showToast(`Success! Mapped ${finalDataset.length.toLocaleString()} points.`, "info");
+                document.getElementById('btnExport').disabled = finalDataset.length === 0;
+
+            } catch (err) {
+                console.error("Processing Error:", err);
+                showToast("Processing failed: " + err.message, "error");
+            } finally {
+                btnProcess.disabled = false;
+                btnProcess.innerHTML = `<i data-lucide="zap" class="w-4 h-4 mr-2"></i> Query & Randomize`;
+                progressContainer.classList.add('hidden');
+                lucide.createIcons();
+            }
+        });
+
+        function getEpcColor(epc) {
+            const e = (epc || '').toUpperCase();
+            if(e.includes('A')) return '#008054'; if(e.includes('B')) return '#19b459';
+            if(e.includes('C')) return '#8dce46'; if(e.includes('D')) return '#ffd500';
+            if(e.includes('E')) return '#fcaa65'; if(e.includes('F')) return '#ef8023';
+            if(e.includes('G')) return '#e9153b'; return '#64748b';
+        }
+
+        // D. CSV Export Logic
+        document.getElementById('btnExport').addEventListener('click', () => {
+            if (!finalDataset.length) return;
+            const csv = Papa.unparse(finalDataset);
+            const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+            const url = URL.createObjectURL(blob);
+            const link = document.createElement("a");
+            link.setAttribute("href", url);
+            link.setAttribute("download", `need_spatialized_${new Date().getTime()}.csv`);
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+        });
+
+        // Bootstrap
+        initMap();
+        initDuckDB();
+
+    </script>
+</body>
+</html>
