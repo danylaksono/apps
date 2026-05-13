@@ -20,27 +20,27 @@
 
     :root {
       color-scheme: dark;
-     --paper: oklch(91% 0.018 82);
-     --paper-deep: oklch(82% 0.026 78);
-     --ink: oklch(18% 0.02 71);
-     --ink-soft: oklch(36% 0.025 71);
-     --map-veil: oklch(12% 0.023 104);
-     --forest: oklch(45% 0.075 143);
-     --clay: oklch(54% 0.12 43);
-     --ochre: oklch(70% 0.13 78);
-     --warning: oklch(58% 0.17 30);
-     --violet: oklch(58% 0.1 330);
-     --line: color-mix(in oklch, var(--ink) 17%, transparent);
-     --shadow: 0 24px 70px color-mix(in oklch, black 42%, transparent);
-     --space-xs: 0.25rem;
-     --space-sm: 0.5rem;
-     --space-md: 0.75rem;
-     --space-lg: 1rem;
-     --space-xl: 1.5rem;
-     --space-2xl: 2rem;
-     --space-3xl: 3rem;
-     --body: "Aptos", "Segoe UI", system-ui,-apple-system, sans-serif;
-     --display: "Georgia", "Times New Roman", serif;
+      --paper: oklch(91% 0.018 82);
+      --paper-deep: oklch(82% 0.026 78);
+      --ink: oklch(18% 0.02 71);
+      --ink-soft: oklch(36% 0.025 71);
+      --map-veil: oklch(12% 0.023 104);
+      --forest: oklch(45% 0.075 143);
+      --clay: oklch(54% 0.12 43);
+      --ochre: oklch(70% 0.13 78);
+      --warning: oklch(58% 0.17 30);
+      --violet: oklch(58% 0.1 330);
+      --line: color-mix(in oklch, var(--ink) 17%, transparent);
+      --shadow: 0 24px 70px color-mix(in oklch, black 42%, transparent);
+      --space-xs: 0.25rem;
+      --space-sm: 0.5rem;
+      --space-md: 0.75rem;
+      --space-lg: 1rem;
+      --space-xl: 1.5rem;
+      --space-2xl: 2rem;
+      --space-3xl: 3rem;
+      --body: "Aptos", "Segoe UI", system-ui, -apple-system, sans-serif;
+      --display: "Georgia", "Times New Roman", serif;
     }
 
     html {
@@ -341,7 +341,7 @@
 
       /* Arrow */
       position: absolute;
-      left:-18px;
+      left: -18px;
       color: var(--ochre);
       font-family: var(--body);
     }
@@ -351,6 +351,45 @@
       color: var(--clay);
       font-weight: 700;
       font-size: 1.1rem;
+    }
+
+    .explore-controls {
+      display: grid;
+      gap: var(--space-md);
+      margin-top: var(--space-md);
+      padding-top: var(--space-md);
+      border-top: 1px solid var(--line);
+    }
+
+    .explore-controls .control-group {
+      display: flex;
+      flex-direction: column;
+      gap: 0.3rem;
+    }
+
+    .explore-controls .control-label {
+      font-size: 0.8rem;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      font-weight: 700;
+      color: var(--ink-soft);
+      margin-bottom: 0.2rem;
+    }
+
+    .explore-controls label {
+      display: flex;
+      align-items: center;
+      gap: var(--space-sm);
+      color: var(--ink);
+      cursor: pointer;
+      font-size: 0.9rem;
+    }
+
+    .explore-controls input[type="radio"],
+    .explore-controls input[type="checkbox"] {
+      accent-color: var(--ochre);
+      width: 1.1rem;
+      height: 1.1rem;
     }
 
     .source-note {
@@ -970,6 +1009,31 @@
       </div>
     </section>
 
+    <!--CHAPTER 12: EKSPLORASI-->
+    <section class="chapter" data-chapter="12">
+      <div class="chapter-box" data-kicker="Interaktif">
+        <h3>Eksplorasi Peta</h3>
+        <h2>Jelajahi Sendiri</h2>
+        <p>Anda dapat menggeser (drag) dan membesarkan peta, serta menghidupkan/mematikan lapisan peta di bawah ini.</p>
+
+        <div class="explore-controls">
+          <div class="control-group">
+            <span class="control-label">Basemap</span>
+            <label><input type="radio" name="basemap" value="dark"> Dark Mode</label>
+            <label><input type="radio" name="basemap" value="satellite"> Satellite</label>
+          </div>
+          <div class="control-group">
+            <span class="control-label">Lapisan Data</span>
+            <label><input type="checkbox" id="toggle-brwa"> <span>Wilayah Adat (BRWA)</span></label>
+            <label><input type="checkbox" id="toggle-kspp"> <span>Kawasan Sentra Produksi Pertanian</span></label>
+            <label><input type="checkbox" id="toggle-sk"> <span>SK KLHK 835/2024</span></label>
+            <label><input type="checkbox" id="toggle-road"> <span>Jalan/Infrastruktur</span></label>
+            <label><input type="checkbox" id="toggle-point"> <span>Titik Lokasi/Investasi</span></label>
+          </div>
+        </div>
+      </div>
+    </section>
+
   </main>
 
   <script>
@@ -977,7 +1041,7 @@
     const map = new maplibregl.Map({
       container: 'map',
       style: 'https://basemaps.cartocdn.com/gl/dark-matter-gl-style/style.json',
-      center: [140.35,-7.85],
+      center: [140.35, -7.85],
       zoom: 8.5,
       minZoom: 6,
       maxZoom: 15,
@@ -985,6 +1049,14 @@
     });
 
     map.addControl(new maplibregl.AttributionControl({ compact: true }));
+
+    // Disable Map Interactions initially
+    map.scrollZoom.disable();
+    map.dragPan.disable();
+    map.dragRotate.disable();
+    map.keyboard.disable();
+    map.doubleClickZoom.disable();
+    map.touchZoomRotate.disable();
 
     /* ====== LOAD GEOJSON SOURCES & LAYERS ====== */
     const dataFiles = [
@@ -1018,7 +1090,7 @@
         layout: { visibility: 'visible' },
         paint: {
           'raster-opacity': 0,
-          'raster-saturation':-0.18,
+          'raster-saturation': -0.18,
           'raster-contrast': 0.08,
           'raster-brightness-min': 0.08,
           'raster-brightness-max': 0.86,
@@ -1057,7 +1129,7 @@
                 id: df.id + '-label',
                 source: df.id,
                 type: 'symbol',
-                layout: { 'text-field': ['get', 'name'], 'text-offset': [0,-1.5], 'text-size': 11, 'text-anchor': 'bottom' },
+                layout: { 'text-field': ['get', 'name'], 'text-offset': [0, -1.5], 'text-size': 11, 'text-anchor': 'bottom' },
                 paint: { 'text-color': '#f3e4ca', 'text-halo-color': '#12120f', 'text-halo-width': 2 }
               });
             } else if (df.type === 'line') {
@@ -1076,7 +1148,7 @@
                 paint: {
                   'fill-color': ['match', ['get', 'status'],
                     'Teregistrasi', '#6ea36b',
-                    'Terverifikasi', '#d4a83f',
+                    'Terverifikasi', '#4299e1',
                     'Tercatat Baru', '#b9784c',
                     '#6ea36b'
                   ],
@@ -1095,7 +1167,7 @@
                 paint: {
                   'line-color': ['match', ['get', 'status'],
                     'Teregistrasi', '#8fb879',
-                    'Terverifikasi', '#d4a83f',
+                    'Terverifikasi', '#63b3ed',
                     'Tercatat Baru', '#b9784c',
                     '#8fb879'
                   ],
@@ -1105,7 +1177,7 @@
                     'Tercatat Baru', 1,
                     1.5
                   ],
-                  'line-opacity': 0.6,
+                  'line-opacity': 0.8,
                 }
               });
               // BRWA labels
@@ -1144,14 +1216,18 @@
               });
             } else {
               // KSPP / SK KLHK polygons
-              let color, opacity, borderColor;
+              let color, opacity, borderColor, dasharray;
               if (df.id === 'kspp') {
-                color = '#d4a83f'; opacity = 0.13; borderColor = '#d4a83f';
+                color = '#e67e22'; opacity = 0.15; borderColor = '#e67e22'; dasharray = [4, 3];
               } else if (df.id === 'sk_klhk') {
-                color = '#a56b9e'; opacity = 0.18; borderColor = '#a56b9e';
+                color = '#a56b9e'; opacity = 0.18; borderColor = '#a56b9e'; dasharray = [1, 0];
               } else {
-                color = '#d96c42'; opacity = 0.12; borderColor = '#d96c42';
+                color = '#d96c42'; opacity = 0.12; borderColor = '#d96c42'; dasharray = [1, 0];
               }
+
+              const outlinePaint = { 'line-color': borderColor, 'line-width': 1.5, 'line-opacity': 0.8 };
+              if (dasharray[1] !== 0) outlinePaint['line-dasharray'] = dasharray;
+
               map.addLayer({
                 id: df.id + '-fill',
                 source: df.id,
@@ -1162,7 +1238,7 @@
                 id: df.id + '-outline',
                 source: df.id,
                 type: 'line',
-                paint: { 'line-color': borderColor, 'line-width': 1.5, 'line-opacity': 0.5 }
+                paint: outlinePaint
               });
             }
 
@@ -1170,7 +1246,7 @@
             if (loaded === dataFiles.length) {
               layersReady = true;
               const pendingChapter = currentChapter >= 0 ? currentChapter : 0;
-              currentChapter =-1;
+              currentChapter = -1;
               updateChapter(pendingChapter);
             }
           })
@@ -1190,8 +1266,8 @@
 
     const layerLegend = {
       brwa: '<div class="leg-row"><span class="leg-swatch" style="background:rgba(110,163,107,0.28);border:2px solid #8fb879"></span><span>Wilayah adat teregistrasi BRWA</span></div>',
-      brwaVerified: '<div class="leg-row"><span class="leg-swatch" style="background:rgba(212,168,63,0.26);border:2px solid #d4a83f"></span><span>Wilayah adat terverifikasi</span></div>',
-      kspp: '<div class="leg-row"><span class="leg-swatch" style="background:rgba(212,168,63,0.22);border:2px solid #d4a83f"></span><span>Kawasan Sentra Produksi Pertanian</span></div>',
+      brwaVerified: '<div class="leg-row"><span class="leg-swatch" style="background:rgba(66,153,225,0.22);border:2px solid #63b3ed"></span><span>Wilayah adat terverifikasi</span></div>',
+      kspp: '<div class="leg-row"><span class="leg-swatch" style="background:rgba(230,126,34,0.15);border:2px dashed #e67e22"></span><span>Kawasan Sentra Produksi Pertanian</span></div>',
       sk: '<div class="leg-row"><span class="leg-swatch" style="background:rgba(165,107,158,0.24);border:2px solid #a56b9e"></span><span>SK KLHK 835/2024</span></div>',
       road: '<div class="leg-row"><span class="leg-swatch" style="height:3px;background:#d4a83f;align-self:center"></span><span>Koridor jalan/infrastruktur</span></div>',
       point: '<div class="leg-row"><span class="leg-swatch" style="background:#d96c42;border:2px solid #15140f;border-radius:50%"></span><span>Lokasi proyek, konflik, atau protes</span></div>'
@@ -1269,25 +1345,95 @@
         caption: 'Semua lapisan dibuka untuk menutup cerita sebagai masalah tata kelola ruang, hak adat, dan akuntabilitas.',
         basemap: 'dark',
         legend: ['brwa', 'brwaVerified', 'kspp', 'sk', 'road', 'point']
+      },
+      {
+        title: 'Eksplorasi Bebas',
+        caption: 'Selamat mengeksplorasi. Silakan geser basemap atau nyalakan/matikan lapisan pada kotak kontrol.',
+        basemap: 'dark',
+        legend: ['brwa', 'brwaVerified', 'kspp', 'sk', 'road', 'point']
       }
     ];
 
     const chapterData = [
-      { center: [140.35,-7.85], zoom: 8.0, pitch: 0, bearing: 0 },
-      { center: [140.30,-8.20], zoom: 9.0, pitch: 30, bearing:-10 },
-      { center: [140.35,-7.85], zoom: 8.2, pitch: 40, bearing:-5 },
-      { center: [140.50,-8.00], zoom: 9.0, pitch: 35, bearing:-15 },
-      { center: [140.60,-7.60], zoom: 9.5, pitch: 50, bearing:-20 },
-      { center: [140.15,-7.30], zoom: 10, pitch: 55, bearing:-10 },
-      { center: [140.30,-7.60], zoom: 9.0, pitch: 40, bearing:-5 },
-      { center: [140.55,-7.40], zoom: 9.0, pitch: 35, bearing: 0 },
-      { center: [140.45,-7.80], zoom: 8.5, pitch: 20, bearing: 0 },
-      { center: [140.40,-7.70], zoom: 8.5, pitch: 30, bearing: 0 },
-      { center: [140.45,-7.50], zoom: 8.0, pitch: 25, bearing: 0 },
-      { center: [140.35,-7.85], zoom: 7.5, pitch: 0, bearing: 0 },
+      { center: [140.35, -7.85], zoom: 8.0, pitch: 0, bearing: 0 },
+      { center: [140.30, -8.20], zoom: 9.0, pitch: 30, bearing: -10 },
+      { center: [140.35, -7.85], zoom: 8.2, pitch: 40, bearing: -5 },
+      { center: [140.50, -8.00], zoom: 9.0, pitch: 35, bearing: -15 },
+      { center: [140.60, -7.60], zoom: 9.5, pitch: 50, bearing: -20 },
+      { center: [140.15, -7.30], zoom: 10, pitch: 55, bearing: -10 },
+      { center: [140.30, -7.60], zoom: 9.0, pitch: 40, bearing: -5 },
+      { center: [140.55, -7.40], zoom: 9.0, pitch: 35, bearing: 0 },
+      { center: [140.45, -7.80], zoom: 8.5, pitch: 20, bearing: 0 },
+      { center: [140.40, -7.70], zoom: 8.5, pitch: 30, bearing: 0 },
+      { center: [140.45, -7.50], zoom: 8.0, pitch: 25, bearing: 0 },
+      { center: [140.35, -7.85], zoom: 7.5, pitch: 0, bearing: 0 },
+      { center: [140.35, -7.85], zoom: 7.5, pitch: 0, bearing: 0, explore: true }
     ];
 
-    let currentChapter =-1;
+    let currentChapter = -1;
+
+    // Control interactivity based on chapter
+    function setInteractivity(isInteractive) {
+      if (isInteractive) {
+        map.scrollZoom.enable();
+        map.dragPan.enable();
+        map.dragRotate.enable();
+        map.keyboard.enable();
+        map.doubleClickZoom.enable();
+        map.touchZoomRotate.enable();
+      } else {
+        map.scrollZoom.disable();
+        map.dragPan.disable();
+        map.dragRotate.disable();
+        map.keyboard.disable();
+        map.doubleClickZoom.disable();
+        map.touchZoomRotate.disable();
+      }
+    }
+
+    // Explore checkboxes elements
+    const exploreInputs = {
+      brwa: document.getElementById('toggle-brwa'),
+      kspp: document.getElementById('toggle-kspp'),
+      sk: document.getElementById('toggle-sk'),
+      road: document.getElementById('toggle-road'),
+      point: document.getElementById('toggle-point')
+    };
+
+    function updateLayerVisibility() {
+      if (currentChapter !== 12) return;
+
+      const visibility = {
+        'brwa-fill': exploreInputs.brwa.checked,
+        'brwa-outline': exploreInputs.brwa.checked,
+        'brwa-label': exploreInputs.brwa.checked,
+        'kspp-fill': exploreInputs.kspp.checked,
+        'kspp-outline': exploreInputs.kspp.checked,
+        'sk_klhk-fill': exploreInputs.sk.checked,
+        'sk_klhk-outline': exploreInputs.sk.checked,
+        'road-line': exploreInputs.road.checked,
+        'locations-circle': exploreInputs.point.checked,
+        'locations-label': exploreInputs.point.checked
+      };
+
+      for (const [id, isVisible] of Object.entries(visibility)) {
+        if (map.getLayer(id)) {
+          map.setLayoutProperty(id, 'visibility', isVisible ? 'visible' : 'none');
+        }
+      }
+    }
+
+    Object.values(exploreInputs).forEach(input => {
+      input.addEventListener('change', updateLayerVisibility);
+    });
+
+    document.querySelectorAll('input[name="basemap"]').forEach(radio => {
+      radio.addEventListener('change', (e) => {
+        if (currentChapter === 12) {
+          setBasemap(e.target.value);
+        }
+      });
+    });
 
     function setBasemap(mode) {
       const satelliteOn = mode === 'satellite';
@@ -1329,9 +1475,14 @@
         'sk_klhk-fill', 'sk_klhk-outline',
         'road-line', 'locations-circle', 'locations-label'];
 
-      allLayers.forEach(lid => {
-        if (map.getLayer(lid)) map.setLayoutProperty(lid, 'visibility', 'none');
-      });
+      // Enable map interactivity only on the explore chapter
+      setInteractivity(cd.explore === true);
+
+      if (idx !== 12) {
+        allLayers.forEach(lid => {
+          if (map.getLayer(lid)) map.setLayoutProperty(lid, 'visibility', 'none');
+        });
+      }
 
       switch (idx) {
         case 0: // intro
@@ -1393,6 +1544,17 @@
           allLayers.forEach(lid => {
             if (map.getLayer(lid)) map.setLayoutProperty(lid, 'visibility', 'visible');
           });
+          break;
+        case 12: // explore Mode
+          // Sync UI controls with current layer state based on recommendations if coming from top 
+          // or keep them as is if user is freely exploring
+          document.querySelector(`input[name="basemap"][value="${meta.basemap}"]`).checked = true;
+          exploreInputs.brwa.checked = true;
+          exploreInputs.kspp.checked = true;
+          exploreInputs.sk.checked = true;
+          exploreInputs.road.checked = true;
+          exploreInputs.point.checked = true;
+          updateLayerVisibility();
           break;
       }
     }
