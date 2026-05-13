@@ -1014,7 +1014,7 @@
       <div class="chapter-box" data-kicker="Interaktif">
         <h3>Eksplorasi Peta</h3>
         <h2>Jelajahi Sendiri</h2>
-        <p>Anda dapat menggeser (drag) dan membesarkan peta, serta menghidupkan/mematikan lapisan peta di bawah ini.</p>
+        <p>Anda dapat menggeser (drag) dan membesarkan peta. Untuk zoom menggunakan <i>scroll</i> <i>mouse</i>, sentuh/tahan tombol <strong>Ctrl/Cmd</strong> (atau gunakan tombol <strong>+ &minus;</strong> di ujung kanan atas layar). Anda juga dapat menghidupkan/mematikan lapisan peta di bawah ini.</p>
 
         <div class="explore-controls">
           <div class="control-group">
@@ -1045,10 +1045,23 @@
       zoom: 8.5,
       minZoom: 6,
       maxZoom: 15,
-      attributionControl: false
+      attributionControl: false,
+      cooperativeGestures: true // Requires ctrl/cmd + scroll to zoom, avoiding page scroll lock
     });
 
     map.addControl(new maplibregl.AttributionControl({ compact: true }));
+    
+    // Add Navigation controls (zoom & compass)
+    const navControl = new maplibregl.NavigationControl({
+      showCompass: true,
+      showZoom: true,
+      visualizePitch: true
+    });
+    map.addControl(navControl, 'top-right');
+
+    // Hide navigation controls initially
+    const navContainer = document.querySelector('.maplibregl-ctrl-top-right');
+    if (navContainer) navContainer.style.display = 'none';
 
     // Disable Map Interactions initially
     map.scrollZoom.disable();
@@ -1374,6 +1387,7 @@
 
     // Control interactivity based on chapter
     function setInteractivity(isInteractive) {
+      const navContainer = document.querySelector('.maplibregl-ctrl-top-right');
       if (isInteractive) {
         map.scrollZoom.enable();
         map.dragPan.enable();
@@ -1381,6 +1395,7 @@
         map.keyboard.enable();
         map.doubleClickZoom.enable();
         map.touchZoomRotate.enable();
+        if (navContainer) navContainer.style.display = 'block';
       } else {
         map.scrollZoom.disable();
         map.dragPan.disable();
@@ -1388,6 +1403,7 @@
         map.keyboard.disable();
         map.doubleClickZoom.disable();
         map.touchZoomRotate.disable();
+        if (navContainer) navContainer.style.display = 'none';
       }
     }
 
