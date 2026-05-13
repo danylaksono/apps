@@ -35,6 +35,22 @@ jobs:
         run: npm run build
         working-directory: joyplot
 
+      - name: Install dependencies (dataqa)
+        run: npm ci
+        working-directory: dataqa
+
+      - name: Build dataqa
+        run: npm run build
+        working-directory: dataqa
+
+      - name: Install dependencies (h3_visualiser)
+        run: npm ci
+        working-directory: h3_visualiser
+
+      - name: Build h3_visualiser
+        run: npm run build
+        working-directory: h3_visualiser
+
       - name: Prepare deploy directory
         run: |
           bash scripts/prepare-deploy.sh

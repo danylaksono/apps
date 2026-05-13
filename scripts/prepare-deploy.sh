@@ -41,11 +41,15 @@ for dir in */; do
   cd "$ROOT/$dir"
 
   if [[ -f package.json ]]; then
-    # Install & build if there is a build script
+    # Install & build if there is a build script AND dist/ doesn't exist yet
     if grep -q '"build"' package.json; then
-      echo "[deploy]   running npm ci && npm run build"
-      npm ci
-      npm run build
+      if [[ -d dist ]]; then
+        echo "[deploy]   dist/ already exists, skipping build"
+      else
+        echo "[deploy]   running npm ci && npm run build"
+        npm ci
+        npm run build
+      fi
     fi
   fi
 
