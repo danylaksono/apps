@@ -4,12 +4,12 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Pesta Babi - PSN Merauke | Scrollytelling Map</title>
+  <title>Pesta Babi-PSN Merauke | Scrollytelling Map</title>
   <script src="https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.js"></script>
   <link href="https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.css" rel="stylesheet">
-  <!-- Phosphor Icons -->
+  <!--Phosphor Icons-->
   <script src="https://unpkg.com/@phosphor-icons/web"></script>
-  <!-- Chart.js -->
+  <!--Chart.js-->
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <style>
     * {
@@ -20,27 +20,27 @@
 
     :root {
       color-scheme: dark;
-      --paper: oklch(91% 0.018 82);
-      --paper-deep: oklch(82% 0.026 78);
-      --ink: oklch(18% 0.02 71);
-      --ink-soft: oklch(36% 0.025 71);
-      --map-veil: oklch(12% 0.023 104);
-      --forest: oklch(45% 0.075 143);
-      --clay: oklch(54% 0.12 43);
-      --ochre: oklch(70% 0.13 78);
-      --warning: oklch(58% 0.17 30);
-      --violet: oklch(58% 0.1 330);
-      --line: color-mix(in oklch, var(--ink) 17%, transparent);
-      --shadow: 0 24px 70px color-mix(in oklch, black 42%, transparent);
-      --space-xs: 0.25rem;
-      --space-sm: 0.5rem;
-      --space-md: 0.75rem;
-      --space-lg: 1rem;
-      --space-xl: 1.5rem;
-      --space-2xl: 2rem;
-      --space-3xl: 3rem;
-      --body: "Aptos", "Segoe UI", system-ui, -apple-system, sans-serif;
-      --display: "Georgia", "Times New Roman", serif;
+     --paper: oklch(91% 0.018 82);
+     --paper-deep: oklch(82% 0.026 78);
+     --ink: oklch(18% 0.02 71);
+     --ink-soft: oklch(36% 0.025 71);
+     --map-veil: oklch(12% 0.023 104);
+     --forest: oklch(45% 0.075 143);
+     --clay: oklch(54% 0.12 43);
+     --ochre: oklch(70% 0.13 78);
+     --warning: oklch(58% 0.17 30);
+     --violet: oklch(58% 0.1 330);
+     --line: color-mix(in oklch, var(--ink) 17%, transparent);
+     --shadow: 0 24px 70px color-mix(in oklch, black 42%, transparent);
+     --space-xs: 0.25rem;
+     --space-sm: 0.5rem;
+     --space-md: 0.75rem;
+     --space-lg: 1rem;
+     --space-xl: 1.5rem;
+     --space-2xl: 2rem;
+     --space-3xl: 3rem;
+     --body: "Aptos", "Segoe UI", system-ui,-apple-system, sans-serif;
+     --display: "Georgia", "Times New Roman", serif;
     }
 
     html {
@@ -56,7 +56,7 @@
 
     body::before {
       content: "";
- position: fixed;
+      position: fixed;
       inset: 0;
       z-index: 1;
       pointer-events: none;
@@ -308,7 +308,7 @@
     }
 
     .chapter-box ul li::before {
-      content: "- ";
+      content: "-";
       color: var(--clay);
       font-weight: 800;
     }
@@ -339,9 +339,9 @@
     .company-name:hover::before {
       content: "\2192";
 
-        /* Arrow */
-        position: absolute;
-      left: -18px;
+      /* Arrow */
+      position: absolute;
+      left:-18px;
       color: var(--ochre);
       font-family: var(--body);
     }
@@ -408,7 +408,7 @@
     #map-panel {
       left: clamp(1rem, 2vw, 1.5rem);
       bottom: clamp(1rem, 2vw, 1.5rem);
-      width: min(22rem, calc(100vw - 2rem));
+      width: min(22rem, calc(100vw-2rem));
       background: color-mix(in oklch, var(--map-veil) 85%, transparent);
       border: 1px solid color-mix(in oklch, var(--paper) 12%, transparent);
       border-radius: 6px;
@@ -439,6 +439,25 @@
       line-height: 1.45;
     }
 
+    #basemap-label {
+      width: fit-content;
+      border: 1px solid color-mix(in oklch, var(--paper) 16%, transparent);
+      border-radius: 3px;
+      padding: 0.24rem 0.44rem;
+      color: color-mix(in oklch, var(--paper) 80%, transparent);
+      font-size: 0.66rem;
+      font-weight: 800;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      transition: background 300ms ease, color 300ms ease, border-color 300ms ease;
+    }
+
+    body.satellite-mode #basemap-label {
+      background: color-mix(in oklch, var(--ochre) 22%, transparent);
+      border-color: color-mix(in oklch, var(--ochre) 52%, transparent);
+      color: var(--paper);
+    }
+
     .progress-track {
       height: 3px;
       background: color-mix(in oklch, var(--paper) 15%, transparent);
@@ -457,7 +476,7 @@
     #legend {
       top: clamp(1rem, 2vw, 1.5rem);
       right: clamp(1rem, 2vw, 1.5rem);
-      width: min(18rem, calc(100vw - 2rem));
+      width: min(18rem, calc(100vw-2rem));
       background: color-mix(in oklch, var(--map-veil) 83%, transparent);
       border-radius: 6px;
       padding: var(--space-lg);
@@ -620,13 +639,14 @@
   <aside id="map-panel" aria-live="polite">
     <div id="chapter-progress">Bagian 1 dari 12</div>
     <div class="progress-track"><span id="progress-fill"></span></div>
+    <div id="basemap-label">Basemap: Dark</div>
     <div id="active-title">Pesta Babi</div>
     <div id="active-caption">Geser ke bawah untuk mengikuti perubahan peta dan bukti utama.</div>
   </aside>
 
   <main id="story">
 
-    <!-- CHAPTER 0: INTRO -->
+    <!--CHAPTER 0: INTRO-->
     <section class="chapter intro" data-chapter="0">
       <div class="chapter-box" data-kicker="PSN Merauke / Papua Selatan">
         <h3>PSN Merauke / Papua Selatan</h3>
@@ -642,9 +662,9 @@
       </div>
     </section>
 
-    <!-- CHAPTER 1: MIFEE 2010 -->
+    <!--CHAPTER 1: MIFEE 2010-->
     <section class="chapter" data-chapter="1">
-      <div class="chapter-box" data-kicker="2010 - Akar masalah">
+      <div class="chapter-box" data-kicker="2010-Akar masalah">
         <h3>2010 &ndash; Akar Masalah</h3>
         <h2>MIFEE Menjadi Pola Awal</h2>
         <p>Merauke pernah menjadi laboratorium food estate. Pada 2010, <span class="highlight">MIFEE</span> diluncurkan
@@ -653,22 +673,22 @@
         </p>
         <div class="data-grid">
           <div class="data-card">
-            <i class="ph ph-buildings" style="font-size: 1.6rem; color: var(--ochre); margin-bottom: -0.2rem;"></i>
+            <i class="ph ph-buildings" style="font-size: 1.6rem; color: var(--ochre); margin-bottom:-0.2rem;"></i>
             <div class="num">38</div>
             <div class="lbl">Perusahaan</div>
           </div>
           <div class="data-card">
-            <i class="ph ph-map-trifold" style="font-size: 1.6rem; color: var(--ochre); margin-bottom: -0.2rem;"></i>
+            <i class="ph ph-map-trifold" style="font-size: 1.6rem; color: var(--ochre); margin-bottom:-0.2rem;"></i>
             <div class="num">1,58 jt</div>
             <div class="lbl">Hektar Izin</div>
           </div>
           <div class="data-card">
-            <i class="ph ph-plant" style="font-size: 1.6rem; color: var(--ochre); margin-bottom: -0.2rem;"></i>
+            <i class="ph ph-plant" style="font-size: 1.6rem; color: var(--ochre); margin-bottom:-0.2rem;"></i>
             <div class="num">18</div>
             <div class="lbl">Perkebunan Tebu</div>
           </div>
           <div class="data-card">
-            <i class="ph ph-frame-corners" style="font-size: 1.6rem; color: var(--ochre); margin-bottom: -0.2rem;"></i>
+            <i class="ph ph-frame-corners" style="font-size: 1.6rem; color: var(--ochre); margin-bottom:-0.2rem;"></i>
             <div class="num">548 rb</div>
             <div class="lbl">Ha Tebu</div>
           </div>
@@ -681,9 +701,9 @@
       </div>
     </section>
 
-    <!-- CHAPTER 2: PSN MERAUKE -->
+    <!--CHAPTER 2: PSN MERAUKE-->
     <section class="chapter" data-chapter="2">
-      <div class="chapter-box" data-kicker="2023 - Eskalasi">
+      <div class="chapter-box" data-kicker="2023-Eskalasi">
         <h3>2023 &ndash; Eskalasi</h3>
         <h2>PSN Merauke Memperbesar Skala</h2>
         <p>Melalui <span class="highlight">Permenko No. 8/2023</span>, pemerintah memasukkan Kawasan Pengembangan Pangan
@@ -710,7 +730,7 @@
       </div>
     </section>
 
-    <!-- CHAPTER 3: 10 COMPANIES -->
+    <!--CHAPTER 3: 10 COMPANIES-->
     <section class="chapter" data-chapter="3">
       <div class="chapter-box" data-kicker="Konsesi perusahaan">
         <h3>Konsesi Perusahaan</h3>
@@ -743,7 +763,7 @@
       </div>
     </section>
 
-    <!-- CHAPTER 4: TUMPANG SUSUN ADAT -->
+    <!--CHAPTER 4: TUMPANG SUSUN ADAT-->
     <section class="chapter" data-chapter="4">
       <div class="chapter-box" data-kicker="Tumpang susun">
         <h3>Tumpang Susun</h3>
@@ -754,22 +774,22 @@
           di wilayah adat Malind.</p>
         <div class="data-grid">
           <div class="data-card">
-            <i class="ph ph-map-pin" style="font-size: 1.6rem; color: var(--ochre); margin-bottom: -0.2rem;"></i>
+            <i class="ph ph-map-pin" style="font-size: 1.6rem; color: var(--ochre); margin-bottom:-0.2rem;"></i>
             <div class="num">694.966</div>
             <div class="lbl">Ha WA Yei (BRWA)</div>
           </div>
           <div class="data-card">
-            <i class="ph ph-intersect" style="font-size: 1.6rem; color: var(--ochre); margin-bottom: -0.2rem;"></i>
+            <i class="ph ph-intersect" style="font-size: 1.6rem; color: var(--ochre); margin-bottom:-0.2rem;"></i>
             <div class="num">316.463</div>
             <div class="lbl">Ha tumpang susun izin</div>
           </div>
           <div class="data-card">
-            <i class="ph ph-users" style="font-size: 1.6rem; color: var(--ochre); margin-bottom: -0.2rem;"></i>
+            <i class="ph ph-users" style="font-size: 1.6rem; color: var(--ochre); margin-bottom:-0.2rem;"></i>
             <div class="num">40.000+</div>
             <div class="lbl">Penduduk asli terdampak</div>
           </div>
           <div class="data-card">
-            <i class="ph ph-house" style="font-size: 1.6rem; color: var(--ochre); margin-bottom: -0.2rem;"></i>
+            <i class="ph ph-house" style="font-size: 1.6rem; color: var(--ochre); margin-bottom:-0.2rem;"></i>
             <div class="num">40</div>
             <div class="lbl">Kampung dalam/sekitar proyek</div>
           </div>
@@ -780,7 +800,7 @@
       </div>
     </section>
 
-    <!-- CHAPTER 5: MILITER & CETAK SAWAH -->
+    <!--CHAPTER 5: MILITER & CETAK SAWAH-->
     <section class="chapter" data-chapter="5">
       <div class="chapter-box" data-kicker="Militerisasi proyek">
         <h3>Militerisasi Proyek</h3>
@@ -799,7 +819,7 @@
       </div>
     </section>
 
-    <!-- CHAPTER 6: ENVIRONMENTAL DESTRUCTION -->
+    <!--CHAPTER 6: ENVIRONMENTAL DESTRUCTION-->
     <section class="chapter" data-chapter="6">
       <div class="chapter-box" data-kicker="Krisis lingkungan">
         <h3>Krisis Lingkungan</h3>
@@ -832,7 +852,7 @@
       </div>
     </section>
 
-    <!-- CHAPTER 7: HUMAN RIGHTS -->
+    <!--CHAPTER 7: HUMAN RIGHTS-->
     <section class="chapter" data-chapter="7">
       <div class="chapter-box" data-kicker="Hak asasi manusia">
         <h3>Pelanggaran HAM</h3>
@@ -854,7 +874,7 @@
       </div>
     </section>
 
-    <!-- CHAPTER 8: BENEFICIAL OWNERSHIP -->
+    <!--CHAPTER 8: BENEFICIAL OWNERSHIP-->
     <section class="chapter" data-chapter="8">
       <div class="chapter-box" data-kicker="Aktor ekonomi">
         <h3>Siapa di Balik Proyek?</h3>
@@ -870,7 +890,7 @@
       </div>
     </section>
 
-    <!-- CHAPTER 9: DEFORESTATION PROGRESSION -->
+    <!--CHAPTER 9: DEFORESTATION PROGRESSION-->
     <section class="chapter" data-chapter="9">
       <div class="chapter-box" data-kicker="Pemantauan deforestasi">
         <h3>Angka Deforestasi</h3>
@@ -879,22 +899,22 @@
           memperlihatkan bahwa proyek ini bukan ancaman abstrak, tetapi proses yang terus berjalan.</p>
         <div class="data-grid">
           <div class="data-card">
-            <i class="ph ph-tree-palm" style="font-size: 1.6rem; color: var(--ochre); margin-bottom: -0.2rem;"></i>
+            <i class="ph ph-tree-palm" style="font-size: 1.6rem; color: var(--ochre); margin-bottom:-0.2rem;"></i>
             <div class="num">4.543</div>
             <div class="lbl">Ha dibongkar di Ilwayab</div>
           </div>
           <div class="data-card">
-            <i class="ph ph-tree" style="font-size: 1.6rem; color: var(--ochre); margin-bottom: -0.2rem;"></i>
+            <i class="ph ph-tree" style="font-size: 1.6rem; color: var(--ochre); margin-bottom:-0.2rem;"></i>
             <div class="num">7.147</div>
             <div class="lbl">Ha dibongkar di Tanah Miring</div>
           </div>
           <div class="data-card">
-            <i class="ph ph-tractor" style="font-size: 1.6rem; color: var(--ochre); margin-bottom: -0.2rem;"></i>
+            <i class="ph ph-tractor" style="font-size: 1.6rem; color: var(--ochre); margin-bottom:-0.2rem;"></i>
             <div class="num">4.912</div>
             <div class="lbl">Ha PT MNM dibongkar (Ags 2025)</div>
           </div>
           <div class="data-card">
-            <i class="ph ph-mountains" style="font-size: 1.6rem; color: var(--ochre); margin-bottom: -0.2rem;"></i>
+            <i class="ph ph-mountains" style="font-size: 1.6rem; color: var(--ochre); margin-bottom:-0.2rem;"></i>
             <div class="num">486.939</div>
             <div class="lbl">Ha hutan dibebaskan</div>
           </div>
@@ -906,9 +926,9 @@
       </div>
     </section>
 
-    <!-- CHAPTER 10: 2025 ESCALATION -->
+    <!--CHAPTER 10: 2025 ESCALATION-->
     <section class="chapter" data-chapter="10">
-      <div class="chapter-box" data-kicker="2025 - Percepatan">
+      <div class="chapter-box" data-kicker="2025-Percepatan">
         <h3>Eskalasi 2025</h3>
         <h2>Percepatan Negara, Perlawanan Warga</h2>
         <p>Pada 2025, proyek tidak melambat. Kebijakan, struktur militer, dan proses hukum bergerak bersamaan:</p>
@@ -930,7 +950,7 @@
       </div>
     </section>
 
-    <!-- CHAPTER 11: REKOMENDASI -->
+    <!--CHAPTER 11: REKOMENDASI-->
     <section class="chapter" data-chapter="11">
       <div class="chapter-box" data-kicker="Rekomendasi">
         <h3>Rekomendasi</h3>
@@ -957,7 +977,7 @@
     const map = new maplibregl.Map({
       container: 'map',
       style: 'https://basemaps.cartocdn.com/gl/dark-matter-gl-style/style.json',
-        center: [140.35, -7.85],
+      center: [140.35,-7.85],
       zoom: 8.5,
       minZoom: 6,
       maxZoom: 15,
@@ -968,11 +988,11 @@
 
     /* ====== LOAD GEOJSON SOURCES & LAYERS ====== */
     const dataFiles = [
-      { id: 'brwa_merauke', file: 'data / brwa_merauke.geojson', type: 'adat' },
-    { id: 'locations', file: 'data / locations.geojson', type: 'point' },
-    { id: 'kspp', file: 'data / kspp.geojson', type: 'polygon' },
-    { id: 'sk_klhk', file: 'data / sk_klhk.geojson', type: 'polygon' },
-    { id: 'road', file: 'data / road.geojson', type: 'line' },
+      { id: 'brwa_merauke', file: 'data/brwa_merauke.geojson', type: 'adat' },
+      { id: 'locations', file: 'data/locations.geojson', type: 'point' },
+      { id: 'kspp', file: 'data/kspp.geojson', type: 'polygon' },
+      { id: 'sk_klhk', file: 'data/sk_klhk.geojson', type: 'polygon' },
+      { id: 'road', file: 'data/road.geojson', type: 'line' },
     ];
 
     const satelliteLayerId = 'satellite-imagery';
@@ -982,7 +1002,7 @@
     const popup = new maplibregl.Popup({ closeButton: false, closeOnClick: false, maxWidth: '280px' });
 
     map.on('load', () => {
-      map.addSource('esri - satellite', {
+      map.addSource('esri-satellite', {
         type: 'raster',
         tiles: [
           'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}'
@@ -994,127 +1014,127 @@
       map.addLayer({
         id: satelliteLayerId,
         type: 'raster',
-        source: 'esri- satellite',
+        source: 'esri-satellite',
         layout: { visibility: 'visible' },
         paint: {
-          'raster- opacity': 0,
-          'raster - saturation': -0.18,
-          'raster - contrast': 0.08,
-          'raster - brightness - min': 0.08,
-          'raster - brightness - max': 0.86,
-          'raster - fade - duration': 500
+          'raster-opacity': 0,
+          'raster-saturation':-0.18,
+          'raster-contrast': 0.08,
+          'raster-brightness-min': 0.08,
+          'raster-brightness-max': 0.86,
+          'raster-fade-duration': 500
         }
       });
 
-    let loaded = 0;
-    dataFiles.forEach(df => {
-      fetch(df.file)
-        .then(r => r.json())
-        .then(data => {
-          map.addSource(df.id, { type: 'geojson', data: data });
+      let loaded = 0;
+      dataFiles.forEach(df => {
+        fetch(df.file)
+          .then(r => r.json())
+          .then(data => {
+            map.addSource(df.id, { type: 'geojson', data: data });
 
-          if (df.type === 'point') {
-        map.addLayer({
-          id: df.id + '-circle',
+            if (df.type === 'point') {
+              map.addLayer({
+                id: df.id + '-circle',
                 source: df.id,
-          type: 'circle',
-          paint: {
-                  'circle- radius': ['match', ['get', 'category'],
+                type: 'circle',
+                paint: {
+                  'circle-radius': ['match', ['get', 'category'],
                     'protest', 8, 'conflict', 9, 'company', 7,
                     'project', 6, 'logistics', 7, 'urban', 10, 6
                   ],
-                  'circle- color': ['match', ['get', 'category'],
+                  'circle-color': ['match', ['get', 'category'],
                     'protest', '#d96c42', 'conflict', '#b84a3a',
                     'company', '#8e3f35', 'project', '#d4a83f',
                     'logistics', '#c9783f', 'urban', '#efe1c5', '#d96c42'
-        ],
-                  'circle - opacity': 0.9,
-                  'circle - stroke - width': 2,
-                  'circle - stroke - color': '#15140f'
+                  ],
+                  'circle-opacity': 0.9,
+                  'circle-stroke-width': 2,
+                  'circle-stroke-color': '#15140f'
                 }
-    });
-    map.addLayer({
-      id: df.id + '-label',
+              });
+              map.addLayer({
+                id: df.id + '-label',
                 source: df.id,
-      type: 'symbol',
-      layout: { 'text- field': ['get', 'name'], 'text- offset': [0, -1.5], 'text - size': 11, 'text - anchor': 'bottom' },
-      paint: { 'text- color': '#f3e4ca', 'text-halo-color': '#12120f', 'text - halo - width': 2 }
+                type: 'symbol',
+                layout: { 'text-field': ['get', 'name'], 'text-offset': [0,-1.5], 'text-size': 11, 'text-anchor': 'bottom' },
+                paint: { 'text-color': '#f3e4ca', 'text-halo-color': '#12120f', 'text-halo-width': 2 }
               });
             } else if (df.type === 'line') {
-      map.addLayer({
-        id: df.id + '-line',
+              map.addLayer({
+                id: df.id + '-line',
                 source: df.id,
-        type: 'line',
-        paint: { 'line- color': '#d4a83f', 'line-width': 3, 'line-dasharray': [4, 2], 'line-opacity': 0.72 }
+                type: 'line',
+                paint: { 'line-color': '#d4a83f', 'line-width': 3, 'line-dasharray': [4, 2], 'line-opacity': 0.72 }
               });
-    } else if (df.type === 'adat') {
-      // BRWA Wilayah Adat - categorized by status
-      map.addLayer({
-        id: 'brwa- fill',
-        source: df.id,
-        type: 'fill',
-        paint: {
-                  'fill- color': ['match', ['get', 'status'],
+            } else if (df.type === 'adat') {
+              // BRWA Wilayah Adat-categorized by status
+              map.addLayer({
+                id: 'brwa-fill',
+                source: df.id,
+                type: 'fill',
+                paint: {
+                  'fill-color': ['match', ['get', 'status'],
                     'Teregistrasi', '#6ea36b',
                     'Terverifikasi', '#d4a83f',
                     'Tercatat Baru', '#b9784c',
                     '#6ea36b'
-      ],
-                  'fill - opacity': ['match', ['get', 'status'],
+                  ],
+                  'fill-opacity': ['match', ['get', 'status'],
                     'Teregistrasi', 0.18,
                     'Terverifikasi', 0.22,
                     'Tercatat Baru', 0.10,
-        0.12
-      ],
+                    0.12
+                  ],
                 }
               });
-    map.addLayer({
-      id: 'brwa- outline',
-      source: df.id,
-      type: 'line',
-      paint: {
-                  'line- color': ['match', ['get', 'status'],
+              map.addLayer({
+                id: 'brwa-outline',
+                source: df.id,
+                type: 'line',
+                paint: {
+                  'line-color': ['match', ['get', 'status'],
                     'Teregistrasi', '#8fb879',
                     'Terverifikasi', '#d4a83f',
                     'Tercatat Baru', '#b9784c',
                     '#8fb879'
-    ],
-                  'line - width': ['match', ['get', 'status'],
+                  ],
+                  'line-width': ['match', ['get', 'status'],
                     'Teregistrasi', 2,
                     'Terverifikasi', 2.5,
                     'Tercatat Baru', 1,
-      1.5
-    ],
-                  'line - opacity': 0.6,
+                    1.5
+                  ],
+                  'line-opacity': 0.6,
                 }
               });
-    // BRWA labels
-    map.addLayer({
-      id: 'brwa- label',
-      source: df.id,
-      type: 'symbol',
-      layout: {
-                  'text- field': ['get', 'nama'], 'text - size': 10, 'text - anchor': 'center',
-                  'text - offset': [0, 0], 'text - allow - overlap': false
+              // BRWA labels
+              map.addLayer({
+                id: 'brwa-label',
+                source: df.id,
+                type: 'symbol',
+                layout: {
+                  'text-field': ['get', 'nama'], 'text-size': 10, 'text-anchor': 'center',
+                  'text-offset': [0, 0], 'text-allow-overlap': false
                 },
-      paint: {
-                  'text- color': '#d7c9a8', 'text-halo-color': '#12120f', 'text - halo - width': 1.5,
-                  'text - opacity': 0.7
+                paint: {
+                  'text-color': '#d7c9a8', 'text-halo-color': '#12120f', 'text-halo-width': 1.5,
+                  'text-opacity': 0.7
                 }
               });
 
-    // Hover effect
-    map.on('mousemove', 'brwa - fill', (e) => {
-      if (e.features.length > 0) {
-        const p = e.features[0].properties;
-        map.getCanvas().style.cursor = 'pointer';
-        popup.setLngLat(e.lngLat)
-          .setHTML(`<strong>${p.nama}</strong><br>
+              // Hover effect
+              map.on('mousemove', 'brwa-fill', (e) => {
+                if (e.features.length > 0) {
+                  const p = e.features[0].properties;
+                  map.getCanvas().style.cursor = 'pointer';
+                  popup.setLngLat(e.lngLat)
+                    .setHTML(`<strong>${p.nama}</strong><br>
                   <small>Suku: ${p.suku || '-'}<br>
                   Luas: ${Number(p.luas_ha).toLocaleString('id')} ha<br>
                   Status: ${p.status}<br>
                   ${p.kecamatan ? 'Kec: ' + p.kecamatan : ''}<br>
-                  ${ p.populasi ? 'Populasi: ' + p.populasi + ' jiwa' : ''}</small > `)
+                  ${p.populasi ? 'Populasi: ' + p.populasi + ' jiwa' : ''}</small > `)
                     .addTo(map);
                 }
               });
@@ -1150,7 +1170,7 @@
             if (loaded === dataFiles.length) {
               layersReady = true;
               const pendingChapter = currentChapter >= 0 ? currentChapter : 0;
-              currentChapter = -1;
+              currentChapter =-1;
               updateChapter(pendingChapter);
             }
           })
@@ -1164,6 +1184,7 @@
     const activeCaption = document.getElementById('active-caption');
     const chapterProgress = document.getElementById('chapter-progress');
     const progressFill = document.getElementById('progress-fill');
+    const basemapLabel = document.getElementById('basemap-label');
     const legendItems = document.getElementById('legend-items');
     const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
@@ -1252,25 +1273,26 @@
     ];
 
     const chapterData = [
-      { center: [140.35, -7.85], zoom: 8.0, pitch: 0, bearing: 0 },
-      { center: [140.30, -8.20], zoom: 9.0, pitch: 30, bearing: -10 },
-      { center: [140.35, -7.85], zoom: 8.2, pitch: 40, bearing: -5 },
-      { center: [140.50, -8.00], zoom: 9.0, pitch: 35, bearing: -15 },
-      { center: [140.60, -7.60], zoom: 9.5, pitch: 50, bearing: -20 },
-      { center: [140.15, -7.30], zoom: 10, pitch: 55, bearing: -10 },
-      { center: [140.30, -7.60], zoom: 9.0, pitch: 40, bearing: -5 },
-      { center: [140.55, -7.40], zoom: 9.0, pitch: 35, bearing: 0 },
-      { center: [140.45, -7.80], zoom: 8.5, pitch: 20, bearing: 0 },
-      { center: [140.40, -7.70], zoom: 8.5, pitch: 30, bearing: 0 },
-      { center: [140.45, -7.50], zoom: 8.0, pitch: 25, bearing: 0 },
-      { center: [140.35, -7.85], zoom: 7.5, pitch: 0, bearing: 0 },
+      { center: [140.35,-7.85], zoom: 8.0, pitch: 0, bearing: 0 },
+      { center: [140.30,-8.20], zoom: 9.0, pitch: 30, bearing:-10 },
+      { center: [140.35,-7.85], zoom: 8.2, pitch: 40, bearing:-5 },
+      { center: [140.50,-8.00], zoom: 9.0, pitch: 35, bearing:-15 },
+      { center: [140.60,-7.60], zoom: 9.5, pitch: 50, bearing:-20 },
+      { center: [140.15,-7.30], zoom: 10, pitch: 55, bearing:-10 },
+      { center: [140.30,-7.60], zoom: 9.0, pitch: 40, bearing:-5 },
+      { center: [140.55,-7.40], zoom: 9.0, pitch: 35, bearing: 0 },
+      { center: [140.45,-7.80], zoom: 8.5, pitch: 20, bearing: 0 },
+      { center: [140.40,-7.70], zoom: 8.5, pitch: 30, bearing: 0 },
+      { center: [140.45,-7.50], zoom: 8.0, pitch: 25, bearing: 0 },
+      { center: [140.35,-7.85], zoom: 7.5, pitch: 0, bearing: 0 },
     ];
 
-    let currentChapter = -1;
+    let currentChapter =-1;
 
     function setBasemap(mode) {
       const satelliteOn = mode === 'satellite';
       document.body.classList.toggle('satellite-mode', satelliteOn);
+      basemapLabel.textContent = `Basemap: ${satelliteOn ? 'Satellite' : 'Dark'}`;
 
       if (map.getLayer(satelliteLayerId)) {
         map.setPaintProperty(satelliteLayerId, 'raster-opacity', satelliteOn ? 0.74 : 0);
@@ -1286,8 +1308,8 @@
       chapters.forEach(ch => ch.classList.toggle('active', parseInt(ch.dataset.chapter) === idx));
       activeTitle.textContent = meta.title;
       activeCaption.textContent = meta.caption;
-      chapterProgress.textContent = `Bagian ${ idx + 1} dari ${ chapterData.length } `;
-      progressFill.style.width = `${ ((idx + 1) / chapterData.length) * 100 }%`;
+      chapterProgress.textContent = `Bagian ${idx + 1} dari ${chapterData.length} `;
+      progressFill.style.width = `${((idx + 1) / chapterData.length) * 100}%`;
       legendItems.innerHTML = meta.legend.map(key => layerLegend[key]).join('');
       setBasemap(meta.basemap);
 
@@ -1317,12 +1339,12 @@
             if (map.getLayer(lid)) map.setLayoutProperty(lid, 'visibility', 'visible');
           });
           break;
-        case 1: // MIFEE - show BRWA adat
+        case 1: // MIFEE-show BRWA adat
           ['brwa-fill', 'brwa-outline', 'locations-circle', 'locations-label'].forEach(lid => {
             if (map.getLayer(lid)) map.setLayoutProperty(lid, 'visibility', 'visible');
           });
           break;
-        case 2: // PSN projects - show KSPP
+        case 2: // PSN projects-show KSPP
           ['kspp-fill', 'kspp-outline', 'locations-circle', 'locations-label', 'road-line'].forEach(lid => {
             if (map.getLayer(lid)) map.setLayoutProperty(lid, 'visibility', 'visible');
           });
@@ -1332,7 +1354,7 @@
             if (map.getLayer(lid)) map.setLayoutProperty(lid, 'visibility', 'visible');
           });
           break;
-        case 4: // adat overlap - BRWA + KSPP
+        case 4: // adat overlap-BRWA + KSPP
           ['brwa-fill', 'brwa-outline', 'brwa-label', 'kspp-fill', 'kspp-outline', 'locations-circle', 'locations-label'].forEach(lid => {
             if (map.getLayer(lid)) map.setLayoutProperty(lid, 'visibility', 'visible');
           });
@@ -1393,7 +1415,7 @@
     // Chart.js Setup
     const ctx = document.getElementById('psnChart').getContext('2d');
     Chart.defaults.color = 'oklch(72% 0.025 71)';
-    Chart.defaults.font.family = '"Aptos", "Segoe UI", system-ui, -apple-system, sans-serif';
+    Chart.defaults.font.family = '"Aptos", "Segoe UI", system-ui,-apple-system, sans-serif';
 
     new Chart(ctx, {
       type: 'bar',
