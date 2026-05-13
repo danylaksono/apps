@@ -1,8 +1,13 @@
 import * as duckdb from 'https://cdn.jsdelivr.net/npm/@duckdb/duckdb-wasm@1.29.0/+esm';
+import { MapViewer } from './map.js';
+import { AttributeTable } from './table.js';
 
 let db = null;
 let allResults = [];   // [{laCode, rows, columns}]
 let files = new Map(); // name → File
+
+let mapViewer = null;
+let tableViewer = null;
 
 // DOM refs
 const dropZone = document.getElementById('drop-zone');
@@ -20,6 +25,32 @@ const resultsSection = document.getElementById('results-section');
 const laBlocksEl = document.getElementById('la-blocks');
 const resultsCount = document.getElementById('results-count');
 const emptyState = document.getElementById('empty-state');
+const viewTabs = document.getElementById('view-tabs');
+const mapLayerSelect = document.getElementById('map-layer-select');
+
+// Tab logic
+document.querySelectorAll('.tab-btn').forEach(btn => {
+  btn.addEventListener('click', (e) => {
+    document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+    document.querySelectorAll('.tab-content').forEach(c => {
+      c.classList.remove('active');
+      c.style.display = 'none';
+    });
+    
+    e.target.classList.add('active');
+    const targetId = e.target.getAttribute('data-tab');
+    const targetEl = document.getElementById(targetId);
+    if (targetEl) {
+      targetEl.classList.add('active');
+      targetEl.style.display = 'block';
+    }
+    
+    // resize maplibre if hidden
+    if (targetId === 'map-tab' && mapViewer) {
+      setTimeout(() => mapViewer.resize(), 50);
+    }
+  });
+});
 
 async function initDuckDB() {
   const JSDELIVR_BUNDLES = duckdb.getJsDelivrBundles();
@@ -75,9 +106,14 @@ clearBtn.addEventListener('click', () => {
   allResults = [];
   renderFilePills();
   laBlocksEl.innerHTML = '';
-  resultsSection.style.display = 'none';
+  document.getElementById('stats-tab').style.display = 'none';
+  viewTabs.style.display = 'none';
   emptyState.classList.remove('visible');
   csvBtn.disabled = true;
+  if (mapViewer) mapViewer.updateData({type: 'FeatureCollection', features: []}, null);
+  if (tableViewer) tableViewer.render([], [], null);
+  // switch back to stats tab
+  document.querySelector('[data-tab="stats-tab"]').click();
   updateButtons();
 });
 
@@ -140,9 +176,11 @@ async function runAnalysis() {
   setTimeout(() => progressW.classList.remove('visible'), 600);
 
   if (allResults.length) {
-    resultsSection.style.display = 'block';
+    document.getElementById('stats-tab').style.display = 'block';
+    viewTabs.style.display = 'flex';
     resultsCount.textContent = `${allResults.length} file${allResults.length > 1 ? 's' : ''} · ${allResults.reduce((s, r) => s + r.rows.length, 0)} columns`;
     csvBtn.disabled = false;
+    populateMapSelect();
     toast('Analysis complete ✓');
   } else {
     emptyState.classList.add('visible');
@@ -446,3 +484,321 @@ function toast(msg, err = false) {
     log('Failed to initialise DuckDB: ' + e.message, 'err');
   }
 })();
+
+// Extract the first [lon, lat] coordinate from any GeoJSON geometry for CRS sniffing
+function getFirstCoord(geom) {
+  if (!geom || !geom.coordinates) return null;
+  let c = geom.coordinates;
+  while (Array.isArray(c[0])) c = c[0];
+  return c;
+}
+
+// Pure-JS WKB → GeoJSON decoder (no external library needed)
+// Supports: Point, LineString, Polygon, Multi* in LE/BE byte order
+function wkbToGeoJSON(raw) {
+  // raw may be Uint8Array, ArrayBuffer, or hex string
+  let bytes;
+  if (typeof raw === 'string') {
+    // hex string
+    const hex = raw.startsWith('\\x') ? raw.slice(2) : raw;
+    bytes = new Uint8Array(hex.match(/.{1,2}/g).map(b => parseInt(b, 16)));
+  } else if (raw instanceof Uint8Array) {
+    bytes = raw;
+  } else {
+    bytes = new Uint8Array(raw);
+  }
+
+  const view = new DataView(bytes.buffer, bytes.byteOffset);
+  let pos = 0;
+
+  function readUint8() { return view.getUint8(pos++); }
+  function readUint32(le) { const v = view.getUint32(pos, le); pos += 4; return v; }
+  function readFloat64(le) { const v = view.getFloat64(pos, le); pos += 8; return v; }
+
+  function readGeom() {
+    const le = readUint8() === 1; // byte order: 1=LE, 0=BE
+    const type = readUint32(le) & 0xFFFF; // mask off EWKB flags
+    switch (type) {
+      case 1: return { type: 'Point', coordinates: readPoint(le) };
+      case 2: return { type: 'LineString', coordinates: readPoints(le) };
+      case 3: return { type: 'Polygon', coordinates: readRings(le) };
+      case 4: return { type: 'MultiPoint', coordinates: readGeoms(le).map(g => g.coordinates) };
+      case 5: return { type: 'MultiLineString', coordinates: readGeoms(le).map(g => g.coordinates) };
+      case 6: return { type: 'MultiPolygon', coordinates: readGeoms(le).map(g => g.coordinates) };
+      default: throw new Error(`Unsupported WKB type: ${type}`);
+    }
+  }
+
+  function readPoint(le) { return [readFloat64(le), readFloat64(le)]; }
+  function readPoints(le) { const n = readUint32(le); return Array.from({length: n}, () => readPoint(le)); }
+  function readRings(le) { const n = readUint32(le); return Array.from({length: n}, () => readPoints(le)); }
+  function readGeoms(le) { const n = readUint32(le); return Array.from({length: n}, () => readGeom()); }
+
+  return readGeom();
+}
+
+
+function populateMapSelect() {
+  mapLayerSelect.innerHTML = allResults.map(r => `<option value="${r.laCode}">${r.laCode}</option>`).join('');
+  mapLayerSelect.onchange = (e) => loadMapData(e.target.value);
+  
+  if (allResults.length > 0) {
+    loadMapData(allResults[0].laCode);
+  }
+}
+
+async function loadMapData(laCode) {
+  if (!mapViewer) {
+    mapViewer = new MapViewer('map-container', 'map-tooltip');
+    tableViewer = new AttributeTable('tanstack-table-container', 'table-toolbar', 'table-pagination');
+    initSplitHandle();
+  }
+
+  const result = allResults.find(r => r.laCode === laCode);
+  const file = [...files.values()].find(f => f.name.replace(/\.parquet$/i, '') === laCode);
+  if (!file || !result) return;
+
+  log(`Loading spatial data for ${laCode}...`, 'info');
+  const safeName = file.name.replace(/'/g, "''");
+  
+  const conn = await db.connect();
+  try {
+    // Register EPSG:27700 with proj4 for client-side fallback
+    if (window.proj4 && !window.proj4.defs('EPSG:27700')) {
+      window.proj4.defs('EPSG:27700', '+proj=tmerc +lat_0=49 +lon_0=-2 +k=0.9996012717 +x_0=400000 +y_0=-100000 +ellps=airy +towgs84=446.448,-125.157,542.06,0.15,0.247,0.842,-20.489 +units=m +no_defs');
+    }
+
+    // Load spatial extension
+    let useSpatial = false;
+    try {
+      await conn.query('INSTALL spatial; LOAD spatial;');
+      useSpatial = true;
+    } catch(e) {
+      console.warn('Spatial extension failed, using wkx fallback');
+    }
+
+    const schemaRes = await conn.query(`DESCRIBE SELECT * FROM read_parquet('${safeName}')`);
+    const schema = schemaRes.toArray();
+
+    // Detect geometry column by name or type
+    const geomField = schema.find(s =>
+      /geometry|wkb_geometry|geom/i.test(s.column_name) ||
+      /^(WKB|BLOB|GEOMETRY)$/i.test(s.column_type)
+    );
+    const geomCol = geomField ? geomField.column_name : 'geometry';
+    const geomQ = `"${geomCol}"`;
+
+    // ── Coordinate transformer (client-side proj4 fallback) ────────────────
+    const transformCoords = (coords) => {
+      if (typeof coords[0] === 'number') {
+        if (coords[0] > 180 || coords[1] > 90 || coords[0] < -180 || coords[1] < -90) {
+          if (window.proj4) {
+            const p = window.proj4('EPSG:27700', 'EPSG:4326', [coords[0], coords[1]]);
+            return [p[0], p[1]];
+          }
+        }
+        return coords;
+      }
+      return coords.map(transformCoords);
+    };
+
+    // ── Build query ─────────────────────────────────────────────────────────
+    // When spatial extension is loaded, DuckDB auto-promotes GeoParquet geometry
+    // columns to GEOMETRY type. ST_GeomFromWKB only works on BLOB/WKB_BLOB.
+    // We must detect the actual type and wrap accordingly.
+    const geomType = (geomField?.column_type || '').toUpperCase();
+    const isBlob = /^(BLOB|WKB_BLOB|WKB)$/.test(geomType);
+    // geomExpr: how to reference the geometry in spatial function calls
+    const geomExpr = (useSpatial && isBlob) ? `ST_GeomFromWKB(${geomQ})` : geomQ;
+
+    let q;
+    let usedTransform = false;
+
+    if (useSpatial) {
+      // 1. Probe one row to detect CRS by sniffing coordinate range
+      let needs27700 = false;
+      try {
+        const probeQ = `SELECT ST_AsGeoJSON(${geomExpr}) AS _g
+                        FROM read_parquet('${safeName}')
+                        WHERE ${geomQ} IS NOT NULL LIMIT 1`;
+        const probeRes = await conn.query(probeQ);
+        const probeRow = probeRes.toArray()[0];
+        if (probeRow && probeRow._g) {
+          const probeGeom = JSON.parse(probeRow._g);
+          const fc = getFirstCoord(probeGeom);
+          // Coords outside WGS84 bounds → projected CRS (e.g. EPSG:27700)
+          if (fc && (Math.abs(fc[0]) > 180 || Math.abs(fc[1]) > 90)) {
+            needs27700 = true;
+          }
+        }
+      } catch(e) {
+        console.warn('Geometry probe failed:', e.message);
+      }
+
+      if (needs27700) {
+        try {
+          q = `SELECT ST_AsGeoJSON(ST_Transform(${geomExpr}, 'EPSG:27700', 'EPSG:4326', always_xy => true)) AS _geojson,
+                      * EXCLUDE (${geomQ})
+               FROM read_parquet('${safeName}')`;
+          await conn.query(q + ' LIMIT 1'); // validate
+          usedTransform = true;
+          log('Detected EPSG:27700 — reprojecting to WGS84 via ST_Transform', 'info');
+        } catch(e) {
+          console.warn('ST_Transform failed, falling back to client-side proj4:', e.message);
+          q = null;
+        }
+      }
+
+      if (!q) {
+        q = `SELECT ST_AsGeoJSON(${geomExpr}) AS _geojson,
+                    * EXCLUDE (${geomQ})
+             FROM read_parquet('${safeName}')`;
+      }
+    } else {
+      // No spatial extension — fetch raw bytes, decode WKB in JS
+      q = `SELECT * FROM read_parquet('${safeName}')`;
+    }
+
+
+    // ── Execute & build features ────────────────────────────────────────────
+    const res = await conn.query(q);
+    const arrowRows = res.toArray();
+
+    const features = [];
+    const propsList = [];
+
+    for (const r of arrowRows) {
+      const obj = r.toJSON();
+      let geom = null;
+
+      if (useSpatial && obj._geojson) {
+        try {
+          geom = JSON.parse(obj._geojson);
+        } catch(_) {}
+        delete obj._geojson;
+        // Apply client-side reproject only when ST_Transform wasn't used
+        if (!usedTransform && geom && geom.coordinates && window.proj4) {
+          try { geom.coordinates = transformCoords(geom.coordinates); } catch(_) {}
+        }
+      } else if (!useSpatial && obj[geomCol]) {
+        // Decode raw WKB bytes → GeoJSON using pure JS (no wkx needed)
+        try {
+          geom = wkbToGeoJSON(obj[geomCol]);
+          if (geom && geom.coordinates && window.proj4) {
+            try { geom.coordinates = transformCoords(geom.coordinates); } catch(_) {}
+          }
+        } catch(e) { console.warn('WKB decode failed:', e.message); }
+        delete obj[geomCol];
+      }
+
+      if (!geom || !geom.coordinates) continue;
+
+      features.push({ type: 'Feature', geometry: geom, properties: obj });
+      propsList.push(obj);
+    }
+
+    const geojson = { type: 'FeatureCollection', features };
+    const columns = Object.keys(propsList[0] || {}).filter(c => c !== geomCol && c !== '_geojson');
+
+    if (features.length === 0) {
+      log('Warning: 0 valid geometries found — check geometry column / CRS', 'err');
+    } else {
+      log(`Loaded ${features.length} features for ${laCode}`, 'ok');
+    }
+
+    mapViewer.updateData(geojson, (hoveredProps) => {
+      tableViewer.highlightRow(hoveredProps);
+    });
+
+    tableViewer.render(propsList, columns, (hoveredProps) => {
+      mapViewer.highlightFeature(hoveredProps);
+    });
+
+    log(`Spatial data loaded for ${laCode}`, 'ok');
+  } catch(e) {
+    log(`Failed to load spatial data: ${e.message}`, 'err');
+    console.error('loadMapData error:', e);
+  } finally {
+    await conn.close();
+  }
+}
+
+// ── Resizable split handle ──────────────────────────────────────────────────
+function initSplitHandle() {
+  const layout = document.getElementById('map-table-layout');
+  const handle = document.getElementById('split-handle');
+  const mapPane = document.getElementById('map-pane');
+  const tablePane = document.getElementById('table-pane');
+  if (!layout || !handle || !mapPane || !tablePane) return;
+
+  let dragging = false;
+  let startY = 0;
+  let startMapH = 0;
+  let startTableH = 0;
+
+  handle.addEventListener('mousedown', (e) => {
+    e.preventDefault();
+    dragging = true;
+    startY = e.clientY;
+    startMapH = mapPane.getBoundingClientRect().height;
+    startTableH = tablePane.getBoundingClientRect().height;
+    handle.classList.add('active');
+    document.body.style.cursor = 'row-resize';
+    document.body.style.userSelect = 'none';
+  });
+
+  document.addEventListener('mousemove', (e) => {
+    if (!dragging) return;
+    const dy = e.clientY - startY;
+    const total = startMapH + startTableH;
+    const minH = 100;
+    let newMapH = Math.max(minH, Math.min(total - minH, startMapH + dy));
+    let newTableH = total - newMapH;
+
+    mapPane.style.flex = `0 0 ${newMapH}px`;
+    tablePane.style.flex = `0 0 ${newTableH}px`;
+
+    if (mapViewer) mapViewer.resize();
+  });
+
+  document.addEventListener('mouseup', () => {
+    if (!dragging) return;
+    dragging = false;
+    handle.classList.remove('active');
+    document.body.style.cursor = '';
+    document.body.style.userSelect = '';
+    if (mapViewer) mapViewer.resize();
+  });
+
+  // Touch support
+  handle.addEventListener('touchstart', (e) => {
+    const t = e.touches[0];
+    dragging = true;
+    startY = t.clientY;
+    startMapH = mapPane.getBoundingClientRect().height;
+    startTableH = tablePane.getBoundingClientRect().height;
+    handle.classList.add('active');
+  }, { passive: true });
+
+  document.addEventListener('touchmove', (e) => {
+    if (!dragging) return;
+    const t = e.touches[0];
+    const dy = t.clientY - startY;
+    const total = startMapH + startTableH;
+    const minH = 100;
+    let newMapH = Math.max(minH, Math.min(total - minH, startMapH + dy));
+    let newTableH = total - newMapH;
+
+    mapPane.style.flex = `0 0 ${newMapH}px`;
+    tablePane.style.flex = `0 0 ${newTableH}px`;
+
+    if (mapViewer) mapViewer.resize();
+  }, { passive: true });
+
+  document.addEventListener('touchend', () => {
+    if (!dragging) return;
+    dragging = false;
+    handle.classList.remove('active');
+    if (mapViewer) mapViewer.resize();
+  });
+}

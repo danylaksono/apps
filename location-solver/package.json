@@ -1,0 +1,31 @@
+{
+  "name": "location-solver",
+  "version": "0.1.0",
+  "description": "Facility location solver plugin for MapLibre GL JS using p-median / Teitz-Bart heuristic",
+  "type": "module",
+  "main": "./index.js",
+  "files": [
+    "index.js",
+    "src/"
+  ],
+  "scripts": {
+    "dev": "serve . -l 3000",
+    "lint": "eslint src/ index.js demo/",
+    "format": "prettier --write '**/*.{js,css,html}'"
+  },
+  "peerDependencies": {
+    "maplibre-gl": "^3.0.0 || ^4.0.0 || ^5.0.0"
+  },
+  "keywords": [
+    "maplibre",
+    "facility-location",
+    "p-median",
+    "location-solver",
+    "optimization",
+    "geospatial"
+  ],
+  "license": "MIT",
+  "devDependencies": {
+    "serve": "^14.2.1"
+  }
+}

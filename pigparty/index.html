@@ -1,0 +1,1450 @@
+<!DOCTYPE html>
+<html lang="id">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Pesta Babi - PSN Merauke | Scrollytelling Map</title>
+  <script src="https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.js"></script>
+  <link href="https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.css" rel="stylesheet">
+  <!-- Phosphor Icons -->
+  <script src="https://unpkg.com/@phosphor-icons/web"></script>
+  <!-- Chart.js -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    :root {
+      color-scheme: dark;
+      --paper: oklch(91% 0.018 82);
+      --paper-deep: oklch(82% 0.026 78);
+      --ink: oklch(18% 0.02 71);
+      --ink-soft: oklch(36% 0.025 71);
+      --map-veil: oklch(12% 0.023 104);
+      --forest: oklch(45% 0.075 143);
+      --clay: oklch(54% 0.12 43);
+      --ochre: oklch(70% 0.13 78);
+      --warning: oklch(58% 0.17 30);
+      --violet: oklch(58% 0.1 330);
+      --line: color-mix(in oklch, var(--ink) 17%, transparent);
+      --shadow: 0 24px 70px color-mix(in oklch, black 42%, transparent);
+      --space-xs: 0.25rem;
+      --space-sm: 0.5rem;
+      --space-md: 0.75rem;
+      --space-lg: 1rem;
+      --space-xl: 1.5rem;
+      --space-2xl: 2rem;
+      --space-3xl: 3rem;
+      --body: "Aptos", "Segoe UI", system-ui, -apple-system, sans-serif;
+      --display: "Georgia", "Times New Roman", serif;
+    }
+
+    html {
+      scroll-behavior: smooth;
+    }
+
+    body {
+      font-family: var(--body);
+      background: var(--map-veil);
+      color: var(--paper);
+      overflow-x: hidden;
+    }
+
+    body::before {
+      content: "";
+ position: fixed;
+      inset: 0;
+      z-index: 1;
+      pointer-events: none;
+      background:
+        linear-gradient(90deg, color-mix(in oklch, black 52%, transparent) 0 38%, transparent 62%),
+        radial-gradient(circle at 78% 16%, color-mix(in oklch, var(--ochre) 16%, transparent), transparent 32%),
+        linear-gradient(180deg, color-mix(in oklch, black 24%, transparent), transparent 28%, color-mix(in oklch, black 30%, transparent));
+      mix-blend-mode: multiply;
+    }
+
+    body.satellite-mode::before {
+      background:
+        linear-gradient(90deg, color-mix(in oklch, black 64%, transparent) 0 34%, transparent 64%),
+        radial-gradient(circle at 78% 16%, color-mix(in oklch, var(--ochre) 12%, transparent), transparent 30%),
+        linear-gradient(180deg, color-mix(in oklch, black 18%, transparent), transparent 32%, color-mix(in oklch, black 38%, transparent));
+      mix-blend-mode: normal;
+    }
+
+    a {
+      color: inherit;
+    }
+
+    #map {
+      position: fixed;
+      inset: 0;
+      width: 100vw;
+      height: 100vh;
+      z-index: 0;
+      background: var(--map-veil);
+    }
+
+    #map::after {
+      content: "";
+      position: absolute;
+      inset: 0;
+      pointer-events: none;
+      background: linear-gradient(90deg, color-mix(in oklch, black 18%, transparent), transparent 45%);
+      transition: background 500ms ease;
+    }
+
+    body.satellite-mode #map::after {
+      background:
+        linear-gradient(90deg, color-mix(in oklch, black 40%, transparent), transparent 44%),
+        linear-gradient(180deg, color-mix(in oklch, black 14%, transparent), transparent 48%, color-mix(in oklch, black 24%, transparent));
+    }
+
+    .skip-link {
+      position: fixed;
+      top: var(--space-lg);
+      left: var(--space-lg);
+      z-index: 10;
+      transform: translateY(-160%);
+      background: var(--paper);
+      color: var(--ink);
+      padding: var(--space-sm) var(--space-md);
+      border-radius: 4px;
+      font-weight: 700;
+    }
+
+    .skip-link:focus {
+      transform: translateY(0);
+      outline: 3px solid var(--ochre);
+      outline-offset: 3px;
+    }
+
+    #story {
+      position: relative;
+      z-index: 2;
+      width: 100%;
+      pointer-events: none;
+    }
+
+    .chapter {
+      pointer-events: auto;
+      min-height: 108vh;
+      display: grid;
+      align-items: center;
+      padding: clamp(4rem, 10vh, 7rem) clamp(1rem, 5vw, 5rem);
+    }
+
+    .chapter:nth-child(4n + 2),
+    .chapter:nth-child(4n + 3) {
+      align-items: end;
+    }
+
+    .chapter-box {
+      width: min(100%, 31rem);
+      background: color-mix(in oklch, var(--paper) 94%, transparent);
+      color: var(--ink);
+      border: 1px solid color-mix(in oklch, var(--paper-deep) 72%, transparent);
+      border-radius: 6px;
+      padding: clamp(1.25rem, 2.2vw, 2rem);
+      box-shadow: var(--shadow);
+      display: grid;
+      gap: var(--space-md);
+      opacity: 0.56;
+      transform: translateY(24px) scale(0.985);
+      transition: opacity 500ms ease, transform 500ms ease;
+    }
+
+    .chapter.active .chapter-box {
+      opacity: 1;
+      transform: translateY(0) scale(1);
+    }
+
+    .chapter-box::before {
+      content: attr(data-kicker);
+      display: block;
+      width: fit-content;
+      max-width: 100%;
+      background: color-mix(in oklch, var(--ink) 90%, transparent);
+      color: var(--paper);
+      padding: 0.28rem 0.48rem;
+      border-radius: 3px;
+      font-size: 0.68rem;
+      font-weight: 800;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+    }
+
+    .chapter-box h2 {
+      font-family: var(--display);
+      font-size: clamp(1.55rem, 3.2vw, 2.35rem);
+      font-weight: 700;
+      line-height: 1.03;
+      letter-spacing: 0;
+      color: var(--ink);
+    }
+
+    .chapter-box h3 {
+      display: none;
+    }
+
+    .chapter-box p,
+    .chapter-box li {
+      font-size: 0.98rem;
+      line-height: 1.62;
+      color: var(--ink-soft);
+    }
+
+    .chapter-box strong {
+      color: var(--ink);
+      font-weight: 800;
+    }
+
+    .chapter-box .dek {
+      font-size: 1.05rem;
+      line-height: 1.55;
+      color: var(--ink);
+    }
+
+    .chapter-box .stat {
+      display: block;
+      font-family: var(--display);
+      font-size: clamp(2rem, 6vw, 3.6rem);
+      font-weight: 700;
+      color: var(--clay);
+      line-height: 0.94;
+      letter-spacing: 0;
+    }
+
+    .chapter-box .stat-label {
+      display: block;
+      max-width: 24ch;
+      font-size: 0.76rem;
+      color: var(--ink-soft);
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      font-weight: 800;
+    }
+
+    .chapter-box .quote {
+      margin-top: var(--space-sm);
+      padding: var(--space-lg);
+      border: 1px solid color-mix(in oklch, var(--clay) 30%, var(--paper-deep));
+      border-radius: 4px;
+      background: color-mix(in oklch, var(--clay) 8%, var(--paper));
+      font-family: var(--display);
+      font-style: italic;
+      color: var(--ink);
+      font-size: 1.08rem;
+      line-height: 1.45;
+    }
+
+    .chapter-box .highlight {
+      color: var(--ink);
+      background: color-mix(in oklch, var(--ochre) 32%, transparent);
+      padding: 0.08em 0.25em;
+      border-radius: 3px;
+      box-decoration-break: clone;
+    }
+
+    .chapter-box img {
+      width: 100%;
+      display: block;
+      border-radius: 3px;
+      margin: var(--space-sm) 0 0;
+      border: 1px solid var(--line);
+      filter: saturate(0.82) contrast(1.04);
+    }
+
+    .chapter-box .img-caption {
+      font-size: 0.76rem;
+      line-height: 1.45;
+      color: color-mix(in oklch, var(--ink-soft) 82%, var(--ink));
+    }
+
+    .data-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(8.6rem, 1fr));
+      gap: var(--space-sm);
+      margin: var(--space-xs) 0;
+    }
+
+    .data-card {
+      min-height: 6.6rem;
+      border: 1px solid var(--line);
+      border-radius: 5px;
+      padding: var(--space-md);
+      display: grid;
+      align-content: space-between;
+      gap: var(--space-sm);
+      background: color-mix(in oklch, var(--paper-deep) 30%, transparent);
+    }
+
+    .data-card .num {
+      font-family: var(--display);
+      font-size: 1.72rem;
+      font-weight: 700;
+      line-height: 0.95;
+      color: var(--clay);
+    }
+
+    .data-card .lbl {
+      font-size: 0.76rem;
+      line-height: 1.25;
+      color: var(--ink-soft);
+    }
+
+    .chapter-box ul {
+      list-style: none;
+      display: grid;
+      gap: var(--space-sm);
+    }
+
+    .chapter-box ul li {
+      border-top: 1px solid var(--line);
+      padding-top: var(--space-sm);
+    }
+
+    .chapter-box ul li::before {
+      content: "- ";
+      color: var(--clay);
+      font-weight: 800;
+    }
+
+    .company-list li {
+      display: flex !important;
+      justify-content: space-between;
+      align-items: baseline;
+    }
+
+    .company-list li::before {
+      content: none !important;
+    }
+
+    .company-name {
+      font-weight: 700;
+      color: var(--ink);
+      transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+      cursor: pointer;
+      position: relative;
+    }
+
+    .company-name:hover {
+      color: var(--ochre);
+      transform: translateX(6px);
+    }
+
+    .company-name:hover::before {
+      content: "\2192";
+
+        /* Arrow */
+        position: absolute;
+      left: -18px;
+      color: var(--ochre);
+      font-family: var(--body);
+    }
+
+    .company-area {
+      font-family: var(--display);
+      color: var(--clay);
+      font-weight: 700;
+      font-size: 1.1rem;
+    }
+
+    .source-note {
+      color: var(--ink-soft);
+      font-size: 0.78rem;
+      line-height: 1.5;
+      border-top: 1px solid var(--line);
+      padding-top: var(--space-md);
+    }
+
+    .chapter.intro {
+      min-height: 120vh;
+      align-items: center;
+      justify-items: center;
+      padding-top: 8vh;
+    }
+
+    .chapter.intro .chapter-box {
+      width: min(100%, 44rem);
+      text-align: left;
+      background: color-mix(in oklch, var(--paper) 97%, transparent);
+    }
+
+    .chapter.intro .chapter-box h2 {
+      font-size: clamp(2.5rem, 7vw, 5.9rem);
+      max-width: 10ch;
+    }
+
+    .chapter.intro .chapter-box .subtitle {
+      max-width: 58ch;
+      font-size: 1.08rem;
+      line-height: 1.6;
+      color: var(--ink);
+    }
+
+    .chapter.intro .cover-row {
+      display: grid;
+      grid-template-columns: minmax(8rem, 13rem) 1fr;
+      gap: var(--space-xl);
+      align-items: end;
+    }
+
+    .chapter.intro img {
+      aspect-ratio: 3 / 4;
+      object-fit: cover;
+    }
+
+    #map-panel,
+    #legend {
+      position: fixed;
+      z-index: 3;
+      pointer-events: auto;
+    }
+
+    #map-panel {
+      left: clamp(1rem, 2vw, 1.5rem);
+      bottom: clamp(1rem, 2vw, 1.5rem);
+      width: min(22rem, calc(100vw - 2rem));
+      background: color-mix(in oklch, var(--map-veil) 85%, transparent);
+      border: 1px solid color-mix(in oklch, var(--paper) 12%, transparent);
+      border-radius: 6px;
+      color: var(--paper);
+      padding: var(--space-lg);
+      display: grid;
+      gap: var(--space-sm);
+      box-shadow: 0 16px 46px color-mix(in oklch, black 36%, transparent);
+    }
+
+    #chapter-progress {
+      font-size: 0.7rem;
+      color: color-mix(in oklch, var(--paper) 64%, transparent);
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      font-weight: 800;
+    }
+
+    #active-title {
+      font-family: var(--display);
+      font-size: 1.2rem;
+      line-height: 1.15;
+    }
+
+    #active-caption {
+      color: color-mix(in oklch, var(--paper) 72%, transparent);
+      font-size: 0.82rem;
+      line-height: 1.45;
+    }
+
+    .progress-track {
+      height: 3px;
+      background: color-mix(in oklch, var(--paper) 15%, transparent);
+      border-radius: 999px;
+      overflow: hidden;
+    }
+
+    #progress-fill {
+      display: block;
+      width: 0%;
+      height: 100%;
+      background: var(--ochre);
+      transition: width 400ms ease;
+    }
+
+    #legend {
+      top: clamp(1rem, 2vw, 1.5rem);
+      right: clamp(1rem, 2vw, 1.5rem);
+      width: min(18rem, calc(100vw - 2rem));
+      background: color-mix(in oklch, var(--map-veil) 83%, transparent);
+      border-radius: 6px;
+      padding: var(--space-lg);
+      font-size: 0.76rem;
+      border: 1px solid color-mix(in oklch, var(--paper) 12%, transparent);
+      box-shadow: 0 16px 46px color-mix(in oklch, black 28%, transparent);
+      display: grid;
+      gap: var(--space-sm);
+    }
+
+    #legend-title {
+      font-size: 0.7rem;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      font-weight: 800;
+      color: color-mix(in oklch, var(--paper) 72%, transparent);
+    }
+
+    #legend .leg-row {
+      display: grid;
+      grid-template-columns: 1rem 1fr;
+      align-items: center;
+      gap: var(--space-sm);
+      color: color-mix(in oklch, var(--paper) 80%, transparent);
+      line-height: 1.35;
+    }
+
+    #legend-items {
+      display: grid;
+      gap: var(--space-sm);
+    }
+
+    #legend .leg-swatch {
+      width: 0.9rem;
+      height: 0.9rem;
+      border-radius: 2px;
+      flex-shrink: 0;
+    }
+
+    .maplibregl-popup-content {
+      background: var(--paper);
+      color: var(--ink);
+      border-radius: 4px;
+      box-shadow: 0 18px 50px color-mix(in oklch, black 35%, transparent);
+      font-family: var(--body);
+      line-height: 1.45;
+    }
+
+    .maplibregl-popup-tip {
+      border-top-color: var(--paper) !important;
+      border-bottom-color: var(--paper) !important;
+    }
+
+    .maplibregl-ctrl-attrib {
+      background: color-mix(in oklch, var(--map-veil) 80%, transparent) !important;
+    }
+
+    .maplibregl-ctrl-attrib a {
+      color: color-mix(in oklch, var(--paper) 58%, transparent) !important;
+    }
+
+    @media (min-width: 768px) {
+      .chapter {
+        justify-items: start;
+        padding-left: clamp(2rem, 6vw, 6rem);
+      }
+
+      .chapter:nth-child(5n + 1):not(.intro) {
+        justify-items: end;
+        padding-right: clamp(2rem, 7vw, 7rem);
+      }
+
+      .chapter:nth-child(5n + 1):not(.intro) .chapter-box {
+        width: min(100%, 29rem);
+      }
+    }
+
+    @media (max-width: 767px) {
+      body::before {
+        background: linear-gradient(180deg, transparent 0 42%, color-mix(in oklch, black 50%, transparent));
+      }
+
+      .chapter {
+        min-height: 112vh;
+        align-items: end;
+        padding: 6rem 1rem 8rem;
+      }
+
+      .chapter-box {
+        width: 100%;
+        padding: 1.1rem;
+      }
+
+      .chapter.intro {
+        align-items: end;
+        justify-items: start;
+        padding-top: 5rem;
+      }
+
+      .chapter.intro .chapter-box h2 {
+        font-size: clamp(2.2rem, 16vw, 4rem);
+      }
+
+      .chapter.intro .cover-row {
+        grid-template-columns: 1fr;
+      }
+
+      .chapter.intro img {
+        max-height: 16rem;
+        object-position: top;
+      }
+
+      #legend {
+        top: var(--space-sm);
+        right: var(--space-sm);
+        left: var(--space-sm);
+        width: auto;
+        padding: var(--space-md);
+      }
+
+      #map-panel {
+        left: var(--space-sm);
+        right: var(--space-sm);
+        bottom: var(--space-sm);
+        width: auto;
+        padding: var(--space-md);
+      }
+
+      #active-caption {
+        display: none;
+      }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      html {
+        scroll-behavior: auto;
+      }
+
+      *,
+      *::before,
+      *::after {
+        animation-duration: 1ms !important;
+        scroll-behavior: auto !important;
+        transition-duration: 1ms !important;
+      }
+    }
+  </style>
+</head>
+
+<body>
+
+  <a class="skip-link" href="#story">Lewati ke narasi</a>
+  <div id="map"></div>
+
+  <div id="legend">
+    <div id="legend-title">Lapisan aktif</div>
+    <div id="legend-items"></div>
+  </div>
+
+  <aside id="map-panel" aria-live="polite">
+    <div id="chapter-progress">Bagian 1 dari 12</div>
+    <div class="progress-track"><span id="progress-fill"></span></div>
+    <div id="active-title">Pesta Babi</div>
+    <div id="active-caption">Geser ke bawah untuk mengikuti perubahan peta dan bukti utama.</div>
+  </aside>
+
+  <main id="story">
+
+    <!-- CHAPTER 0: INTRO -->
+    <section class="chapter intro" data-chapter="0">
+      <div class="chapter-box" data-kicker="PSN Merauke / Papua Selatan">
+        <h3>PSN Merauke / Papua Selatan</h3>
+        <h2>Pesta Babi:<br>Ketika Proyek Strategis Nasional Menjadi Bencana</h2>
+        <div class="cover-row">
+          <img src="web-images/page-000.jpg" alt="Sampul briefing paper Pusaka tentang PSN Merauke">
+          <p class="subtitle">Sebuah narasi peta berdasarkan briefing paper <strong>Yayasan Pusaka Bentala
+              Rakyat</strong>. Peta ini mengikuti bagaimana proyek pangan dan energi skala jutaan hektar bertemu dengan
+            wilayah adat, hutan, rawa, aparat keamanan, dan perlawanan warga.</p>
+        </div>
+        <p class="source-note">Scroll untuk membaca. Setiap bagian mengubah lapisan peta agar klaim utama bisa dilihat
+          dalam ruang, bukan hanya dibaca sebagai angka.</p>
+      </div>
+    </section>
+
+    <!-- CHAPTER 1: MIFEE 2010 -->
+    <section class="chapter" data-chapter="1">
+      <div class="chapter-box" data-kicker="2010 - Akar masalah">
+        <h3>2010 &ndash; Akar Masalah</h3>
+        <h2>MIFEE Menjadi Pola Awal</h2>
+        <p>Merauke pernah menjadi laboratorium food estate. Pada 2010, <span class="highlight">MIFEE</span> diluncurkan
+          dengan kajian sosial-lingkungan yang dinilai tidak memadai. BKPRN merekomendasikan pencadangan areal seluas
+          <span class="highlight">1.282.833 hektar</span> &mdash; lebih dari seperempat Kabupaten Merauke.
+        </p>
+        <div class="data-grid">
+          <div class="data-card">
+            <i class="ph ph-buildings" style="font-size: 1.6rem; color: var(--ochre); margin-bottom: -0.2rem;"></i>
+            <div class="num">38</div>
+            <div class="lbl">Perusahaan</div>
+          </div>
+          <div class="data-card">
+            <i class="ph ph-map-trifold" style="font-size: 1.6rem; color: var(--ochre); margin-bottom: -0.2rem;"></i>
+            <div class="num">1,58 jt</div>
+            <div class="lbl">Hektar Izin</div>
+          </div>
+          <div class="data-card">
+            <i class="ph ph-plant" style="font-size: 1.6rem; color: var(--ochre); margin-bottom: -0.2rem;"></i>
+            <div class="num">18</div>
+            <div class="lbl">Perkebunan Tebu</div>
+          </div>
+          <div class="data-card">
+            <i class="ph ph-frame-corners" style="font-size: 1.6rem; color: var(--ochre); margin-bottom: -0.2rem;"></i>
+            <div class="num">548 rb</div>
+            <div class="lbl">Ha Tebu</div>
+          </div>
+        </div>
+        <p>Briefing Pusaka menempatkan angka-angka itu sebagai preseden: izin skala luas berada di <span
+            class="highlight">wilayah adat Malind</span> dan kawasan hutan, sementara musyawarah dan persetujuan bebas
+          masyarakat adat tidak menjadi titik awal.</p>
+        <img src="web-images/page-001.jpg" alt="MIFEE land use map">
+        <div class="img-caption">Peta kawasan proyek MIFEE di Merauke, 2010</div>
+      </div>
+    </section>
+
+    <!-- CHAPTER 2: PSN MERAUKE -->
+    <section class="chapter" data-chapter="2">
+      <div class="chapter-box" data-kicker="2023 - Eskalasi">
+        <h3>2023 &ndash; Eskalasi</h3>
+        <h2>PSN Merauke Memperbesar Skala</h2>
+        <p>Melalui <span class="highlight">Permenko No. 8/2023</span>, pemerintah memasukkan Kawasan Pengembangan Pangan
+          dan Energi Merauke ke daftar Proyek Strategis Nasional. Di lapangan, proyek itu terbaca sebagai tiga agenda
+          yang bergerak bersamaan:</p>
+        <ul>
+          <li><i class="ph ph-plant" style="margin-right: 4px; color: var(--clay);"></i><strong>Perkebunan tebu &amp;
+              bioetanol</strong>: 10 perusahaan, 500.000 ha</li>
+          <li><i class="ph ph-tractor" style="margin-right: 4px; color: var(--clay);"></i><strong>Optimalisasi lahan
+              (Oplah)</strong>: 6 distrik, 40.000 &rarr; 100.000 ha</li>
+          <li><i class="ph ph-grains" style="margin-right: 4px; color: var(--clay);"></i><strong>Cetak sawah
+              baru</strong>: 1.000.000 ha (Kemhan)</li>
+        </ul>
+        <p><span class="stat">~2.000.000 ha</span> <span class="stat-label">target lahan yang disebut dalam
+            rencana</span></p>
+
+        <div
+          style="margin-top: var(--space-md); padding: var(--space-md); background: color-mix(in oklch, var(--paper-deep) 30%, transparent); border: 1px solid var(--line); border-radius: 5px;">
+          <canvas id="psnChart" style="width: 100%; max-height: 200px;"></canvas>
+        </div>
+
+        <p>Dasar hukumnya diperkuat melalui <span class="highlight">Perpres 40/2023</span> tentang gula dan bioetanol
+          serta <span class="highlight">Keppres 15/2024</span> tentang Satgas Gula-Bioetanol.</p>
+      </div>
+    </section>
+
+    <!-- CHAPTER 3: 10 COMPANIES -->
+    <section class="chapter" data-chapter="3">
+      <div class="chapter-box" data-kicker="Konsesi perusahaan">
+        <h3>Konsesi Perusahaan</h3>
+        <h2>Satu Lanskap, Sepuluh Izin Tebu</h2>
+        <p>Pada 2023&ndash;2024, pemerintah daerah dan nasional menerbitkan PKKPR dan surat rekomendasi pelepasan
+          kawasan hutan bagi sepuluh perusahaan perkebunan tebu. Total areal yang disebut dalam briefing mencapai <span
+            class="highlight">541.094 hektar</span>.</p>
+        <ul class="company-list">
+          <li><span class="company-name">PT Andalan Manis Nusantara</span> <span class="company-area">60.000 ha</span>
+          </li>
+          <li><span class="company-name">PT Semesta Gula Nusantara</span> <span class="company-area">60.000 ha</span>
+          </li>
+          <li><span class="company-name">PT Berkat Tebu Sejahtera</span> <span class="company-area">60.000 ha</span>
+          </li>
+          <li><span class="company-name">PT Agrindo Gula Nusantara</span> <span class="company-area">60.000 ha</span>
+          </li>
+          <li><span class="company-name">PT Sejahtera Gula Nusantara</span> <span class="company-area">60.000 ha</span>
+          </li>
+          <li><span class="company-name">PT Dutamas Resources Intl.</span> <span class="company-area">60.000 ha</span>
+          </li>
+          <li><span class="company-name">PT Global Papua Makmur</span> <span class="company-area">59.963 ha</span></li>
+          <li><span class="company-name">PT Borneo Citra Persada</span> <span class="company-area">50.772 ha</span></li>
+          <li><span class="company-name">PT Murni Nusantara Mandiri</span> <span class="company-area">39.579 ha</span>
+          </li>
+          <li><span class="company-name">PT Global Papua Abadi</span> <span class="company-area">30.778 ha</span></li>
+        </ul>
+        <p>Rencana investasi GPA Group disebut mencapai <span class="highlight">Rp 83 triliun</span>, dengan target
+          produksi gula, bioetanol, dan listrik biomassa. Skala ekonomi itu berhadapan langsung dengan skala ruang hidup
+          masyarakat adat.</p>
+      </div>
+    </section>
+
+    <!-- CHAPTER 4: TUMPANG SUSUN ADAT -->
+    <section class="chapter" data-chapter="4">
+      <div class="chapter-box" data-kicker="Tumpang susun">
+        <h3>Tumpang Susun</h3>
+        <h2>Bukan Tanah Kosong</h2>
+        <p>Data <span class="highlight">BRWA</span> mencatat lima wilayah adat di Merauke seluas sekitar 1,18 juta ha.
+          Analisis tumpang susun Pusaka menunjukkan <span class="highlight">316.463 hektar</span> izin perusahaan berada
+          di <span class="highlight">Wilayah Adat Yei</span> (694.966 ha, teregistrasi BRWA), sementara sisanya berada
+          di wilayah adat Malind.</p>
+        <div class="data-grid">
+          <div class="data-card">
+            <i class="ph ph-map-pin" style="font-size: 1.6rem; color: var(--ochre); margin-bottom: -0.2rem;"></i>
+            <div class="num">694.966</div>
+            <div class="lbl">Ha WA Yei (BRWA)</div>
+          </div>
+          <div class="data-card">
+            <i class="ph ph-intersect" style="font-size: 1.6rem; color: var(--ochre); margin-bottom: -0.2rem;"></i>
+            <div class="num">316.463</div>
+            <div class="lbl">Ha tumpang susun izin</div>
+          </div>
+          <div class="data-card">
+            <i class="ph ph-users" style="font-size: 1.6rem; color: var(--ochre); margin-bottom: -0.2rem;"></i>
+            <div class="num">40.000+</div>
+            <div class="lbl">Penduduk asli terdampak</div>
+          </div>
+          <div class="data-card">
+            <i class="ph ph-house" style="font-size: 1.6rem; color: var(--ochre); margin-bottom: -0.2rem;"></i>
+            <div class="num">40</div>
+            <div class="lbl">Kampung dalam/sekitar proyek</div>
+          </div>
+        </div>
+        <blockquote class="quote">&ldquo;Kami Bisa Hidup Tanpa Sawit dan Tebu Tapi Tidak Tanpa Tanah dan Hutan&rdquo;
+          <br>&mdash; Suku Yei, Kampung Kweel (19/7/2024)
+        </blockquote>
+      </div>
+    </section>
+
+    <!-- CHAPTER 5: MILITER & CETAK SAWAH -->
+    <section class="chapter" data-chapter="5">
+      <div class="chapter-box" data-kicker="Militerisasi proyek">
+        <h3>Militerisasi Proyek</h3>
+        <h2>Infrastruktur Pangan Masuk Bersama Aparat</h2>
+        <p>Menteri Pertanian menyebut pengendalian pembukaan lahan sejuta hektar berada di bawah kendali Pangdam
+          XVII/Cenderawasih.</p>
+        <p>Juli 2024: Kapal tongkang Haji Isam menurunkan <span class="highlight">232 excavator</span> di Wanam, Distrik
+          Ilwayab. Anggota militer mengawasi penggusuran hutan, rawa, dan lahan adat.</p>
+        <blockquote class="quote">&ldquo;Tanah ini tidak kosong, tolong hargai kami&rdquo; <br>&mdash; Warga Wanam
+        </blockquote>
+        <p><span class="highlight">SK KLHK 835/2024</span> melepas 13.540 ha Hutan Lindung untuk infrastruktur ketahanan
+          pangan Kemhan. Pada peta, pelepasan ini penting karena bekerja sebagai pintu akses, bukan sekadar batas
+          administrasi.</p>
+        <img src="web-images/page-006.jpg" alt="Peta lokasi proyek dan kawasan hutan">
+        <div class="img-caption">Peta lokasi proyek cetak sawah dan infrastruktur Kemhan</div>
+      </div>
+    </section>
+
+    <!-- CHAPTER 6: ENVIRONMENTAL DESTRUCTION -->
+    <section class="chapter" data-chapter="6">
+      <div class="chapter-box" data-kicker="Krisis lingkungan">
+        <h3>Krisis Lingkungan</h3>
+        <h2>Hutan, Rawa, dan Gambut Masuk Area Risiko</h2>
+        <p>Briefing Pusaka mencatat 47% izin perusahaan tebu berada di <span class="highlight">Hutan Produksi yang Dapat
+            Dikonversi</span>, 32% di Hutan Produksi Terbatas, dan lebih dari 30% berada pada kawasan moratorium PIPPIB.
+        </p>
+        <div class="data-grid">
+          <div class="data-card">
+            <div class="num">149 rb</div>
+            <div class="lbl">Ha PIPPIB Primer</div>
+          </div>
+          <div class="data-card">
+            <div class="num">24 rb</div>
+            <div class="lbl">Ha PIPPIB Gambut</div>
+          </div>
+          <div class="data-card">
+            <div class="num">44%</div>
+            <div class="lbl">Izin di Kawasan Lindung</div>
+          </div>
+          <div class="data-card">
+            <div class="num">&gt;800</div>
+            <div class="lbl">Ha hutan sudah digusur</div>
+          </div>
+        </div>
+        <p>Risikonya tidak hanya kehilangan tutupan hutan. Pada lanskap rawa dan gambut, pembukaan lahan juga mengubah
+          air, pangan, akses berburu-meramu, dan daya lenting ekologis kampung sekitar.</p>
+        <img src="web-images/page-013.jpg" alt="Peta kawasan hutan dan KSPP Merauke">
+        <div class="img-caption">Peta Kawasan Hutan dan Kawasan Sentra Produksi Pertanian (KSPP) Merauke</div>
+      </div>
+    </section>
+
+    <!-- CHAPTER 7: HUMAN RIGHTS -->
+    <section class="chapter" data-chapter="7">
+      <div class="chapter-box" data-kicker="Hak asasi manusia">
+        <h3>Pelanggaran HAM</h3>
+        <h2>Persetujuan Tidak Bisa Datang Setelah Alat Berat</h2>
+        <p>Menurut briefing, PSN Merauke berjalan <span class="highlight">tanpa KLHS dan AMDAL</span> serta tanpa
+          konsultasi bermakna dengan masyarakat adat. Kehadiran aparat dalam proses survei, negosiasi, dan pembukaan
+          lahan membuat persetujuan bebas sulit disebut bebas.</p>
+        <p>Melanggar:</p>
+        <ul>
+          <li>Hak atas tanah &amp; wilayah adat</li>
+          <li>Hak atas lingkungan hidup sehat</li>
+          <li>Hak atas pangan &amp; sumber penghidupan</li>
+          <li>Hak atas rasa aman &amp; bebas dari intimidasi</li>
+          <li>Prinsip FPIC (Free, Prior and Informed Consent)</li>
+        </ul>
+        <p>Pemimpin Suku Yei membuat <span class="highlight">Surat Pernyataan Bersama</span> pada 7 Mei 2024 untuk
+          menolak proyek. Dalam alur cerita ini, surat itu menjadi dokumen politik: bukti bahwa penolakan sudah
+          dinyatakan sebelum kerusakan meluas.</p>
+      </div>
+    </section>
+
+    <!-- CHAPTER 8: BENEFICIAL OWNERSHIP -->
+    <section class="chapter" data-chapter="8">
+      <div class="chapter-box" data-kicker="Aktor ekonomi">
+        <h3>Siapa di Balik Proyek?</h3>
+        <h2>Jejak Korporasi di Balik Konsesi</h2>
+        <p>Briefing Pusaka menelusuri penerima manfaat proyek tebu dan bioetanol ke dua kelompok utama:</p>
+        <ul>
+          <li><strong>Keluarga Fangiono</strong> (First Resources, FAP Agri, Ciliandry Anky Abadi) &mdash; mengontrol 9
+            dari 10 perusahaan melalui Angelia Bonaventure Sudirman, Antoni, dan Silvia Caroline</li>
+          <li><strong>Martua Sitorus</strong> (KPN Corp, pendiri Wilmar) &mdash; melalui Tan Keng Liam</li>
+        </ul>
+        <p>Struktur <span class="highlight">perusahaan cangkang</span> membuat kepemilikan manfaat sulit dibaca dari
+          nama izin saja. Karena itu, bagian ini menempatkan peta konsesi bersama narasi aktor ekonomi.</p>
+      </div>
+    </section>
+
+    <!-- CHAPTER 9: DEFORESTATION PROGRESSION -->
+    <section class="chapter" data-chapter="9">
+      <div class="chapter-box" data-kicker="Pemantauan deforestasi">
+        <h3>Angka Deforestasi</h3>
+        <h2>Angka Kerusakan Terus Bergerak</h2>
+        <p>Pemantauan Pusaka menunjukkan pembukaan lahan berlangsung setelah briefing 2024 terbit. Angka berikut
+          memperlihatkan bahwa proyek ini bukan ancaman abstrak, tetapi proses yang terus berjalan.</p>
+        <div class="data-grid">
+          <div class="data-card">
+            <i class="ph ph-tree-palm" style="font-size: 1.6rem; color: var(--ochre); margin-bottom: -0.2rem;"></i>
+            <div class="num">4.543</div>
+            <div class="lbl">Ha dibongkar di Ilwayab</div>
+          </div>
+          <div class="data-card">
+            <i class="ph ph-tree" style="font-size: 1.6rem; color: var(--ochre); margin-bottom: -0.2rem;"></i>
+            <div class="num">7.147</div>
+            <div class="lbl">Ha dibongkar di Tanah Miring</div>
+          </div>
+          <div class="data-card">
+            <i class="ph ph-tractor" style="font-size: 1.6rem; color: var(--ochre); margin-bottom: -0.2rem;"></i>
+            <div class="num">4.912</div>
+            <div class="lbl">Ha PT MNM dibongkar (Ags 2025)</div>
+          </div>
+          <div class="data-card">
+            <i class="ph ph-mountains" style="font-size: 1.6rem; color: var(--ochre); margin-bottom: -0.2rem;"></i>
+            <div class="num">486.939</div>
+            <div class="lbl">Ha hutan dibebaskan</div>
+          </div>
+        </div>
+        <p>Total deforestasi untuk infrastruktur pangan dan perkebunan tebu hingga Agustus 2025:</p>
+        <p><span class="stat">&gt;16.600 ha</span></p>
+        <p>Kepmenhut 591/2025 (September 2025) membebaskan <span class="highlight">486.939 ha</span> kawasan hutan di
+          Papua Selatan menjadi Areal Penggunaan Lain &mdash; mencakup Boven Digoel, Mappi, dan Merauke.</p>
+      </div>
+    </section>
+
+    <!-- CHAPTER 10: 2025 ESCALATION -->
+    <section class="chapter" data-chapter="10">
+      <div class="chapter-box" data-kicker="2025 - Percepatan">
+        <h3>Eskalasi 2025</h3>
+        <h2>Percepatan Negara, Perlawanan Warga</h2>
+        <p>Pada 2025, proyek tidak melambat. Kebijakan, struktur militer, dan proses hukum bergerak bersamaan:</p>
+        <ul>
+          <li><strong>Agustus 2025 &mdash; Inpres 14/2025</strong>: instruksi percepatan Kawasan Swasembada Pangan,
+            Energi, Air Nasional di Papua Selatan, Kalteng, Kalsel, Sumsel</li>
+          <li><strong>Agustus 2025 &mdash; Kodam XXIV/Mandala Trikora</strong>: Kodam baru berkedudukan di Merauke,
+            bersama 5 Kodam lainnya + 20 Brigif + 100 Yonif</li>
+          <li><strong>Agustus 2025 &mdash; Uji Materi MK</strong>: warga adat Merauke, Rempang, Kaltara, Sultra hadiri
+            uji materi UU Ciptaker terkait PSN</li>
+        </ul>
+        <p>Sementara itu perlawanan terus berlanjut: <span class="highlight">Yasinta Moiwend</span> memasang palang adat
+          di dermaga Jhonlin Group (26 Jan 2025), Marga Kwipalo melayangkan somasi atas penyerobotan tanah oleh PT MNM
+          (15 Sep 2025).</p>
+        <img src="timeline-images/25-26Jan2025.jpeg"
+          alt="Yasinta Moiwend memasang palang adat di dermaga Jhonlin Group">
+        <div class="img-caption">Yasinta Moiwend memasang palang adat di dermaga Jhonlin Group, dijaga aparat TNI (26
+          Jan 2025)</div>
+      </div>
+    </section>
+
+    <!-- CHAPTER 11: REKOMENDASI -->
+    <section class="chapter" data-chapter="11">
+      <div class="chapter-box" data-kicker="Rekomendasi">
+        <h3>Rekomendasi</h3>
+        <h2>Hentikan PSN Merauke</h2>
+        <ul>
+          <li>Evaluasi dan hentikan PSN Merauke, proyek tebu-bioetanol, dan cetak sawah 1 juta ha</li>
+          <li>Audit lingkungan hidup dan cabut izin usaha yang melanggar</li>
+          <li>Hormati hak masyarakat adat &mdash; lakukan konsultasi bermakna</li>
+          <li>Undang Pelapor Khusus PBB untuk Hak Masyarakat Adat ke Papua</li>
+          <li>Hentikan pelibatan TNI/Polri dalam proyek komersial</li>
+        </ul>
+        <p class="source-note">
+          Sumber: Briefing Paper Yayasan Pusaka Bentala Rakyat, September 2024<br>
+          Data Wilayah Adat: BRWA (brwa.or.id/sig)<br>
+          Lini Masa: pusaka.or.id/lini-masa &bull; Peta: MapLibre
+        </p>
+      </div>
+    </section>
+
+  </main>
+
+  <script>
+    /* ====== MAP SETUP ====== */
+    const map = new maplibregl.Map({
+      container: 'map',
+      style: 'https://basemaps.cartocdn.com/gl/dark-matter-gl-style/style.json',
+        center: [140.35, -7.85],
+      zoom: 8.5,
+      minZoom: 6,
+      maxZoom: 15,
+      attributionControl: false
+    });
+
+    map.addControl(new maplibregl.AttributionControl({ compact: true }));
+
+    /* ====== LOAD GEOJSON SOURCES & LAYERS ====== */
+    const dataFiles = [
+      { id: 'brwa_merauke', file: 'data / brwa_merauke.geojson', type: 'adat' },
+    { id: 'locations', file: 'data / locations.geojson', type: 'point' },
+    { id: 'kspp', file: 'data / kspp.geojson', type: 'polygon' },
+    { id: 'sk_klhk', file: 'data / sk_klhk.geojson', type: 'polygon' },
+    { id: 'road', file: 'data / road.geojson', type: 'line' },
+    ];
+
+    const satelliteLayerId = 'satellite-imagery';
+    let layersReady = false;
+
+    // Hover popup for BRWA adat polygons
+    const popup = new maplibregl.Popup({ closeButton: false, closeOnClick: false, maxWidth: '280px' });
+
+    map.on('load', () => {
+      map.addSource('esri - satellite', {
+        type: 'raster',
+        tiles: [
+          'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}'
+        ],
+        tileSize: 256,
+        attribution: 'Imagery: Esri, Maxar, Earthstar Geographics, and the GIS User Community'
+      });
+
+      map.addLayer({
+        id: satelliteLayerId,
+        type: 'raster',
+        source: 'esri- satellite',
+        layout: { visibility: 'visible' },
+        paint: {
+          'raster- opacity': 0,
+          'raster - saturation': -0.18,
+          'raster - contrast': 0.08,
+          'raster - brightness - min': 0.08,
+          'raster - brightness - max': 0.86,
+          'raster - fade - duration': 500
+        }
+      });
+
+    let loaded = 0;
+    dataFiles.forEach(df => {
+      fetch(df.file)
+        .then(r => r.json())
+        .then(data => {
+          map.addSource(df.id, { type: 'geojson', data: data });
+
+          if (df.type === 'point') {
+        map.addLayer({
+          id: df.id + '-circle',
+                source: df.id,
+          type: 'circle',
+          paint: {
+                  'circle- radius': ['match', ['get', 'category'],
+                    'protest', 8, 'conflict', 9, 'company', 7,
+                    'project', 6, 'logistics', 7, 'urban', 10, 6
+                  ],
+                  'circle- color': ['match', ['get', 'category'],
+                    'protest', '#d96c42', 'conflict', '#b84a3a',
+                    'company', '#8e3f35', 'project', '#d4a83f',
+                    'logistics', '#c9783f', 'urban', '#efe1c5', '#d96c42'
+        ],
+                  'circle - opacity': 0.9,
+                  'circle - stroke - width': 2,
+                  'circle - stroke - color': '#15140f'
+                }
+    });
+    map.addLayer({
+      id: df.id + '-label',
+                source: df.id,
+      type: 'symbol',
+      layout: { 'text- field': ['get', 'name'], 'text- offset': [0, -1.5], 'text - size': 11, 'text - anchor': 'bottom' },
+      paint: { 'text- color': '#f3e4ca', 'text-halo-color': '#12120f', 'text - halo - width': 2 }
+              });
+            } else if (df.type === 'line') {
+      map.addLayer({
+        id: df.id + '-line',
+                source: df.id,
+        type: 'line',
+        paint: { 'line- color': '#d4a83f', 'line-width': 3, 'line-dasharray': [4, 2], 'line-opacity': 0.72 }
+              });
+    } else if (df.type === 'adat') {
+      // BRWA Wilayah Adat - categorized by status
+      map.addLayer({
+        id: 'brwa- fill',
+        source: df.id,
+        type: 'fill',
+        paint: {
+                  'fill- color': ['match', ['get', 'status'],
+                    'Teregistrasi', '#6ea36b',
+                    'Terverifikasi', '#d4a83f',
+                    'Tercatat Baru', '#b9784c',
+                    '#6ea36b'
+      ],
+                  'fill - opacity': ['match', ['get', 'status'],
+                    'Teregistrasi', 0.18,
+                    'Terverifikasi', 0.22,
+                    'Tercatat Baru', 0.10,
+        0.12
+      ],
+                }
+              });
+    map.addLayer({
+      id: 'brwa- outline',
+      source: df.id,
+      type: 'line',
+      paint: {
+                  'line- color': ['match', ['get', 'status'],
+                    'Teregistrasi', '#8fb879',
+                    'Terverifikasi', '#d4a83f',
+                    'Tercatat Baru', '#b9784c',
+                    '#8fb879'
+    ],
+                  'line - width': ['match', ['get', 'status'],
+                    'Teregistrasi', 2,
+                    'Terverifikasi', 2.5,
+                    'Tercatat Baru', 1,
+      1.5
+    ],
+                  'line - opacity': 0.6,
+                }
+              });
+    // BRWA labels
+    map.addLayer({
+      id: 'brwa- label',
+      source: df.id,
+      type: 'symbol',
+      layout: {
+                  'text- field': ['get', 'nama'], 'text - size': 10, 'text - anchor': 'center',
+                  'text - offset': [0, 0], 'text - allow - overlap': false
+                },
+      paint: {
+                  'text- color': '#d7c9a8', 'text-halo-color': '#12120f', 'text - halo - width': 1.5,
+                  'text - opacity': 0.7
+                }
+              });
+
+    // Hover effect
+    map.on('mousemove', 'brwa - fill', (e) => {
+      if (e.features.length > 0) {
+        const p = e.features[0].properties;
+        map.getCanvas().style.cursor = 'pointer';
+        popup.setLngLat(e.lngLat)
+          .setHTML(`<strong>${p.nama}</strong><br>
+                  <small>Suku: ${p.suku || '-'}<br>
+                  Luas: ${Number(p.luas_ha).toLocaleString('id')} ha<br>
+                  Status: ${p.status}<br>
+                  ${p.kecamatan ? 'Kec: ' + p.kecamatan : ''}<br>
+                  ${ p.populasi ? 'Populasi: ' + p.populasi + ' jiwa' : ''}</small > `)
+                    .addTo(map);
+                }
+              });
+              map.on('mouseleave', 'brwa-fill', () => {
+                map.getCanvas().style.cursor = '';
+                popup.remove();
+              });
+            } else {
+              // KSPP / SK KLHK polygons
+              let color, opacity, borderColor;
+              if (df.id === 'kspp') {
+                color = '#d4a83f'; opacity = 0.13; borderColor = '#d4a83f';
+              } else if (df.id === 'sk_klhk') {
+                color = '#a56b9e'; opacity = 0.18; borderColor = '#a56b9e';
+              } else {
+                color = '#d96c42'; opacity = 0.12; borderColor = '#d96c42';
+              }
+              map.addLayer({
+                id: df.id + '-fill',
+                source: df.id,
+                type: 'fill',
+                paint: { 'fill-color': color, 'fill-opacity': opacity }
+              });
+              map.addLayer({
+                id: df.id + '-outline',
+                source: df.id,
+                type: 'line',
+                paint: { 'line-color': borderColor, 'line-width': 1.5, 'line-opacity': 0.5 }
+              });
+            }
+
+            loaded++;
+            if (loaded === dataFiles.length) {
+              layersReady = true;
+              const pendingChapter = currentChapter >= 0 ? currentChapter : 0;
+              currentChapter = -1;
+              updateChapter(pendingChapter);
+            }
+          })
+          .catch(err => console.error('Failed to load', df.file, err));
+      });
+    });
+
+    /* ====== SCROLL CHAPTERS ====== */
+    const chapters = document.querySelectorAll('.chapter');
+    const activeTitle = document.getElementById('active-title');
+    const activeCaption = document.getElementById('active-caption');
+    const chapterProgress = document.getElementById('chapter-progress');
+    const progressFill = document.getElementById('progress-fill');
+    const legendItems = document.getElementById('legend-items');
+    const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+    const layerLegend = {
+      brwa: '<div class="leg-row"><span class="leg-swatch" style="background:rgba(110,163,107,0.28);border:2px solid #8fb879"></span><span>Wilayah adat teregistrasi BRWA</span></div>',
+      brwaVerified: '<div class="leg-row"><span class="leg-swatch" style="background:rgba(212,168,63,0.26);border:2px solid #d4a83f"></span><span>Wilayah adat terverifikasi</span></div>',
+      kspp: '<div class="leg-row"><span class="leg-swatch" style="background:rgba(212,168,63,0.22);border:2px solid #d4a83f"></span><span>Kawasan Sentra Produksi Pertanian</span></div>',
+      sk: '<div class="leg-row"><span class="leg-swatch" style="background:rgba(165,107,158,0.24);border:2px solid #a56b9e"></span><span>SK KLHK 835/2024</span></div>',
+      road: '<div class="leg-row"><span class="leg-swatch" style="height:3px;background:#d4a83f;align-self:center"></span><span>Koridor jalan/infrastruktur</span></div>',
+      point: '<div class="leg-row"><span class="leg-swatch" style="background:#d96c42;border:2px solid #15140f;border-radius:50%"></span><span>Lokasi proyek, konflik, atau protes</span></div>'
+    };
+
+    const chapterMeta = [
+      {
+        title: 'Pesta Babi',
+        caption: 'Pembukaan: Merauke dibaca sebagai peta konflik antara proyek pangan nasional, hutan, dan wilayah adat.',
+        basemap: 'dark',
+        legend: ['kspp', 'brwa', 'brwaVerified']
+      },
+      {
+        title: 'MIFEE sebagai preseden',
+        caption: 'Lapisan wilayah adat dan titik lokasi membantu menunjukkan bahwa proyek lama pun berdiri di atas ruang hidup masyarakat Malind.',
+        basemap: 'dark',
+        legend: ['brwa', 'brwaVerified', 'point']
+      },
+      {
+        title: 'PSN Merauke diperbesar',
+        caption: 'KSPP, titik proyek, dan koridor jalan memperlihatkan skala intervensi pangan-energi yang diperluas sejak 2023.',
+        basemap: 'satellite',
+        legend: ['kspp', 'road', 'point']
+      },
+      {
+        title: 'Sepuluh perusahaan tebu',
+        caption: 'Konsesi tebu dibaca sebagai satu blok ekonomi besar, bukan sebagai izin yang terpisah-pisah.',
+        basemap: 'satellite',
+        legend: ['kspp', 'point']
+      },
+      {
+        title: 'Wilayah adat bertumpuk izin',
+        caption: 'BRWA dan KSPP ditampilkan bersama untuk menekankan tumpang susun proyek dengan wilayah adat Yei dan Malind.',
+        basemap: 'dark',
+        legend: ['brwa', 'brwaVerified', 'kspp', 'point']
+      },
+      {
+        title: 'Militerisasi dan infrastruktur',
+        caption: 'SK KLHK dan jalan proyek menjadi fokus karena membuka akses bagi cetak sawah dan infrastruktur pangan.',
+        basemap: 'satellite',
+        legend: ['sk', 'road', 'point']
+      },
+      {
+        title: 'Hutan, rawa, gambut',
+        caption: 'Seluruh lapisan utama muncul bersama untuk menunjukkan tekanan ekologis yang tidak berdiri sendiri.',
+        basemap: 'satellite',
+        legend: ['kspp', 'brwa', 'sk', 'point']
+      },
+      {
+        title: 'Tanpa persetujuan bermakna',
+        caption: 'Wilayah adat kembali dipusatkan karena isu HAM berangkat dari hak atas tanah, rasa aman, dan persetujuan bebas.',
+        basemap: 'dark',
+        legend: ['brwa', 'brwaVerified', 'point']
+      },
+      {
+        title: 'Pemilik manfaat',
+        caption: 'Peta memperlihatkan jejak ruang proyek, sementara narasi membuka struktur korporasi di baliknya.',
+        basemap: 'dark',
+        legend: ['kspp', 'brwa', 'point']
+      },
+      {
+        title: 'Kerusakan bertambah',
+        caption: 'Kombinasi KSPP, wilayah adat, SK KLHK, dan titik pemantauan menempatkan angka deforestasi dalam lanskap.',
+        basemap: 'satellite',
+        legend: ['kspp', 'brwa', 'sk', 'point']
+      },
+      {
+        title: 'Percepatan 2025',
+        caption: 'Lapisan adat dan SK KLHK menandai bagaimana kebijakan baru memperkeras tekanan pada ruang yang sama.',
+        basemap: 'satellite',
+        legend: ['brwa', 'brwaVerified', 'sk', 'point']
+      },
+      {
+        title: 'Rekomendasi',
+        caption: 'Semua lapisan dibuka untuk menutup cerita sebagai masalah tata kelola ruang, hak adat, dan akuntabilitas.',
+        basemap: 'dark',
+        legend: ['brwa', 'brwaVerified', 'kspp', 'sk', 'road', 'point']
+      }
+    ];
+
+    const chapterData = [
+      { center: [140.35, -7.85], zoom: 8.0, pitch: 0, bearing: 0 },
+      { center: [140.30, -8.20], zoom: 9.0, pitch: 30, bearing: -10 },
+      { center: [140.35, -7.85], zoom: 8.2, pitch: 40, bearing: -5 },
+      { center: [140.50, -8.00], zoom: 9.0, pitch: 35, bearing: -15 },
+      { center: [140.60, -7.60], zoom: 9.5, pitch: 50, bearing: -20 },
+      { center: [140.15, -7.30], zoom: 10, pitch: 55, bearing: -10 },
+      { center: [140.30, -7.60], zoom: 9.0, pitch: 40, bearing: -5 },
+      { center: [140.55, -7.40], zoom: 9.0, pitch: 35, bearing: 0 },
+      { center: [140.45, -7.80], zoom: 8.5, pitch: 20, bearing: 0 },
+      { center: [140.40, -7.70], zoom: 8.5, pitch: 30, bearing: 0 },
+      { center: [140.45, -7.50], zoom: 8.0, pitch: 25, bearing: 0 },
+      { center: [140.35, -7.85], zoom: 7.5, pitch: 0, bearing: 0 },
+    ];
+
+    let currentChapter = -1;
+
+    function setBasemap(mode) {
+      const satelliteOn = mode === 'satellite';
+      document.body.classList.toggle('satellite-mode', satelliteOn);
+
+      if (map.getLayer(satelliteLayerId)) {
+        map.setPaintProperty(satelliteLayerId, 'raster-opacity', satelliteOn ? 0.74 : 0);
+      }
+    }
+
+    function updateChapter(idx) {
+      if (idx === currentChapter || idx < 0 || idx >= chapterData.length) return;
+      currentChapter = idx;
+      const cd = chapterData[idx];
+      const meta = chapterMeta[idx];
+
+      chapters.forEach(ch => ch.classList.toggle('active', parseInt(ch.dataset.chapter) === idx));
+      activeTitle.textContent = meta.title;
+      activeCaption.textContent = meta.caption;
+      chapterProgress.textContent = `Bagian ${ idx + 1} dari ${ chapterData.length } `;
+      progressFill.style.width = `${ ((idx + 1) / chapterData.length) * 100 }%`;
+      legendItems.innerHTML = meta.legend.map(key => layerLegend[key]).join('');
+      setBasemap(meta.basemap);
+
+      map.flyTo({
+        center: cd.center,
+        zoom: cd.zoom,
+        pitch: cd.pitch,
+        bearing: cd.bearing,
+        duration: prefersReducedMotion ? 0 : 1500,
+        essential: false
+      });
+
+      if (!layersReady) return;
+
+      const allLayers = ['brwa-fill', 'brwa-outline', 'brwa-label',
+        'kspp-fill', 'kspp-outline',
+        'sk_klhk-fill', 'sk_klhk-outline',
+        'road-line', 'locations-circle', 'locations-label'];
+
+      allLayers.forEach(lid => {
+        if (map.getLayer(lid)) map.setLayoutProperty(lid, 'visibility', 'none');
+      });
+
+      switch (idx) {
+        case 0: // intro
+          ['kspp-fill', 'kspp-outline', 'brwa-fill', 'brwa-outline'].forEach(lid => {
+            if (map.getLayer(lid)) map.setLayoutProperty(lid, 'visibility', 'visible');
+          });
+          break;
+        case 1: // MIFEE - show BRWA adat
+          ['brwa-fill', 'brwa-outline', 'locations-circle', 'locations-label'].forEach(lid => {
+            if (map.getLayer(lid)) map.setLayoutProperty(lid, 'visibility', 'visible');
+          });
+          break;
+        case 2: // PSN projects - show KSPP
+          ['kspp-fill', 'kspp-outline', 'locations-circle', 'locations-label', 'road-line'].forEach(lid => {
+            if (map.getLayer(lid)) map.setLayoutProperty(lid, 'visibility', 'visible');
+          });
+          break;
+        case 3: // companies
+          ['kspp-fill', 'kspp-outline', 'locations-circle', 'locations-label'].forEach(lid => {
+            if (map.getLayer(lid)) map.setLayoutProperty(lid, 'visibility', 'visible');
+          });
+          break;
+        case 4: // adat overlap - BRWA + KSPP
+          ['brwa-fill', 'brwa-outline', 'brwa-label', 'kspp-fill', 'kspp-outline', 'locations-circle', 'locations-label'].forEach(lid => {
+            if (map.getLayer(lid)) map.setLayoutProperty(lid, 'visibility', 'visible');
+          });
+          break;
+        case 5: // military
+          ['sk_klhk-fill', 'sk_klhk-outline', 'road-line', 'locations-circle', 'locations-label'].forEach(lid => {
+            if (map.getLayer(lid)) map.setLayoutProperty(lid, 'visibility', 'visible');
+          });
+          break;
+        case 6: // environment
+          ['kspp-fill', 'kspp-outline', 'brwa-fill', 'brwa-outline', 'sk_klhk-fill', 'sk_klhk-outline', 'locations-circle', 'locations-label'].forEach(lid => {
+            if (map.getLayer(lid)) map.setLayoutProperty(lid, 'visibility', 'visible');
+          });
+          break;
+        case 7: // HAM
+          ['brwa-fill', 'brwa-outline', 'brwa-label', 'locations-circle', 'locations-label'].forEach(lid => {
+            if (map.getLayer(lid)) map.setLayoutProperty(lid, 'visibility', 'visible');
+          });
+          break;
+        case 8: // ownership
+          ['kspp-fill', 'kspp-outline', 'brwa-fill', 'brwa-outline', 'locations-circle', 'locations-label'].forEach(lid => {
+            if (map.getLayer(lid)) map.setLayoutProperty(lid, 'visibility', 'visible');
+          });
+          break;
+        case 9: // deforestation
+          ['kspp-fill', 'kspp-outline', 'brwa-fill', 'brwa-outline', 'sk_klhk-fill', 'sk_klhk-outline', 'locations-circle', 'locations-label'].forEach(lid => {
+            if (map.getLayer(lid)) map.setLayoutProperty(lid, 'visibility', 'visible');
+          });
+          break;
+        case 10: // 2025 escalation
+          ['brwa-fill', 'brwa-outline', 'brwa-label', 'sk_klhk-fill', 'sk_klhk-outline', 'locations-circle', 'locations-label'].forEach(lid => {
+            if (map.getLayer(lid)) map.setLayoutProperty(lid, 'visibility', 'visible');
+          });
+          break;
+        case 11: // rekomendasi
+          allLayers.forEach(lid => {
+            if (map.getLayer(lid)) map.setLayoutProperty(lid, 'visibility', 'visible');
+          });
+          break;
+      }
+    }
+
+    /* ====== INTERSECTION OBSERVER ====== */
+    const observer = new IntersectionObserver((entries) => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting) {
+          const idx = parseInt(entry.target.dataset.chapter);
+          updateChapter(idx);
+        }
+      });
+    }, {
+      root: null,
+      threshold: 0.4,
+    });
+
+    chapters.forEach(ch => observer.observe(ch));
+
+    // Chart.js Setup
+    const ctx = document.getElementById('psnChart').getContext('2d');
+    Chart.defaults.color = 'oklch(72% 0.025 71)';
+    Chart.defaults.font.family = '"Aptos", "Segoe UI", system-ui, -apple-system, sans-serif';
+
+    new Chart(ctx, {
+      type: 'bar',
+      data: {
+        labels: ['Tebu & Bioetanol', 'Optimalisasi Lahan', 'Cetak Sawah'],
+        datasets: [{
+          label: 'Target Lahan (Hektar)',
+          data: [500000, 100000, 1000000],
+          backgroundColor: [
+            'oklch(54% 0.12 43)',
+            'oklch(70% 0.13 78)',
+            'oklch(58% 0.1 330)'
+          ],
+          borderWidth: 0,
+          borderRadius: 4
+        }]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+          legend: { display: false },
+          tooltip: {
+            callbacks: {
+              label: function (context) {
+                return context.raw.toLocaleString('id-ID') + ' ha';
+              }
+            }
+          }
+        },
+        scales: {
+          y: {
+            beginAtZero: true,
+            grid: { color: 'oklch(36% 0.025 71 / 0.3)' },
+            ticks: {
+              callback: function (value) {
+                return (value / 1000) + ' rb';
+              }
+            }
+          },
+          x: {
+            grid: { display: false }
+          }
+        }
+      }
+    });
+
+    // Initial update
+    setTimeout(() => updateChapter(0), 500);
+
+  </script>
+</body>
+
+</html>

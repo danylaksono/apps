@@ -1,0 +1,165 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Wilayah Adat Malind (Marind)",
+        "population": "~50.000+",
+        "note": "Masyarakat adat terbesar di Merauke pesisir"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              139.8,
+              -8.7
+            ],
+            [
+              141.0,
+              -8.7
+            ],
+            [
+              141.0,
+              -8.3
+            ],
+            [
+              140.6,
+              -7.9
+            ],
+            [
+              140.2,
+              -7.9
+            ],
+            [
+              139.9,
+              -8.2
+            ],
+            [
+              139.8,
+              -8.4
+            ],
+            [
+              139.8,
+              -8.7
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Wilayah Adat Yei (Yeinan)",
+        "population": "~40.000",
+        "note": "316.463 ha tumpang susun dgn izin perusahaan tebu"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              140.4,
+              -8.3
+            ],
+            [
+              141.2,
+              -8.3
+            ],
+            [
+              141.1,
+              -7.4
+            ],
+            [
+              140.6,
+              -7.4
+            ],
+            [
+              140.2,
+              -7.6
+            ],
+            [
+              140.2,
+              -8.0
+            ],
+            [
+              140.4,
+              -8.3
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Wilayah Adat Maklew",
+        "population": "",
+        "note": "Terdampak cetak sawah di Wanam, Ilwayab"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              139.8,
+              -7.5
+            ],
+            [
+              140.4,
+              -7.5
+            ],
+            [
+              140.4,
+              -7.0
+            ],
+            [
+              139.8,
+              -7.0
+            ],
+            [
+              139.8,
+              -7.5
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Wilayah Adat Khimaima",
+        "population": "",
+        "note": "Terdampak KSPP klaster utara"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              140.0,
+              -7.2
+            ],
+            [
+              140.8,
+              -7.2
+            ],
+            [
+              140.8,
+              -6.6
+            ],
+            [
+              140.0,
+              -6.6
+            ],
+            [
+              140.0,
+              -7.2
+            ]
+          ]
+        ]
+      }
+    }
+  ]
+}
