@@ -1,4 +1,4 @@
-import type { GeoJsonFeatureCollection, LocationPoint, OptimiseResult, RoutingProfile } from '../types';
+import type { GeoJsonFeatureCollection, LocationPoint, OptimiseResult, RouteSegment, RoutingProfile } from '../types';
 
 const ORS_OPTIMIZATION_URL = 'https://api.heigit.org/vroom/v0';
 const ORS_DIRECTIONS_BASE_URL = 'https://api.heigit.org/openrouteservice/v2/directions';
@@ -20,6 +20,7 @@ interface DirectionsResult {
   geoJson: GeoJsonFeatureCollection;
   distanceMeters: number;
   durationSeconds: number;
+  segments: RouteSegment[];
 }
 
 function ensureApiKey(apiKey: string): void {
@@ -130,7 +131,7 @@ export async function fetchDirections({
     },
     body: JSON.stringify({
       coordinates,
-      instructions: false,
+      instructions: true,
       elevation: false,
       geometry_simplify: false,
     }),
@@ -143,14 +144,44 @@ export async function fetchDirections({
           distance?: number;
           duration?: number;
         };
+        segments?: Array<{
+          distance?: number;
+          duration?: number;
+          steps?: Array<{
+            instruction?: string;
+            name?: string;
+            distance?: number;
+            duration?: number;
+            type?: number;
+          }>;
+        }>;
       };
     }>;
   };
 
-  const summary = geoJson.features?.[0]?.properties?.summary;
+  const properties = geoJson.features?.[0]?.properties;
+  const summary = properties?.summary;
+  const segments = (properties?.segments ?? []).map((segment, segmentIndex) => ({
+    id: `segment-${segmentIndex}`,
+    label: `Leg ${segmentIndex + 1}`,
+    distanceMeters: segment.distance ?? 0,
+    durationSeconds: segment.duration ?? 0,
+    steps: (segment.steps ?? []).map((step, stepIndex) => ({
+      id: `segment-${segmentIndex}-step-${stepIndex}`,
+      instruction: step.instruction || 'Continue',
+      name: step.name,
+      distanceMeters: step.distance ?? 0,
+      durationSeconds: step.duration ?? 0,
+      type: step.type,
+      segmentIndex,
+      stepIndex,
+    })),
+  }));
+
   return {
     geoJson,
     distanceMeters: summary?.distance ?? 0,
     durationSeconds: summary?.duration ?? 0,
+    segments,
   };
 }

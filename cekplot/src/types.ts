@@ -23,6 +23,25 @@ export interface RouteSummary {
   durationSeconds: number;
 }
 
+export interface RouteStep {
+  id: string;
+  instruction: string;
+  name?: string;
+  distanceMeters: number;
+  durationSeconds: number;
+  type?: number;
+  segmentIndex: number;
+  stepIndex: number;
+}
+
+export interface RouteSegment {
+  id: string;
+  label: string;
+  distanceMeters: number;
+  durationSeconds: number;
+  steps: RouteStep[];
+}
+
 export type GeoJsonFeatureCollection = FeatureCollection<Geometry, Record<string, unknown>>;
 
 export interface OptimiseResult {

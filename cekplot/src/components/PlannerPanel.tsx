@@ -1,17 +1,19 @@
 import { FileUp, LocateFixed, MapPin, Navigation, RotateCcw, Wand2 } from 'lucide-react';
-import { ChangeEvent, useMemo, useRef, useState } from 'react';
+import { ChangeEvent, useEffect, useMemo, useRef, useState } from 'react';
 import { optimiseStops, fetchDirections } from '../services/orsClient';
 import { usePlannerStore } from '../store/usePlannerStore';
 import type { LocationPoint } from '../types';
 import { parseLocationsCsv, formatDistance, formatDuration } from '../utils/csv';
 import { StopList } from './StopList';
 import { AddressSearch } from './AddressSearch';
+import { DirectionsList } from './DirectionsList';
 
 const MAX_TARGET_STOPS = 49;
 
 export function PlannerPanel() {
   const fileInputRef = useRef<HTMLInputElement | null>(null);
   const [csvText, setCsvText] = useState('');
+  const [routeView, setRouteView] = useState<'stops' | 'directions'>('stops');
   const origin = usePlannerStore((state) => state.origin);
   const targets = usePlannerStore((state) => state.targets);
   const orderedStops = usePlannerStore((state) => state.orderedStops);
@@ -20,6 +22,7 @@ export function PlannerPanel() {
   const status = usePlannerStore((state) => state.status);
   const error = usePlannerStore((state) => state.error);
   const routeSummary = usePlannerStore((state) => state.routeSummary);
+  const routeSegments = usePlannerStore((state) => state.routeSegments);
   const setPlacementMode = usePlannerStore((state) => state.setPlacementMode);
   const addTargets = usePlannerStore((state) => state.addTargets);
   const clearTargets = usePlannerStore((state) => state.clearTargets);
@@ -38,6 +41,12 @@ export function PlannerPanel() {
   );
 
   const canRequestRoute = Boolean(origin && orderedTargets.length > 0 && status === 'idle');
+
+  useEffect(() => {
+    if (routeView === 'directions' && routeSegments.length === 0) {
+      setRouteView('stops');
+    }
+  }, [routeSegments.length, routeView]);
 
   function importCsv(text: string) {
     const parsed = parseLocationsCsv(text);
@@ -118,10 +127,17 @@ export function PlannerPanel() {
         apiKey: getEffectiveApiKey(),
         profile,
       });
-      setRoute(result.geoJson, {
-        distanceMeters: result.distanceMeters,
-        durationSeconds: result.durationSeconds,
-      });
+      setRoute(
+        result.geoJson,
+        {
+          distanceMeters: result.distanceMeters,
+          durationSeconds: result.durationSeconds,
+        },
+        result.segments,
+      );
+      if (result.segments.length > 0) {
+        setRouteView('directions');
+      }
     } catch (caught) {
       setError(caught instanceof Error ? caught.message : 'Unable to fetch route directions.');
     } finally {
@@ -192,10 +208,31 @@ export function PlannerPanel() {
       <section className="panel-section grow">
         <div className="section-title">
           <Navigation size={16} aria-hidden="true" />
-          <h2>Stops</h2>
+          <h2>Route</h2>
           <span className="count-pill">{orderedTargets.length}</span>
         </div>
-        <StopList />
+        <div className="segmented route-tabs" role="radiogroup" aria-label="Route view">
+          <button
+            type="button"
+            className={routeView === 'stops' ? 'active' : ''}
+            onClick={() => setRouteView('stops')}
+            role="radio"
+            aria-checked={routeView === 'stops'}
+          >
+            Stops
+          </button>
+          <button
+            type="button"
+            className={routeView === 'directions' ? 'active' : ''}
+            onClick={() => setRouteView('directions')}
+            role="radio"
+            aria-checked={routeView === 'directions'}
+            disabled={routeSegments.length === 0}
+          >
+            Directions
+          </button>
+        </div>
+        <div className="route-view">{routeView === 'stops' ? <StopList /> : <DirectionsList />}</div>
       </section>
 
       <section className="action-panel">

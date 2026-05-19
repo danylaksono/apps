@@ -4,6 +4,7 @@ import type {
   GeoJsonFeatureCollection,
   LocationPoint,
   PlacementMode,
+  RouteSegment,
   RouteSummary,
   RoutingProfile,
 } from '../types';
@@ -45,6 +46,7 @@ interface PlannerState {
   orderedStops: string[];
   routeGeoJson: GeoJsonFeatureCollection | null;
   routeSummary: RouteSummary | null;
+  routeSegments: RouteSegment[];
   focusPoint: LocationPoint | null;
   selectedBasemap: BasemapId;
   placementMode: PlacementMode;
@@ -62,7 +64,7 @@ interface PlannerState {
   setOrderedStops: (ids: string[]) => void;
   clearRoute: () => void;
   clearTargets: () => void;
-  setRoute: (geoJson: GeoJsonFeatureCollection, summary: RouteSummary) => void;
+  setRoute: (geoJson: GeoJsonFeatureCollection, summary: RouteSummary, segments: RouteSegment[]) => void;
   focusLocation: (point: LocationPoint) => void;
   setSelectedBasemap: (id: BasemapId) => void;
   setPlacementMode: (mode: PlacementMode) => void;
@@ -81,6 +83,7 @@ export const usePlannerStore = create<PlannerState>((set, get) => ({
   orderedStops: seedTargets.map((target) => target.id),
   routeGeoJson: null,
   routeSummary: null,
+  routeSegments: [],
   focusPoint: null,
   selectedBasemap: persisted.selectedBasemap ?? 'light',
   placementMode: 'target',
@@ -94,6 +97,7 @@ export const usePlannerStore = create<PlannerState>((set, get) => ({
       origin: { id: createId(), ...point },
       routeGeoJson: null,
       routeSummary: null,
+      routeSegments: [],
       error: null,
     }),
   addTarget: (point) =>
@@ -104,6 +108,7 @@ export const usePlannerStore = create<PlannerState>((set, get) => ({
         orderedStops: [...state.orderedStops, target.id],
         routeGeoJson: null,
         routeSummary: null,
+        routeSegments: [],
         error: null,
       };
     }),
@@ -115,6 +120,7 @@ export const usePlannerStore = create<PlannerState>((set, get) => ({
         orderedStops: [...state.orderedStops, ...targets.map((target) => target.id)],
         routeGeoJson: null,
         routeSummary: null,
+        routeSegments: [],
         error: null,
       };
     }),
@@ -123,6 +129,7 @@ export const usePlannerStore = create<PlannerState>((set, get) => ({
       targets: state.targets.map((target) => (target.id === id ? { ...target, ...point } : target)),
       routeGeoJson: null,
       routeSummary: null,
+      routeSegments: [],
     })),
   removeTarget: (id) =>
     set((state) => ({
@@ -130,18 +137,19 @@ export const usePlannerStore = create<PlannerState>((set, get) => ({
       orderedStops: state.orderedStops.filter((targetId) => targetId !== id),
       routeGeoJson: null,
       routeSummary: null,
+      routeSegments: [],
     })),
   reorderStop: (fromIndex, toIndex) =>
     set((state) => {
       const orderedStops = [...state.orderedStops];
       const [moved] = orderedStops.splice(fromIndex, 1);
       orderedStops.splice(toIndex, 0, moved);
-      return { orderedStops, routeGeoJson: null, routeSummary: null };
+      return { orderedStops, routeGeoJson: null, routeSummary: null, routeSegments: [] };
     }),
-  setOrderedStops: (ids) => set({ orderedStops: ids, routeGeoJson: null, routeSummary: null }),
-  clearRoute: () => set({ routeGeoJson: null, routeSummary: null }),
-  clearTargets: () => set({ targets: [], orderedStops: [], routeGeoJson: null, routeSummary: null }),
-  setRoute: (geoJson, summary) => set({ routeGeoJson: geoJson, routeSummary: summary }),
+  setOrderedStops: (ids) => set({ orderedStops: ids, routeGeoJson: null, routeSummary: null, routeSegments: [] }),
+  clearRoute: () => set({ routeGeoJson: null, routeSummary: null, routeSegments: [] }),
+  clearTargets: () => set({ targets: [], orderedStops: [], routeGeoJson: null, routeSummary: null, routeSegments: [] }),
+  setRoute: (geoJson, summary, segments) => set({ routeGeoJson: geoJson, routeSummary: summary, routeSegments: segments }),
   focusLocation: (point) => set({ focusPoint: point }),
   setSelectedBasemap: (id) => {
     const next = { ...readSettings(), selectedBasemap: id };
@@ -157,7 +165,7 @@ export const usePlannerStore = create<PlannerState>((set, get) => ({
   setProfile: (profile) => {
     const next = { ...readSettings(), profile };
     saveSettings(next);
-    set({ profile, routeGeoJson: null, routeSummary: null });
+    set({ profile, routeGeoJson: null, routeSummary: null, routeSegments: [] });
   },
   setStatus: (status) => set({ status }),
   setError: (error) => set({ error }),
