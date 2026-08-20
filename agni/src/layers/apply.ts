@@ -50,7 +50,6 @@ export interface MapSyncState {
   visibility: Record<string, boolean>;
   opacity: Record<string, number>;
   layerMode: Record<string, string>;
-  layerParams: Record<string, Record<string, number>>;
   firesGeojson: FeatureCollection | null;
   fireFilters: FireFilters;
 }
@@ -76,12 +75,7 @@ let lastFiresData: FeatureCollection | null = null;
 
 /** Map layers driven by the fire filter. The charts apply the same predicate
  *  through applyFireFilters, so the two views cannot drift apart. */
-const FIRE_FILTERED = [
-  "fires",
-  "fires-glow-outer",
-  "fires-glow-inner",
-  "fires-heat",
-];
+const FIRE_FILTERED = ["fires", "fires-glow-outer", "fires-glow-inner"];
 
 /** The filtered slice, shared by the glyph source and the glyph markers.
  *
@@ -128,9 +122,6 @@ export function applyMapState(map: MaplibreMap, state: MapSyncState): boolean {
     if (map.getLayer(d.id)) {
       if (d.applyMode && d.modes?.length) {
         d.applyMode(map, state.layerMode[d.id] ?? d.modes[0].value);
-      }
-      if (d.applyParams && d.params?.length) {
-        d.applyParams(map, state.layerParams[d.id] ?? {});
       }
       if (d.setOpacity) {
         d.setOpacity(map, state.opacity[d.id] ?? d.defaultOpacity);

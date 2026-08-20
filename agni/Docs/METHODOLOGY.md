@@ -167,7 +167,7 @@ ship at 0.5 opacity.
 - The map owns a **single inline style** (background + 3 basemap raster layers). Everything else is added/removed imperatively by `MapView` effects that subscribe to the Zustand store.
 - Each registry descriptor implements `add(map)`, `remove(map)`, `setOpacity(map, v)`. The sync effect diffs desired vs. applied state on every store change.
 - Overlay ordering is controlled by inserting layers above the basemap stack in registry order.
-- FIRMS data flows: `useFirms` hook → store (`firesGeojson`, status) → `setData` on the fire GeoJSON source → circle + heatmap layers re-render.
+- FIRMS data flows: `useFirms` hook → store (`firesGeojson`, status) → `setData` on the fire GeoJSON source → the circle layers re-render.
 
 ## 6. KPI methodology
 

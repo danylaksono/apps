@@ -37,8 +37,6 @@ function LayerRow({ d }: { d: LayerDescriptor }) {
   const setOpacity = useLayersStore((s) => s.setOpacity);
   const mode = useLayersStore((s) => s.layerMode[d.id]);
   const setMode = useLayersStore((s) => s.setLayerMode);
-  const params = useLayersStore((s) => s.layerParams[d.id]);
-  const setParam = useLayersStore((s) => s.setLayerParam);
   const unavailable = availability === "unavailable";
 
   return (
@@ -110,32 +108,6 @@ function LayerRow({ d }: { d: LayerDescriptor }) {
               })}
             </div>
           )}
-          {d.params?.map((p) => {
-            const v = params?.[p.key] ?? p.value;
-            return (
-              <div key={p.key} className="mb-1.5 flex items-center gap-2">
-                <span className="w-[46px] shrink-0 text-[9px] uppercase tracking-widest text-ink-400">
-                  {p.label}
-                </span>
-                <input
-                  type="range"
-                  min={p.min}
-                  max={p.max}
-                  step={p.step}
-                  value={v}
-                  onChange={(e) =>
-                    setParam(d.id, p.key, Number(e.target.value))
-                  }
-                  className="agni-slider flex-1"
-                  aria-label={`${d.label} ${p.label}`}
-                />
-                <span className="w-14 shrink-0 whitespace-nowrap text-right text-[10px] tabular-nums text-ink-200">
-                  {v}
-                  {p.unit ? ` ${p.unit}` : ""}
-                </span>
-              </div>
-            );
-          })}
           <input
             type="range"
             min={0}

@@ -18,7 +18,6 @@ Scope is **national** (Indonesia). FIRMS is requested over the national bbox and
 | ID | Group | Label | Source | Type | Default |
 | --- | --- | --- | --- | --- | --- |
 | `fires` | Fire | Active fires | FIRMS `/api/area/csv`, **5 days**, national bbox | circle (FRP-scaled, confidence-coloured) | **on** |
-| `fires-heat` | Fire | Fire heatmap | derived from FIRMS points | heatmap | off |
 | `fire-glyphs` | Fire | Fire glyphs | derived from the filtered FIRMS set | canvas donut DOM markers | off |
 | `burnt-area` | Fire | Burnt area (Copernicus 300 m) | CLMS `ba_global_300m_daily_v4` WMTS, decoded | raster (protocol) | off |
 | `fire-hazard` | Fire | Fire hazard (rawan karhutla) | BIG SatuPeta layer 47 | fill | off |

@@ -43,7 +43,7 @@ export interface LayerDescriptor {
   label: string;
   description: string;
   /** primary map layer type, drives default opacity mapping */
-  layerType: "circle" | "heatmap" | "raster" | "fill" | "line";
+  layerType: "circle" | "raster" | "fill" | "line";
   defaultVisible: boolean;
   defaultOpacity: number;
   /** base paint opacity multiplied by the slider value (default 1) */
@@ -65,21 +65,6 @@ export interface LayerDescriptor {
   /** called whenever the selected `modes` value changes, for layers that
    *  switch appearance rather than data */
   applyMode?(map: MaplibreMap, mode: string): void;
-  /** Numeric knobs shown as sliders under the layer. For anything where the
-   *  right value is a judgement call rather than a constant. */
-  params?: LayerParam[];
-  applyParams?(map: MaplibreMap, values: Record<string, number>): void;
-}
-
-export interface LayerParam {
-  key: string;
-  label: string;
-  min: number;
-  max: number;
-  step: number;
-  /** default */
-  value: number;
-  unit?: string;
 }
 
 /** Bottom-to-top draw order. Context polygons sit under the fire points they
@@ -96,7 +81,6 @@ export const GROUP_RANK: Record<LayerGroup, number> = {
 
 export const OPACITY_PROPS = {
   circle: "circle-opacity",
-  heatmap: "heatmap-opacity",
   raster: "raster-opacity",
   fill: "fill-opacity",
   line: "line-opacity",
@@ -167,37 +151,6 @@ function fireRadius(scale: number): ExpressionSpecification {
     7 * scale,
     400,
     11 * scale,
-  ] as unknown as ExpressionSpecification;
-}
-
-/** Heatmap kernel radius as a ground distance rather than a pixel count.
- *
- *  The old radius was 2 px at z3 and 10 px at z7 — narrower than the gaps
- *  between detections, so at national zoom the "density surface" was just the
- *  dots again with soft edges. A kernel measured in kilometres stays the same
- *  real-world size as you zoom, which is what makes it read as a field.
- *
- *  Web Mercator metres-per-pixel halves with every zoom step, so pixels double:
- *  an exponential-base-2 interpolation between the two ends is exact (at the
- *  equator, and Indonesia straddles it). Clamped at the top because MapLibre
- *  pays for a heatmap kernel in fill rate and a 1,000 px radius will not draw
- *  at a usable frame rate. */
-function heatmapRadiusKm(km: number): ExpressionSpecification {
-  const MAX_PX = 90;
-  const pxAtZoom = (z: number) => (km * 1000 * 2 ** z) / 156543.03;
-  // Zoom at which the kernel would exceed MAX_PX. The cap has to be expressed
-  // as a stop rather than wrapped in ["min", …]: MapLibre only accepts ["zoom"]
-  // as the input to a *top-level* interpolate, so anything enclosing it is
-  // rejected outright at addLayer.
-  const capZoom = Math.min(22, Math.log2((MAX_PX * 156543.03) / (km * 1000)));
-  const stops: number[] = [0, pxAtZoom(0)];
-  if (capZoom > 0 && capZoom < 22) stops.push(capZoom, MAX_PX, 22, MAX_PX);
-  else stops.push(22, Math.min(MAX_PX, pxAtZoom(22)));
-  return [
-    "interpolate",
-    ["exponential", 2],
-    ["zoom"],
-    ...stops,
   ] as unknown as ExpressionSpecification;
 }
 
@@ -302,143 +255,6 @@ export const LAYERS: LayerDescriptor[] = [
       removeSourceIfUnused(map, "fires");
     },
   },
-  {
-    id: "fires-heat",
-    group: "fire",
-    label: "Fire heatmap",
-    description:
-      "FRP-weighted density surface derived from FIRMS detection points. The kernel is a ground distance, so it stays the same size on the ground as you zoom — widen it to read regional pressure, narrow it to pick out individual clusters.",
-    layerType: "heatmap",
-    defaultVisible: false,
-    defaultOpacity: 0.85,
-    params: [
-      {
-        key: "radiusKm",
-        label: "Kernel",
-        min: 2,
-        max: 60,
-        step: 1,
-        value: 18,
-        unit: "km",
-      },
-      {
-        key: "intensity",
-        label: "Intensity",
-        min: 0.2,
-        max: 4,
-        step: 0.1,
-        value: 1.2,
-      },
-    ],
-    gradientLegend: {
-      css: "linear-gradient(90deg, rgba(255,194,75,0.3), #ff9e2c, #f04438)",
-      min: "low",
-      max: "high",
-    },
-    applyParams(map, values) {
-      if (!map.getLayer("fires-heat")) return;
-      map.setPaintProperty(
-        "fires-heat",
-        "heatmap-radius",
-        heatmapRadiusKm(values.radiusKm ?? 18),
-      );
-      map.setPaintProperty(
-        "fires-heat",
-        "heatmap-intensity",
-        values.intensity ?? 1.2,
-      );
-    },
-    add(map) {
-      addSourceSafe(map, "fires", { type: "geojson", data: EMPTY_FC });
-      if (!map.getLayer("fires-heat")) {
-        map.addLayer({
-          id: "fires-heat",
-          type: "heatmap",
-          source: "fires",
-          paint: {
-            "heatmap-weight": [
-              "interpolate",
-              ["linear"],
-              ["get", "frp"],
-              0,
-              0,
-              100,
-              1,
-            ],
-            "heatmap-intensity": 1.2,
-            "heatmap-radius": heatmapRadiusKm(18),
-            "heatmap-color": [
-              "interpolate",
-              ["linear"],
-              ["heatmap-density"],
-              0,
-              "rgba(0,0,0,0)",
-              0.2,
-              "rgba(255,194,75,0.25)",
-              0.45,
-              "rgba(255,158,44,0.5)",
-              0.7,
-              "rgba(255,107,26,0.75)",
-              1,
-              "rgba(240,68,56,0.95)",
-            ],
-          },
-        });
-      }
-    },
-    remove(map) {
-      removeLayerSafe(map, "fires-heat");
-      removeSourceIfUnused(map, "fires");
-    },
-  },
-
-  {
-    id: "fire-hazard",
-    group: "fire",
-    mapLayerIds: ["fire-hazard"],
-    label: "Fire hazard (rawan karhutla)",
-    description:
-      "Official forest and land fire hazard classes from BIG SatuPeta, showing where fire is expected under baseline conditions. Large layer; loads on demand.",
-    layerType: "fill",
-    defaultVisible: false,
-    defaultOpacity: 0.6,
-    legend: [
-      { color: "#fca5a5", label: "rendah" },
-      { color: "#f87171", label: "sedang" },
-      { color: "#dc2626", label: "tinggi" },
-    ],
-    add(map) {
-      addSourceSafe(map, "fire-hazard", { type: "geojson", data: EMPTY_FC });
-      if (!map.getLayer("fire-hazard")) {
-        map.addLayer({
-          id: "fire-hazard",
-          type: "fill",
-          source: "fire-hazard",
-          paint: {
-            "fill-color": [
-              "match",
-              ["downcase", ["coalesce", ["get", "kelas"], ""]],
-              "tinggi",
-              "#dc2626",
-              "sangat tinggi",
-              "#991b1b",
-              "sedang",
-              "#f87171",
-              "rendah",
-              "#fca5a5",
-              "#94a3b8",
-            ],
-            "fill-opacity": 0.35,
-          },
-        });
-      }
-    },
-    remove(map) {
-      removeLayerSafe(map, "fire-hazard");
-      removeSourceIfUnused(map, "fire-hazard");
-    },
-  },
-
   {
     id: "fire-glyphs",
     group: "fire",
