@@ -15,9 +15,14 @@
 
 import { CAMS_WMS } from "./config";
 
-/** Probe requests in flight at once. Enough to make a full series feel
- *  immediate without hammering a free public service. */
-const CONCURRENCY = 8;
+/** Probe requests in flight at once, across *all* layers being probed.
+ *
+ *  Browsers cap concurrent connections to one host at around six, so running
+ *  eight per layer just queues them inside the browser while looking like
+ *  sixteen here. One shared queue at the real limit keeps the ordering below
+ *  meaningful — otherwise the near-term steps we want first sit behind a
+ *  backlog the queue no longer controls. */
+const CONCURRENCY = 6;
 
 /** Half-width of the tiny bbox built around the point. CAMS is a ~0.4 degree
  *  grid and the server snaps to the nearest grid point regardless, so this only
@@ -92,35 +97,70 @@ export interface ProbePoint {
   value: number | null;
 }
 
-/** Probe every step, `CONCURRENCY` at a time, preserving order.
- *  `onProgress` fires as results land so the chart can draw while it fills. */
+export type ProbeSeries = Record<string, ProbePoint[]>;
+
+/** Visit order: nearest `anchor` first, spreading outwards.
+ *
+ *  A full CAMS run is ~72 steps and the chart needs two layers, so a click is
+ *  ~144 requests and several seconds end to end. Filling left-to-right leaves
+ *  the part people actually look at — right now, and the next day or two —
+ *  until last. Working outwards from the current step means the useful middle
+ *  of the chart is drawn within about a second and the tails fill in after. */
+function outwardOrder(count: number, anchor: number): number[] {
+  const order: number[] = [];
+  const start = Math.max(0, Math.min(count - 1, anchor));
+  for (let d = 0; d < count; d++) {
+    if (d === 0) order.push(start);
+    else {
+      if (start - d >= 0) order.push(start - d);
+      if (start + d < count) order.push(start + d);
+    }
+    if (order.length >= count) break;
+  }
+  return order;
+}
+
+/** Probe every step of every layer through one queue, nearest `anchor` first.
+ *  `onProgress` fires as results land so the chart draws while it fills. */
 export async function probeCamsSeries(
-  layer: string,
+  layers: string[],
   lon: number,
   lat: number,
   times: string[],
-  onProgress?: (points: ProbePoint[]) => void,
-): Promise<ProbePoint[]> {
-  const out: ProbePoint[] = times.map((time) => ({ time, value: null }));
+  anchor: number,
+  onProgress?: (series: ProbeSeries) => void,
+): Promise<ProbeSeries> {
+  const out: ProbeSeries = {};
+  for (const layer of layers) {
+    out[layer] = times.map((time) => ({ time, value: null }));
+  }
+
+  const jobs: { layer: string; i: number }[] = [];
+  for (const i of outwardOrder(times.length, anchor)) {
+    for (const layer of layers) jobs.push({ layer, i });
+  }
+
   let next = 0;
   let done = 0;
-
   const worker = async () => {
     for (;;) {
-      const i = next++;
-      if (i >= times.length) return;
-      out[i] = { time: times[i], value: await probeCams(layer, lon, lat, times[i]) };
+      const job = jobs[next++];
+      if (!job) return;
+      const value = await probeCams(job.layer, lon, lat, times[job.i]);
+      out[job.layer][job.i] = { time: times[job.i], value };
       done += 1;
-      // Repaint every few results rather than every one — the chart is a whole
-      // re-render and 70 of them is wasted work.
-      if (onProgress && (done % 6 === 0 || done === times.length)) {
-        onProgress([...out]);
+      // Repaint every few results rather than every one — each is a full
+      // re-render and 144 of them is wasted work.
+      if (onProgress && (done % 4 === 0 || done === jobs.length)) {
+        onProgress(
+          Object.fromEntries(layers.map((l) => [l, [...out[l]]])) as ProbeSeries,
+        );
       }
     }
   };
 
   await Promise.all(
-    Array.from({ length: Math.min(CONCURRENCY, times.length) }, worker),
+    Array.from({ length: Math.min(CONCURRENCY, jobs.length) }, worker),
   );
   return out;
 }

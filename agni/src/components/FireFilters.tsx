@@ -62,7 +62,13 @@ export default function FireFilters() {
           Window
         </span>
         {WINDOWS.map((h) => (
-          <Chip key={h} on={f.hours === h} onClick={() => set({ hours: h })}>
+          <Chip
+            key={h}
+            // A pinned day overrides the window, so none of these read as
+            // active while one is held.
+            on={!f.day && f.hours === h}
+            onClick={() => set({ hours: h, day: null })}
+          >
             {h}h
           </Chip>
         ))}

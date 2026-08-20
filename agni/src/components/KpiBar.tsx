@@ -61,7 +61,9 @@ export default function KpiBar() {
     {
       label: "Active fires",
       value: firesStatus === "loading" ? "…" : value(kpi.fires),
-      hint: `VIIRS SNPP · ${filters.hours} h · Indonesia`,
+      hint: `VIIRS SNPP · ${
+        filters.day ? filters.day : `${filters.hours} h`
+      } · Indonesia`,
     },
     {
       label: "Total FRP",

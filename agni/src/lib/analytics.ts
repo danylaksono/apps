@@ -101,6 +101,8 @@ export interface FireFilters {
   hours: number;
   /** clicking a ranked bar scopes everything to that area */
   area: { level: "provinsi" | "kabkota"; name: string } | null;
+  /** clicking a column in the trend pins that UTC day, replacing `hours` */
+  day: string | null;
   /** FIRMS confidence classes to keep: l | n | h */
   confidence: string[];
   /** D, N, or both */
@@ -112,6 +114,7 @@ export interface FireFilters {
 export const DEFAULT_FILTERS: FireFilters = {
   hours: 24,
   area: null,
+  day: null,
   confidence: ["l", "n", "h"],
   daynight: ["D", "N"],
   minFrp: 0,
@@ -138,11 +141,14 @@ export function fireFilterExpression(
 ): unknown[] {
   const expr: unknown[] = [
     "all",
-    [">=", ["get", "ts"], latest - f.hours * 3600_000],
     [">=", ["get", "frp"], f.minFrp],
     ["in", ["get", "confidence"], ["literal", f.confidence]],
     ["in", ["get", "daynight"], ["literal", f.daynight]],
   ];
+  // A pinned day and a rolling window answer the same question two ways, so
+  // only one is ever in force.
+  if (f.day) expr.push(["==", ["get", "acq_date"], f.day]);
+  else expr.push([">=", ["get", "ts"], latest - f.hours * 3600_000]);
   if (f.area) expr.push(["==", ["get", f.area.level], f.area.name]);
   return expr;
 }
@@ -157,8 +163,11 @@ export function applyFireFilters(
     type: "FeatureCollection",
     features: fires.features.filter((x) => {
       const p = x.properties ?? {};
+      const inWindow = f.day
+        ? String(p.acq_date) === f.day
+        : (Number(p.ts) || 0) >= since;
       return (
-        (Number(p.ts) || 0) >= since &&
+        inWindow &&
         (Number(p.frp) || 0) >= f.minFrp &&
         f.confidence.includes(String(p.confidence)) &&
         f.daynight.includes(String(p.daynight)) &&

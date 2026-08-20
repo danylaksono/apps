@@ -35,6 +35,8 @@ export interface LinePoint {
   t: number;
   value: number | null;
   label: string;
+  /** stable id, when the point is selectable */
+  key?: string;
 }
 
 export interface BarRow {

@@ -33,6 +33,24 @@ function niceTicks(max: number, count = 4): number[] {
   return out;
 }
 
+/** Round tick values lying *inside* [lo, hi].
+ *
+ *  Deliberately does not snap the domain to the ticks. Letting the outermost
+ *  tick define the range is what produced an axis of 2k/4k/6k for data running
+ *  4.2k–7.0k: the floor dropped far below the data, flattening it again, while
+ *  the top tick sat under the peak and clipped it. The domain comes from the
+ *  data; these are only labels placed within it. */
+function ticksWithin(lo: number, hi: number, count = 4): number[] {
+  const rough = (hi - lo) / count;
+  if (!(rough > 0)) return [lo];
+  const mag = 10 ** Math.floor(Math.log10(rough));
+  const step =
+    [1, 2, 2.5, 5, 10].map((m) => m * mag).find((v) => v >= rough) ?? mag * 10;
+  const out: number[] = [];
+  for (let v = Math.ceil(lo / step) * step; v <= hi; v += step) out.push(v);
+  return out.length ? out : [lo, hi];
+}
+
 const fmt = (n: number) =>
   n >= 1000 ? `${(n / 1000).toFixed(n >= 10000 ? 0 : 1)}k` : `${Math.round(n)}`;
 
@@ -94,6 +112,9 @@ export function LineChart({
   /** index where forecast begins; everything from here is drawn dashed-free but
    *  in a lighter wash so analysis and forecast are not read as equal */
   forecastFrom,
+  baseline = "zero",
+  activeKey,
+  onSelect,
 }: {
   title: string;
   subtitle?: string;
@@ -103,6 +124,14 @@ export function LineChart({
   thresholds?: Threshold[];
   height?: number;
   forecastFrom?: number;
+  /** "zero" anchors the axis at 0, which magnitude readings need. "fit" pads
+   *  around the data instead — legitimate for a line, whose meaning is carried
+   *  by position rather than by length, and necessary when a series sits in a
+   *  narrow band well above zero: anchored at 0, five days between 4.2k and
+   *  7.0k are a flat row of near-identical heights and the trend disappears. */
+  baseline?: "zero" | "fit";
+  activeKey?: string | null;
+  onSelect?: (point: LinePoint) => void;
 }) {
   const [hover, setHover] = useState<number | null>(null);
   const W = 268;
@@ -120,12 +149,24 @@ export function LineChart({
     ...real.map((p) => p.value),
     ...thresholds.map((t) => t.value * 0.65),
   );
-  const ticks = niceTicks(maxV);
-  const top = ticks[ticks.length - 1] || maxV;
+  const minV = real.length ? Math.min(...real.map((p) => p.value)) : 0;
+
+  // A fitted axis pads the observed span by a tenth on each side, so the line
+  // uses the height of the plot instead of hugging the top of it.
+  const pad = Math.max(1, (maxV - minV) * 0.12);
+  const fit = baseline === "fit" && real.length > 1 && maxV > minV;
+  // Fitted: the domain is the data plus a little air, and the ticks fall where
+  // they may inside it. Zero-anchored: the top tick defines the domain, as a
+  // magnitude scale should.
+  const bottom = fit ? Math.max(0, minV - pad) : 0;
+  const zeroTicks = fit ? [] : niceTicks(maxV);
+  const top = fit ? maxV + pad : zeroTicks[zeroTicks.length - 1] || maxV;
+  const ticks = fit ? ticksWithin(bottom, top) : zeroTicks;
+  const span = Math.max(1e-9, top - bottom);
 
   const x = (i: number) =>
     padL + (i / Math.max(1, points.length - 1)) * (W - padL - padR);
-  const y = (v: number) => padT + plotH - (v / top) * plotH;
+  const y = (v: number) => padT + plotH - ((v - bottom) / span) * plotH;
 
   const path = points
     .map((p, i) => (p.value === null ? null : `${x(i)},${y(p.value)}`))
@@ -143,6 +184,20 @@ export function LineChart({
     : null;
   const peakIdx = peak ? points.indexOf(peak) : -1;
   const hovered = hover !== null ? points[hover] : null;
+  const activeIdx = activeKey
+    ? points.findIndex((p) => p.key === activeKey)
+    : -1;
+
+  /** Nearest point index for a pointer position. The whole plot is the hit
+   *  area, so a 4px marker never has to be landed on. */
+  const indexAt = (e: React.MouseEvent<SVGSVGElement>): number | null => {
+    const box = e.currentTarget.getBoundingClientRect();
+    const rel = ((e.clientX - box.left) / box.width) * W;
+    const i = Math.round(
+      ((rel - padL) / (W - padL - padR)) * (points.length - 1),
+    );
+    return i >= 0 && i < points.length ? i : null;
+  };
 
   return (
     <ChartFrame
@@ -172,14 +227,13 @@ export function LineChart({
           role="img"
           aria-label={title}
           onMouseLeave={() => setHover(null)}
-          onMouseMove={(e) => {
-            const box = e.currentTarget.getBoundingClientRect();
-            const rel = ((e.clientX - box.left) / box.width) * W;
-            const i = Math.round(
-              ((rel - padL) / (W - padL - padR)) * (points.length - 1),
-            );
-            setHover(i >= 0 && i < points.length ? i : null);
+          onMouseMove={(e) => setHover(indexAt(e))}
+          onClick={(e) => {
+            if (!onSelect) return;
+            const i = indexAt(e);
+            if (i !== null && points[i].value !== null) onSelect(points[i]);
           }}
+          style={onSelect ? { cursor: "pointer" } : undefined}
         >
           {/* y grid — hairline, solid, one step off surface */}
           {ticks.map((t) => (
@@ -255,7 +309,9 @@ export function LineChart({
             />
           )}
 
-          {area && <path d={area} fill={color} opacity={0.1} />}
+          {/* No wash under a fitted axis: an area reads as magnitude from the
+              baseline, and this baseline is not zero. */}
+          {area && !fit && <path d={area} fill={color} opacity={0.1} />}
           {line && (
             <path
               d={line}
@@ -268,7 +324,7 @@ export function LineChart({
           )}
 
           {/* peak marker: >=8px with a 2px surface ring */}
-          {peak && peakIdx >= 0 && (
+          {peak && peakIdx >= 0 && !onSelect && (
             <>
               <circle
                 cx={x(peakIdx)}
@@ -287,6 +343,36 @@ export function LineChart({
                 {fmt(peak.value)}
               </text>
             </>
+          )}
+
+          {/* Dots only on a short series — 70 forecast steps would be a bead
+              curtain. They mark what can be clicked. */}
+          {onSelect &&
+            points.length <= 12 &&
+            points.map((p, i) =>
+              p.value === null ? null : (
+                <circle
+                  key={p.key ?? p.t}
+                  cx={x(i)}
+                  cy={y(p.value)}
+                  r={i === activeIdx ? 4.5 : 3}
+                  fill={i === activeIdx ? CHART_INK : color}
+                  stroke={SURFACE}
+                  strokeWidth={2}
+                />
+              ),
+            )}
+
+          {activeIdx >= 0 && (
+            <line
+              x1={x(activeIdx)}
+              x2={x(activeIdx)}
+              y1={padT}
+              y2={padT + plotH}
+              stroke={CHART_INK}
+              strokeWidth={1}
+              opacity={0.5}
+            />
           )}
 
           {hovered && hovered.value !== null && (
@@ -311,7 +397,10 @@ export function LineChart({
           )}
 
           {/* x labels: first, middle, last only — more collide at this width */}
-          {[0, Math.floor(points.length / 2), points.length - 1]
+          {(points.length <= 7
+            ? points.map((_, i) => i)
+            : [0, Math.floor(points.length / 2), points.length - 1]
+          )
             .filter((i, n, a) => points[i] && a.indexOf(i) === n)
             .map((i) => (
               <text

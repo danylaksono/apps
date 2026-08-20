@@ -17,6 +17,7 @@ import {
   rollupByArea,
 } from "../lib/analytics";
 import { probeCamsSeries, type ProbePoint as Series } from "../lib/camsProbe";
+import { camsTimeSteps } from "../lib/cams";
 import { exposedPopulation } from "../lib/population";
 import { getMapRef } from "../lib/mapRef";
 import { useLayersStore } from "../store/layers";
@@ -123,6 +124,31 @@ export default function DashboardRail() {
   const exposed = exposure?.key === scopeKey ? exposure.value : null;
 
   // --- CAMS probe ---------------------------------------------------------
+  const camsIndex = useLayersStore((s) => s.camsIndex);
+  const setCamsSteps = useLayersStore((s) => s.setCamsSteps);
+
+  // The forecast charts need the time dimension whether or not a CAMS *layer*
+  // is switched on. Leaving that to CamsTimeline — which only fetches while one
+  // is visible — meant clicking the map with the haze layers off left both
+  // charts saying "loading…" forever, because the probe had no steps to walk.
+  //
+  // Fetched when the rail mounts rather than on the click that needs it: the
+  // capabilities document is 600 kB of XML, and paying for it inside the click
+  // put ~4 s in front of the first line being drawn. It is cached in lib/cams,
+  // so CamsTimeline shares this one fetch.
+  useEffect(() => {
+    if (camsSteps.length) return;
+    let cancelled = false;
+    camsTimeSteps(CAMS_LAYERS.bbaod.layer)
+      .then((steps) => {
+        if (!cancelled && steps.length) setCamsSteps(steps);
+      })
+      .catch((err) => console.warn("[agni] CAMS time steps failed", err));
+    return () => {
+      cancelled = true;
+    };
+  }, [camsSteps.length, setCamsSteps]);
+
   const probeKey = probe ? `${probe.lon.toFixed(3)},${probe.lat.toFixed(3)}` : "";
   const [series, setSeries] = useState<{
     key: string;
@@ -134,35 +160,31 @@ export default function DashboardRail() {
   useEffect(() => {
     if (!probe || !camsSteps.length) return;
     let cancelled = false;
-    const partial = { pm25: [] as Series[], smoke: [] as Series[] };
-    const push = (which: "pm25" | "smoke") => (pts: Series[]) => {
+    const PM = CAMS_LAYERS.pm25.layer;
+    const BB = CAMS_LAYERS.bbaod.layer;
+    const apply = (r: Record<string, Series[]>, done: boolean) => {
       if (cancelled) return;
-      partial[which] = pts;
-      setSeries({ key: probeKey, ...partial, done: false });
+      setSeries({ key: probeKey, pm25: r[PM] ?? [], smoke: r[BB] ?? [], done });
     };
-    void Promise.all([
-      probeCamsSeries(
-        CAMS_LAYERS.pm25.layer,
-        probe.lon,
-        probe.lat,
-        camsSteps,
-        push("pm25"),
-      ),
-      probeCamsSeries(
-        CAMS_LAYERS.bbaod.layer,
-        probe.lon,
-        probe.lat,
-        camsSteps,
-        push("smoke"),
-      ),
-    ]).then(([pm25, smoke]) => {
-      if (!cancelled) setSeries({ key: probeKey, pm25, smoke, done: true });
-    });
+    void probeCamsSeries(
+      [PM, BB],
+      probe.lon,
+      probe.lat,
+      camsSteps,
+      // start at the step on screen, so the part being looked at fills first
+      camsIndex,
+      (r) => apply(r, false),
+    ).then((r) => apply(r, true));
     return () => {
       cancelled = true;
     };
+    // camsIndex only picks the starting point; re-probing as it scrubs would
+    // restart the queue on every animation frame.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [probe, camsSteps, probeKey]);
 
+  // A result carries the point it was probed for, so a series left over from
+  // the previous click is ignored rather than shown against the new one.
   const current = series?.key === probeKey ? series : null;
   const pm25 = current?.pm25 ?? [];
   const smoke = current?.smoke ?? [];
@@ -188,6 +210,10 @@ export default function DashboardRail() {
     );
     if (b) map.fitBounds(b, { padding: 60, duration: 700 });
   };
+
+  const scopeLabel = filters.day
+    ? dayLabel.format(new Date(`${filters.day}T00:00:00Z`))
+    : `Last ${filters.hours} h`;
 
   const toPoints = (rows: Series[]): LinePoint[] =>
     rows.map((r) => ({
@@ -231,14 +257,23 @@ export default function DashboardRail() {
         </button>
       </header>
 
-      {filters.area && (
+      {(filters.area || filters.day) && (
         <button
           type="button"
-          onClick={() => setFilters({ area: null })}
+          onClick={() => setFilters({ area: null, day: null })}
           className="flex w-full items-center gap-1.5 rounded-lg bg-fire-400/15 px-2.5 py-1.5 text-left text-[10px] text-fire-300 hover:bg-fire-400/25"
         >
           <Funnel size={12} weight="fill" className="shrink-0" />
-          <span className="truncate font-medium">{filters.area.name}</span>
+          <span className="truncate font-medium">
+            {[
+              filters.area?.name,
+              filters.day
+                ? dayLabel.format(new Date(`${filters.day}T00:00:00Z`))
+                : null,
+            ]
+              .filter(Boolean)
+              .join(" · ")}
+          </span>
           <span className="ml-auto shrink-0 text-ink-300">clear ×</span>
         </button>
       )}
@@ -252,21 +287,37 @@ export default function DashboardRail() {
               ? `${(exposed / 1e6).toFixed(1)} M`
               : exposed.toLocaleString()
         }
-        definition={`Kontur population within ~${EXPOSURE_KM} km of a detection, over the ${filters.hours} h shown. A wider radius or window multiplies this several times over.`}
+        definition={`Kontur population within ~${EXPOSURE_KM} km of a detection, over the ${
+          filters.day ? "day" : `${filters.hours} h`
+        } shown. A wider radius or window multiplies this several times over.`}
         tone={SERIES.fire}
       />
 
       {trend.length > 1 && (
         <LineChart
           title="Detections per day"
-          subtitle={`VIIRS SNPP, ${trend.length} days · unfiltered, for context`}
+          subtitle={
+            filters.day
+              ? "Pinned to one day · click again to release"
+              : `VIIRS SNPP, ${trend.length} days · click a day to pin it`
+          }
           points={trend.map((d) => ({
+            key: d.date,
             t: Date.parse(`${d.date}T00:00:00Z`),
             value: d.detections,
             label: dayLabel.format(new Date(`${d.date}T00:00:00Z`)),
           }))}
           color={SERIES.fire}
           unit="detections"
+          height={140}
+          // Fitted, not zero-anchored: the daily totals sit in a narrow band
+          // well above zero, and anchoring flattens the very trend this chart
+          // exists to show.
+          baseline="fit"
+          activeKey={filters.day}
+          onSelect={(p) =>
+            setFilters({ day: filters.day === p.key ? null : (p.key ?? null) })
+          }
         />
       )}
 
@@ -275,8 +326,8 @@ export default function DashboardRail() {
           title="Provinces by detections"
           subtitle={
             areas.unattributed
-              ? `Last ${filters.hours} h · ${areas.unattributed} offshore or unattributed`
-              : `Last ${filters.hours} h`
+              ? `${scopeLabel} · ${areas.unattributed} offshore or unattributed`
+              : scopeLabel
           }
           rows={areas.provinces.slice(0, 8).map((p) => ({
             name: p.name,
@@ -293,7 +344,7 @@ export default function DashboardRail() {
       {areas && areas.kabkota.length > 0 && (
         <BarChart
           title="Kabupaten by detections"
-          subtitle={`Last ${filters.hours} h · top 8 of ${areas.kabkota.length}`}
+          subtitle={`${scopeLabel} · top 8 of ${areas.kabkota.length}`}
           rows={areas.kabkota.slice(0, 8).map((k) => ({
             name: k.name,
             province: k.province,
