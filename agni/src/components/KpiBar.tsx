@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from "react";
 import type { FeatureCollection, MultiPolygon, Polygon } from "geojson";
 import { computeKpi } from "../lib/kpi";
 import { loadKabKota } from "../lib/geo";
+import { applyFireFilters, latestTimestamp } from "../lib/analytics";
 import { getPeatExtent } from "../lib/peat";
 import { useLayersStore } from "../store/layers";
 
@@ -12,8 +13,21 @@ function value(v: number | null): string {
 }
 
 export default function KpiBar() {
-  const fires = useLayersStore((s) => s.firesGeojson);
+  const allFires = useLayersStore((s) => s.firesGeojson);
   const firesStatus = useLayersStore((s) => s.firesStatus);
+  const filters = useLayersStore((s) => s.fireFilters);
+
+  // The KPI cards count exactly what the map draws and the charts plot. FIRMS
+  // now returns the full 5-day window, so without this the headline number
+  // would be five days of fires under a "last 24 h" label.
+  const latest = useMemo(
+    () => (allFires ? latestTimestamp(allFires) : 0),
+    [allFires],
+  );
+  const fires = useMemo(
+    () => (allFires ? applyFireFilters(allFires, filters, latest) : null),
+    [allFires, filters, latest],
+  );
   const [kab, setKab] = useState<FeatureCollection<
     Polygon | MultiPolygon
   > | null>(null);
@@ -47,7 +61,7 @@ export default function KpiBar() {
     {
       label: "Active fires",
       value: firesStatus === "loading" ? "…" : value(kpi.fires),
-      hint: "VIIRS SNPP · 48 h · Indonesia",
+      hint: `VIIRS SNPP · ${filters.hours} h · Indonesia`,
     },
     {
       label: "Total FRP",

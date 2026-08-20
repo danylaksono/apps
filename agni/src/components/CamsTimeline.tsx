@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 import { Pause, Play, SkipBack, SkipForward } from "@phosphor-icons/react";
 import { CAMS_LAYER_IDS, CAMS_SOURCES } from "../layers/cams";
 import { camsImageUrl, camsTimeSteps, prefetchCamsFrame } from "../lib/cams";
@@ -43,9 +43,7 @@ export default function CamsTimeline() {
   const setCamsPlaying = useLayersStore((s) => s.setCamsPlaying);
 
   const active = CAMS_LAYER_IDS.some((id) => visibility[id]);
-  // Captured when the steps arrive rather than read during render: the
-  // analysis/forecast boundary is fixed for a given CAMS run.
-  const [forecastFrom, setForecastFrom] = useState<number | null>(null);
+  const forecastFrom = useLayersStore((s) => s.camsForecastFrom);
 
   // load the time dimension the first time a CAMS layer is switched on
   useEffect(() => {
@@ -55,9 +53,6 @@ export default function CamsTimeline() {
       .then((s) => {
         if (cancelled || !s.length) return;
         setCamsSteps(s);
-        const now = Date.now();
-        const boundary = s.findIndex((t) => Date.parse(t) > now);
-        setForecastFrom(boundary === -1 ? s.length : boundary);
       })
       .catch((err) => console.warn("[agni] CAMS time steps failed", err));
     return () => {
@@ -116,7 +111,7 @@ export default function CamsTimeline() {
   if (!active) return null;
 
   const current = steps[index];
-  const isForecast = forecastFrom !== null && index >= forecastFrom;
+  const isForecast = steps.length > 0 && index >= forecastFrom;
 
   return (
     <div className="pointer-events-auto absolute bottom-28 left-1/2 w-[min(560px,calc(100%-2rem))] -translate-x-1/2 rounded-xl border border-ink-700/60 bg-ink-900/85 px-3 py-2 shadow-2xl backdrop-blur">

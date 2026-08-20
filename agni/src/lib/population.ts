@@ -13,7 +13,7 @@
  *  duckdb-wasm — they are computed offline in pipeline/build_tiles.py. */
 
 import type { GeoJSONSource, Map as MaplibreMap } from "maplibre-gl";
-import type { Feature, FeatureCollection, Polygon } from "geojson";
+import type { Feature, FeatureCollection, Point, Polygon } from "geojson";
 import { POPULATION_PARQUET_URL } from "./config";
 import { getDuckDB } from "./duckdb";
 import { useLayersStore } from "../store/layers";
@@ -154,6 +154,59 @@ export async function queryPopulation(
   return { type: "FeatureCollection", features };
 }
 
+
+/** Population within roughly `radiusKm` of any detection.
+ *
+ *  Computed on res-7 cells (edge ~1.2 km) rather than the res-8 cells the table
+ *  is keyed on. Expanding ~4,000 detections into res-8 k-rings produces >100k
+ *  distinct cells, which is far too many to put in an IN list; at res 7 the
+ *  detections collapse onto a few thousand cells because fires cluster, and one
+ *  ring of neighbours is already the ~2 km we want.
+ *
+ *  The figure is only as meaningful as its radius: the same detections at 5 km
+ *  over 5 days reach 84 M, which describes Java's population density more than
+ *  this fire season. Whatever calls this must print the radius and window. */
+export async function exposedPopulation(
+  fires: FeatureCollection,
+  radiusKm = 2,
+): Promise<number> {
+  const { latLngToCell, gridDisk } = await import("h3-js");
+  await initPopulation();
+
+  const RES = 7;
+  const EDGE_KM = 1.22;
+  const k = Math.max(1, Math.round(radiusKm / EDGE_KM));
+
+  const seeds = new Set<string>();
+  for (const f of fires.features) {
+    if (f.geometry?.type !== "Point") continue;
+    const [lon, lat] = (f.geometry as Point).coordinates;
+    seeds.add(latLngToCell(lat, lon, RES));
+  }
+  const ring = new Set<string>();
+  for (const cell of seeds) for (const c of gridDisk(cell, k)) ring.add(c);
+  if (!ring.size) return 0;
+
+  const cells = [...ring];
+  const db = await getDuckDB();
+  const conn = await db.connect();
+  try {
+    // Chunked so the SQL text stays sane however large the fire set gets.
+    const CHUNK = 8000;
+    let total = 0;
+    for (let i = 0; i < cells.length; i += CHUNK) {
+      const slice = cells.slice(i, i + CHUNK);
+      const r = await conn.query(
+        `SELECT sum(population) AS pop FROM population
+          WHERE h3_r${RES} IN (${quoteList(slice)})`,
+      );
+      total += Number(r.toArray()[0]?.pop ?? 0) || 0;
+    }
+    return Math.round(total);
+  } finally {
+    await conn.close();
+  }
+}
 
 // ------------------------------------------------------------- map glue ---
 

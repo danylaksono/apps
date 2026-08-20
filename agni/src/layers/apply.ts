@@ -7,6 +7,12 @@ import type { FeatureCollection } from "geojson";
 import { GROUP_RANK, LAYERS, OPACITY_PROPS } from "./registry";
 import type { LayerDescriptor } from "./registry";
 import { BASEMAPS, basemapSourceId } from "./basemaps";
+import {
+  fireFilterExpression,
+  latestTimestamp,
+  type FireFilters,
+} from "../lib/analytics";
+import type { FilterSpecification } from "maplibre-gl";
 
 function rankOf(d: LayerDescriptor): number {
   return d.renderRank ?? GROUP_RANK[d.group];
@@ -42,9 +48,18 @@ export interface MapSyncState {
   visibility: Record<string, boolean>;
   opacity: Record<string, number>;
   firesGeojson: FeatureCollection | null;
+  fireFilters: FireFilters;
 }
 
 let lastFires: FeatureCollection | null = null;
+/** Latest detection time in the current set — the anchor the time filter is
+ *  measured back from. Recomputed only when the data itself changes. */
+let firesLatest = 0;
+let lastFilterKey = "";
+
+/** Map layers driven by the fire filter. The charts apply the same predicate
+ *  through applyFireFilters, so the two views cannot drift apart. */
+const FIRE_FILTERED = ["fires", "fires-heat"];
 
 /** Returns false if the style was not ready and nothing was applied — the
  *  caller must retry, or the store change is lost for good (the store only
@@ -97,6 +112,22 @@ export function applyMapState(map: MaplibreMap, state: MapSyncState): boolean {
   if (src && state.firesGeojson && state.firesGeojson !== lastFires) {
     src.setData(state.firesGeojson);
     lastFires = state.firesGeojson;
+    firesLatest = latestTimestamp(state.firesGeojson);
+    lastFilterKey = ""; // force the filter to be re-applied to the new data
+  }
+
+  // Filtering happens in the style, not by re-slicing the source: the whole
+  // 5-day set stays loaded and a filter change is a repaint, not a refetch.
+  const filterKey = `${firesLatest}|${JSON.stringify(state.fireFilters)}`;
+  if (firesLatest && filterKey !== lastFilterKey) {
+    lastFilterKey = filterKey;
+    const expr = fireFilterExpression(
+      state.fireFilters,
+      firesLatest,
+    ) as unknown as FilterSpecification;
+    for (const id of FIRE_FILTERED) {
+      if (map.getLayer(id)) map.setFilter(id, expr);
+    }
   }
 
   return true;

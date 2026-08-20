@@ -23,6 +23,7 @@ import { applyMapState } from "../layers/apply";
 import { BIG_BACKED, applyBigData, ensureBigLayer } from "../lib/peat";
 import { GIBS_BACKED, ensureGibsDate } from "../lib/gibs";
 import { refreshPopulation } from "../lib/population";
+import { setMapRef } from "../lib/mapRef";
 import { setCamsTime } from "../layers/cams";
 import { useLayersStore } from "../store/layers";
 
@@ -63,6 +64,7 @@ function pickState(s: ReturnType<typeof useLayersStore.getState>) {
     visibility: s.visibility,
     opacity: s.opacity,
     firesGeojson: s.firesGeojson,
+    fireFilters: s.fireFilters,
   };
 }
 
@@ -83,6 +85,7 @@ export default function MapView() {
       attributionControl: { compact: true },
     });
     map.addControl(new NavigationControl(), "bottom-right");
+    setMapRef(map);
 
     // dev-only handle for poking at sources/layers from the console
     if (import.meta.env.DEV) {
@@ -151,6 +154,11 @@ export default function MapView() {
       className: "agni-popup",
     });
     const onClick = (e: MapMouseEvent) => {
+      // Every click is a CAMS probe point — the forecast charts in the rail
+      // read the numbers behind the pixels the haze layers are drawing.
+      useLayersStore
+        .getState()
+        .setProbePoint({ lon: e.lngLat.lng, lat: e.lngLat.lat });
       const html = buildInspectHtml(map, map.queryRenderedFeatures(e.point));
       if (!html) {
         popup.remove();
@@ -165,6 +173,7 @@ export default function MapView() {
       map.off("click", onClick);
       popup.remove();
       unsubscribe();
+      setMapRef(null);
       map.remove();
       removeProtocol("pmtiles");
     };

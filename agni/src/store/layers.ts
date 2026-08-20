@@ -2,6 +2,13 @@ import { create } from "zustand";
 import type { FeatureCollection } from "geojson";
 import { LAYERS } from "../layers/registry";
 import { DEFAULT_BASEMAP } from "../layers/basemaps";
+import { DEFAULT_FILTERS, type FireFilters } from "../lib/analytics";
+
+/** A point the user clicked, for the CAMS forecast probe. */
+export interface ProbePoint {
+  lon: number;
+  lat: number;
+}
 
 export type Availability = "checking" | "ok" | "unavailable";
 export type FiresStatus = "idle" | "loading" | "ok" | "error";
@@ -20,6 +27,17 @@ export interface LayersState {
   camsSteps: string[];
   camsIndex: number;
   camsPlaying: boolean;
+  /** index of the first step past "now" — the analysis/forecast boundary.
+   *  Captured when the steps arrive rather than derived during render, which
+   *  would mean calling Date.now() in a component body. */
+  camsForecastFrom: number;
+  /** dashboard rail */
+  railOpen: boolean;
+  /** one filter set, shared by the map and every chart, so they can never
+   *  disagree about which detections are in scope */
+  fireFilters: FireFilters;
+  /** map point being probed for the CAMS forecast chart */
+  probePoint: ProbePoint | null;
   setBasemap(id: string): void;
   toggleLayer(id: string): void;
   setOpacity(id: string, value: number): void;
@@ -29,6 +47,9 @@ export interface LayersState {
   setCamsSteps(steps: string[]): void;
   setCamsIndex(i: number): void;
   setCamsPlaying(playing: boolean): void;
+  setRailOpen(open: boolean): void;
+  setFireFilters(patch: Partial<FireFilters>): void;
+  setProbePoint(p: ProbePoint | null): void;
 }
 
 /** Index of the step closest to now — the boundary between analysis and
@@ -67,6 +88,10 @@ export const useLayersStore = create<LayersState>((set) => ({
   camsSteps: [],
   camsIndex: 0,
   camsPlaying: false,
+  camsForecastFrom: 0,
+  railOpen: true,
+  fireFilters: DEFAULT_FILTERS,
+  probePoint: null,
   setBasemap: (id) => set({ basemap: id }),
   toggleLayer: (id) =>
     set((s) => ({ visibility: { ...s.visibility, [id]: !s.visibility[id] } })),
@@ -80,11 +105,20 @@ export const useLayersStore = create<LayersState>((set) => ({
   setFires: (fc, status) => set({ firesGeojson: fc, firesStatus: status }),
   setPeatLoaded: (count) => set({ peatFeatureCount: count }),
   setCamsSteps: (steps) =>
-    set((s) => ({
-      camsSteps: steps,
-      // default to the most recent analysis step rather than the forecast tail
-      camsIndex: s.camsSteps.length ? s.camsIndex : nowIndex(steps),
-    })),
+    set((s) => {
+      const now = Date.now();
+      const boundary = steps.findIndex((t) => Date.parse(t) > now);
+      return {
+        camsSteps: steps,
+        // default to the most recent analysis step rather than the forecast tail
+        camsIndex: s.camsSteps.length ? s.camsIndex : nowIndex(steps),
+        camsForecastFrom: boundary === -1 ? steps.length : boundary,
+      };
+    }),
   setCamsIndex: (i) => set({ camsIndex: i }),
   setCamsPlaying: (playing) => set({ camsPlaying: playing }),
+  setRailOpen: (open) => set({ railOpen: open }),
+  setFireFilters: (patch) =>
+    set((s) => ({ fireFilters: { ...s.fireFilters, ...patch } })),
+  setProbePoint: (p) => set({ probePoint: p }),
 }));

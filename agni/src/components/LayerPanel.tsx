@@ -1,7 +1,9 @@
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
 import {
+  CaretDown,
   CloudFog,
   Fire,
+  MagnifyingGlass,
   MapTrifold,
   Plant,
   ShieldCheck,
@@ -9,6 +11,7 @@ import {
   UsersThree,
   WarningCircle,
 } from "@phosphor-icons/react";
+import FireFilters from "./FireFilters";
 import type { LayerDescriptor, LayerGroup } from "../layers/registry";
 import { LAYERS } from "../layers/registry";
 import { useLayersStore } from "../store/layers";
@@ -119,16 +122,47 @@ function LayerRow({ d }: { d: LayerDescriptor }) {
   );
 }
 
+/** Groups open on load. The rest collapse: 22 layers in one flat scroll buries
+ *  the fire and haze layers people actually came for. */
+const OPEN_BY_DEFAULT: LayerGroup[] = ["fire", "haze"];
+
 export default function LayerPanel() {
+  const [query, setQuery] = useState("");
+  const [collapsed, setCollapsed] = useState<Set<LayerGroup>>(
+    () =>
+      new Set(
+        (Object.keys(GROUP_META) as LayerGroup[]).filter(
+          (g) => !OPEN_BY_DEFAULT.includes(g),
+        ),
+      ),
+  );
+
+  const q = query.trim().toLowerCase();
   const groups = useMemo(() => {
     const out: { group: LayerGroup; layers: LayerDescriptor[] }[] = [];
     for (const d of LAYERS) {
+      if (
+        q &&
+        !d.label.toLowerCase().includes(q) &&
+        !d.description.toLowerCase().includes(q) &&
+        !GROUP_META[d.group].label.toLowerCase().includes(q)
+      ) {
+        continue;
+      }
       const found = out.find((g) => g.group === d.group);
       if (found) found.layers.push(d);
       else out.push({ group: d.group, layers: [d] });
     }
     return out;
-  }, []);
+  }, [q]);
+
+  const toggleGroup = (g: LayerGroup) =>
+    setCollapsed((prev) => {
+      const next = new Set(prev);
+      if (next.has(g)) next.delete(g);
+      else next.add(g);
+      return next;
+    });
 
   return (
     <aside className="agni-scroll absolute left-3 top-3 max-h-[calc(100%-120px)] w-72 overflow-y-auto rounded-xl border border-ink-700/60 bg-ink-900/85 shadow-2xl backdrop-blur">
@@ -140,20 +174,69 @@ export default function LayerPanel() {
           Indonesia fire & haze
         </p>
       </div>
+      <div className="border-b border-ink-700/40 px-3 py-2">
+        <div className="flex items-center gap-1.5 rounded-md bg-ink-850 px-2 py-1">
+          <MagnifyingGlass size={12} className="shrink-0 text-ink-400" />
+          <input
+            value={query}
+            onChange={(e) => setQuery(e.target.value)}
+            placeholder="Search layers"
+            aria-label="Search layers"
+            className="w-full bg-transparent text-[11px] text-ink-100 placeholder:text-ink-400 focus:outline-none"
+          />
+          {query && (
+            <button
+              type="button"
+              onClick={() => setQuery("")}
+              aria-label="Clear search"
+              className="shrink-0 text-[11px] text-ink-400 hover:text-ink-100"
+            >
+              ×
+            </button>
+          )}
+        </div>
+      </div>
+
       {groups.map(({ group, layers }) => {
         const Icon = GROUP_META[group].icon;
+        // A search always shows what it matched, whatever the collapse state.
+        const shut = collapsed.has(group) && !q;
         return (
           <section key={group} className="border-b border-ink-700/40 py-1.5">
-            <header className="flex items-center gap-1.5 px-3 pb-1 pt-1 text-[10px] font-semibold uppercase tracking-widest text-ink-300">
+            <button
+              type="button"
+              onClick={() => toggleGroup(group)}
+              aria-expanded={!shut}
+              className="flex w-full items-center gap-1.5 px-3 pb-1 pt-1 text-[10px] font-semibold uppercase tracking-widest text-ink-300 hover:text-ink-100"
+            >
               <Icon size={13} weight="duotone" className="text-fire-400" />
               {GROUP_META[group].label}
-            </header>
-            {layers.map((d) => (
-              <LayerRow key={d.id} d={d} />
-            ))}
+              <span className="ml-auto flex items-center gap-1.5 font-normal normal-case tracking-normal text-ink-400">
+                {shut && <span className="text-[10px]">{layers.length}</span>}
+                <CaretDown
+                  size={11}
+                  weight="bold"
+                  className={`transition-transform ${shut ? "-rotate-90" : ""}`}
+                />
+              </span>
+            </button>
+            {!shut && (
+              <>
+                {group === "fire" && <FireFilters />}
+                {layers.map((d) => (
+                  <LayerRow key={d.id} d={d} />
+                ))}
+              </>
+            )}
           </section>
         );
       })}
+
+      {groups.length === 0 && (
+        <p className="px-3 py-4 text-center text-[11px] text-ink-400">
+          No layer matches “{query}”.
+        </p>
+      )}
     </aside>
   );
 }

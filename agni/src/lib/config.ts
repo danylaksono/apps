@@ -3,9 +3,11 @@
 // NASA FIRMS (see AGENTS.md — key valid for FIRMS Global, 5000 req / 10 min)
 export const FIRMS_API_KEY = "eda46120c69739d3b51b05ae8dd3584a";
 export const FIRMS_SOURCE = "VIIRS_SNPP_NRT";
-// 1 day means "today so far, UTC" — empty for the first hours of each UTC
-// day, which reads as "no fires" rather than "no data yet". 2 always has data.
-export const FIRMS_DAYS = 2;
+// The NRT area endpoint accepts 1..5 days and rejects anything more (verified:
+// "Invalid day range. Expects [1..5]"). 5 is the whole window it will give us,
+// which is what the trend chart plots; the map and KPIs filter it down from
+// there. Nationally that is ~27,000 detections, 2.2 MB, ~1.8 s.
+export const FIRMS_DAYS = 5;
 
 // Indonesia bbox (west,south,east,north), used as the FIRMS request envelope
 // and the BIG spatial filter. Sabang to Merauke, plus a small margin.

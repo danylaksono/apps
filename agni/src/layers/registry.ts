@@ -106,7 +106,7 @@ export const LAYERS: LayerDescriptor[] = [
     group: "fire",
     label: "Active fires",
     description:
-      "VIIRS SNPP near real-time detections from the last 48 hours, clipped to Indonesia. Source: NASA FIRMS.",
+      "VIIRS SNPP near real-time detections, clipped to Indonesia. Five days are loaded; the Fire filters below decide how much of that is drawn. Source: NASA FIRMS.",
     layerType: "circle",
     defaultVisible: true,
     defaultOpacity: 0.9,

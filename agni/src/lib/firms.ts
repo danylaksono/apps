@@ -35,6 +35,8 @@ export function parseFirmsCsv(csv: string): FeatureCollection {
     const lat = Number(cols[idx("latitude")]);
     const lon = Number(cols[idx("longitude")]);
     if (!Number.isFinite(lat) || !Number.isFinite(lon)) continue;
+    const date = cols[idx("acq_date")] ?? "";
+    const time = (cols[idx("acq_time")] ?? "").padStart(4, "0");
     features.push({
       type: "Feature",
       geometry: { type: "Point", coordinates: [lon, lat] },
@@ -42,9 +44,13 @@ export function parseFirmsCsv(csv: string): FeatureCollection {
         confidence: cols[idx("confidence")] ?? "",
         frp: Number(cols[idx("frp")]) || 0,
         daynight: cols[idx("daynight")] ?? "",
-        acq_date: cols[idx("acq_date")] ?? "",
-        acq_time: cols[idx("acq_time")] ?? "",
+        acq_date: date,
+        acq_time: time,
         satellite: cols[idx("satellite")] ?? "",
+        // Epoch ms (UTC), so the trend chart and the time filter can both work
+        // in numbers. FIRMS gives acq_time as HHMM without padding — "508" is
+        // 05:08, not 50:80 — hence the padStart above.
+        ts: Date.parse(`${date}T${time.slice(0, 2)}:${time.slice(2)}:00Z`) || 0,
       },
     });
   }
