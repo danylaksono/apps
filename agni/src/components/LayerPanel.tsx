@@ -1,6 +1,7 @@
 import { useMemo, useState } from "react";
 import {
   CaretDown,
+  CaretLeft,
   CloudFog,
   Fire,
   MagnifyingGlass,
@@ -127,6 +128,7 @@ function LayerRow({ d }: { d: LayerDescriptor }) {
 const OPEN_BY_DEFAULT: LayerGroup[] = ["fire", "haze"];
 
 export default function LayerPanel() {
+  const open = useLayersStore((s) => s.layersOpen);
   const [query, setQuery] = useState("");
   const [collapsed, setCollapsed] = useState<Set<LayerGroup>>(
     () =>
@@ -165,14 +167,29 @@ export default function LayerPanel() {
     });
 
   return (
-    <aside className="agni-scroll absolute left-3 top-3 max-h-[calc(100%-120px)] w-72 overflow-y-auto rounded-xl border border-ink-700/60 bg-ink-900/85 shadow-2xl backdrop-blur">
-      <div className="border-b border-ink-700/60 px-3 py-2.5">
-        <h1 className="font-display text-sm font-bold tracking-wide text-ink-100">
-          AGNI
-        </h1>
-        <p className="text-[10px] uppercase tracking-widest text-ink-400">
-          Indonesia fire & haze
-        </p>
+    <aside
+      className={`agni-scroll absolute z-20 overflow-y-auto border border-ink-700/60 bg-ink-900/95 shadow-2xl backdrop-blur md:bg-ink-900/85
+        inset-x-2 bottom-[3.75rem] max-h-[62svh] rounded-xl
+        md:inset-x-auto md:bottom-auto md:left-3 md:top-3 md:max-h-[calc(100%-120px)] md:w-72
+        ${open ? "" : "hidden"}`}
+    >
+      <div className="flex items-start justify-between border-b border-ink-700/60 px-3 py-2.5">
+        <div>
+          <h1 className="font-display text-sm font-bold tracking-wide text-ink-100">
+            AGNI
+          </h1>
+          <p className="text-[10px] uppercase tracking-widest text-ink-400">
+            Indonesia fire &amp; haze
+          </p>
+        </div>
+        <button
+          type="button"
+          onClick={() => useLayersStore.getState().setLayersOpen(false)}
+          aria-label="Close layers"
+          className="hidden rounded p-0.5 text-ink-400 hover:bg-ink-700/50 hover:text-ink-100 md:block"
+        >
+          <CaretLeft size={14} weight="bold" />
+        </button>
       </div>
       <div className="border-b border-ink-700/40 px-3 py-2">
         <div className="flex items-center gap-1.5 rounded-md bg-ink-850 px-2 py-1">

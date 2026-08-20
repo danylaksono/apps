@@ -75,6 +75,16 @@ export const GIBS_LAYERS = {
     maxzoom: 6,
     ext: "png",
   },
+  /** Black Marble: a pre-rendered static composite, so no date resolution and
+   *  no decoding — settlements, roads and gas flares as points of light. */
+  nightLights: {
+    layer: "VIIRS_Black_Marble",
+    matrixSet: "GoogleMapsCompatible_Level8",
+    maxzoom: 8,
+    ext: "png",
+    /** static 2016 composite; GIBS still wants a date in the path */
+    fixedDate: "2016-01-01",
+  },
   trueColor: {
     layer: "MODIS_Terra_CorrectedReflectance_TrueColor",
     matrixSet: "GoogleMapsCompatible_Level9",
@@ -154,6 +164,11 @@ export function gfwVectorTiles(dataset: string, version: string): string {
 export function gfwRasterTiles(dataset: string, version: string): string {
   return `${GFW_TILES}/${dataset}/${version}/default/{z}/{x}/{y}.png`;
 }
+
+/** UMD/Hansen tree cover loss, served by GFW as an *encoded* raster rather than
+ *  a styled one — see src/lib/gfwRaster.ts for the decode. Pinned rather than
+ *  `latest`, which 307-redirects and moves when UMD publishes a new year. */
+export const GFW_TREE_COVER_LOSS_VERSION = "v1.13";
 
 /** Pinned GFW dataset versions. The MVT `source-layer` equals the dataset name. */
 export const GFW_DATASETS = {

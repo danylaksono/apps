@@ -97,12 +97,12 @@ export default function KpiBar() {
   ];
 
   return (
-    <div className="pointer-events-none absolute inset-x-0 bottom-3 flex justify-center">
-      <div className="pointer-events-auto flex gap-2 rounded-xl border border-ink-700/60 bg-ink-900/85 p-2 shadow-2xl backdrop-blur">
+    <div className="pointer-events-none absolute inset-x-0 bottom-[4.75rem] flex justify-center md:bottom-3">
+      <div className="agni-scroll pointer-events-auto flex max-w-[calc(100%-1rem)] gap-2 overflow-x-auto rounded-xl border border-ink-700/60 bg-ink-900/85 p-2 shadow-2xl backdrop-blur">
         {cards.map((c) => (
           <div
             key={c.label}
-            className="min-w-28 rounded-lg bg-ink-850/70 px-3 py-2"
+            className="min-w-24 shrink-0 rounded-lg bg-ink-850/70 px-3 py-2 md:min-w-28"
           >
             <p className="text-[9px] font-semibold uppercase tracking-widest text-ink-400">
               {c.label}

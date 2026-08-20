@@ -24,6 +24,7 @@ import { BIG_BACKED, applyBigData, ensureBigLayer } from "../lib/peat";
 import { GIBS_BACKED, ensureGibsDate } from "../lib/gibs";
 import { refreshPopulation } from "../lib/population";
 import { setMapRef } from "../lib/mapRef";
+import { GFW_LOSS_PROTOCOL, gfwLossProtocol } from "../lib/gfwRaster";
 import { setCamsTime } from "../layers/cams";
 import { useLayersStore } from "../store/layers";
 
@@ -74,6 +75,9 @@ export default function MapView() {
   useEffect(() => {
     const protocol = new Protocol();
     addProtocol("pmtiles", protocol.tile);
+    // GFW ships tree cover loss as data-in-pixels; this decodes each tile to a
+    // styled PNG before MapLibre ever sees it. See lib/gfwRaster.ts.
+    addProtocol(GFW_LOSS_PROTOCOL, gfwLossProtocol);
 
     const map = new MaplibreMap({
       container: containerRef.current!,
@@ -176,6 +180,7 @@ export default function MapView() {
       setMapRef(null);
       map.remove();
       removeProtocol("pmtiles");
+      removeProtocol(GFW_LOSS_PROTOCOL);
     };
   }, []);
 

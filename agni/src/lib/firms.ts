@@ -86,13 +86,35 @@ export function clipToIndonesia(
   kab: PolyFC,
 ): FeatureCollection {
   const index = indexPolygons(kab);
-  const features = fires.features.filter((f) => {
-    if (f.geometry?.type !== "Point") return false;
+  const features: Feature[] = [];
+  for (const f of fires.features) {
+    if (f.geometry?.type !== "Point") continue;
     const pt = f as Feature<Point>;
-    if (polygonAt(pt, index)) return true;
-    const [lon, lat] = pt.geometry.coordinates;
-    return nearPolygon(lon, lat, index, COAST_TOLERANCE_M);
-  });
+    const hit = polygonAt(pt, index);
+    if (!hit) {
+      const [lon, lat] = pt.geometry.coordinates;
+      if (!nearPolygon(lon, lat, index, COAST_TOLERANCE_M)) continue;
+      features.push(f);
+      continue;
+    }
+    // Tag with the area it landed in while we already have the answer. This
+    // one pass then serves the KPI counts, the ranked charts and the
+    // click-a-bar-to-filter expression — none of which has to touch geometry
+    // again, and the ranking no longer re-runs point-in-polygon every time a
+    // filter chip moves.
+    const props = hit.properties as {
+      name?: string;
+      provinsi_name?: string;
+    } | null;
+    features.push({
+      ...f,
+      properties: {
+        ...f.properties,
+        kabkota: props?.name ?? "",
+        provinsi: props?.provinsi_name ?? "",
+      },
+    });
+  }
   return { type: "FeatureCollection", features };
 }
 

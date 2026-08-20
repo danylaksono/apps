@@ -53,12 +53,16 @@ export default function CamsTimeline() {
       .then((s) => {
         if (cancelled || !s.length) return;
         setCamsSteps(s);
+        // Start the animation as soon as the steps land: a CAMS layer switched
+        // on shows one still frame, and the movement is the whole point of it.
+        // Prefetching means the first loop is already warm.
+        setCamsPlaying(true);
       })
       .catch((err) => console.warn("[agni] CAMS time steps failed", err));
     return () => {
       cancelled = true;
     };
-  }, [active, steps.length, setCamsSteps]);
+  }, [active, steps.length, setCamsSteps, setCamsPlaying]);
 
   // Playback, gated on the frame actually being ready rather than on a timer:
   // see prefetchCamsFrame for why a plain interval cancels most of its frames.
@@ -114,7 +118,7 @@ export default function CamsTimeline() {
   const isForecast = steps.length > 0 && index >= forecastFrom;
 
   return (
-    <div className="pointer-events-auto absolute bottom-28 left-1/2 w-[min(560px,calc(100%-2rem))] -translate-x-1/2 rounded-xl border border-ink-700/60 bg-ink-900/85 px-3 py-2 shadow-2xl backdrop-blur">
+    <div className="pointer-events-auto absolute bottom-[11rem] left-1/2 z-10 w-[min(560px,calc(100%-1rem))] -translate-x-1/2 rounded-xl border border-ink-700/60 bg-ink-900/85 px-3 py-2 shadow-2xl backdrop-blur md:bottom-28">
       <div className="flex items-center gap-2">
         <button
           type="button"

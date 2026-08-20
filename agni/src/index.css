@@ -46,6 +46,23 @@ body,
   color: var(--color-ink-200);
 }
 
+/* Phone layout: the bottom edge is a stack — toolbar, attribution, KPI strip,
+   timeline — so each has to be told where the one below it ends. The zoom
+   buttons go entirely: they collide with the KPI strip and pinch-zoom already
+   does the job. Attribution stays, always: it is a licence condition. */
+@media (max-width: 767px) {
+  .maplibregl-ctrl-bottom-right .maplibregl-ctrl-group {
+    display: none;
+  }
+  .maplibregl-ctrl-bottom-right,
+  .maplibregl-ctrl-bottom-left {
+    bottom: 3rem;
+  }
+  .maplibregl-ctrl-attrib {
+    font-size: 9px;
+  }
+}
+
 /* thin scrollbars for panels */
 .agni-scroll::-webkit-scrollbar {
   width: 6px;

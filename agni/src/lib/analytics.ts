@@ -4,14 +4,14 @@
  *  number a chart shows has to be defensible — see the exposure note below for
  *  the one that needs its definition printed on the chart.
  *
- *  Province and kabupaten attribution comes from the kab/kota polygon join,
- *  *not* from the population Parquet. Kontur only stores populated hexagons, so
- *  joining detections to it by H3 leaves ~70% of them unattributed — forest and
- *  peat fires are by definition where nobody lives — and ranks Java top because
- *  that is where the populated cells are. The polygon join attributes 97.7%. */
+ *  Province and kabupaten attribution comes from the kab/kota polygon join that
+ *  clipToIndonesia performs once, *not* from the population Parquet. Kontur only
+ *  stores populated hexagons, so joining detections to it by H3 leaves ~70%
+ *  unattributed — forest and peat fires are by definition where nobody lives —
+ *  and ranks Java top because that is where the populated cells are. The
+ *  polygon join attributes 97.7%. */
 
-import type { Feature, FeatureCollection, Point } from "geojson";
-import { indexPolygons, polygonAt, type PolyFC, type PolyIndex } from "./geo";
+import type { FeatureCollection } from "geojson";
 
 export interface DayCount {
   /** UTC day, "YYYY-MM-DD" */
@@ -25,12 +25,6 @@ export interface AreaCount {
   province: string;
   detections: number;
   frpMw: number;
-}
-
-function firePoints(fires: FeatureCollection): Feature<Point>[] {
-  return fires.features.filter(
-    (f): f is Feature<Point> => f.geometry?.type === "Point",
-  );
 }
 
 /** Detections and total FRP per UTC day, oldest first. */
@@ -57,31 +51,24 @@ export interface AreaRollup {
   unattributed: number;
 }
 
-/** Rank provinces and kabupaten by detections. One pass over the same spatial
- *  join the KPI bar already needs, so this is not a second traversal. */
-export function rollupByArea(
-  fires: FeatureCollection,
-  kab: PolyFC,
-  index?: PolyIndex,
-): AreaRollup {
-  const idx = index ?? indexPolygons(kab);
+/** Rank provinces and kabupaten by detections.
+ *
+ *  Reads the `provinsi` / `kabkota` tags that clipToIndonesia already wrote, so
+ *  this is a counting pass rather than a spatial join — it runs on every filter
+ *  change and must not touch geometry. */
+export function rollupByArea(fires: FeatureCollection): AreaRollup {
   const prov = new Map<string, AreaCount>();
   const kk = new Map<string, AreaCount>();
   let unattributed = 0;
 
-  for (const pt of firePoints(fires)) {
-    const hit = polygonAt(pt, idx);
-    if (!hit) {
+  for (const f of fires.features) {
+    const province = String(f.properties?.provinsi ?? "");
+    const name = String(f.properties?.kabkota ?? "");
+    if (!province || !name) {
       unattributed += 1;
       continue;
     }
-    const props = hit.properties as {
-      name?: string;
-      provinsi_name?: string;
-    } | null;
-    const province = String(props?.provinsi_name ?? "—");
-    const name = String(props?.name ?? "—");
-    const frp = Number(pt.properties?.frp) || 0;
+    const frp = Number(f.properties?.frp) || 0;
 
     const p = prov.get(province) ?? {
       name: province,
@@ -112,6 +99,8 @@ export function rollupByArea(
 export interface FireFilters {
   /** hours back from the newest detection */
   hours: number;
+  /** clicking a ranked bar scopes everything to that area */
+  area: { level: "provinsi" | "kabkota"; name: string } | null;
   /** FIRMS confidence classes to keep: l | n | h */
   confidence: string[];
   /** D, N, or both */
@@ -122,6 +111,7 @@ export interface FireFilters {
 
 export const DEFAULT_FILTERS: FireFilters = {
   hours: 24,
+  area: null,
   confidence: ["l", "n", "h"],
   daynight: ["D", "N"],
   minFrp: 0,
@@ -146,13 +136,15 @@ export function fireFilterExpression(
   f: FireFilters,
   latest: number,
 ): unknown[] {
-  return [
+  const expr: unknown[] = [
     "all",
     [">=", ["get", "ts"], latest - f.hours * 3600_000],
     [">=", ["get", "frp"], f.minFrp],
     ["in", ["get", "confidence"], ["literal", f.confidence]],
     ["in", ["get", "daynight"], ["literal", f.daynight]],
   ];
+  if (f.area) expr.push(["==", ["get", f.area.level], f.area.name]);
+  return expr;
 }
 
 export function applyFireFilters(
@@ -169,7 +161,8 @@ export function applyFireFilters(
         (Number(p.ts) || 0) >= since &&
         (Number(p.frp) || 0) >= f.minFrp &&
         f.confidence.includes(String(p.confidence)) &&
-        f.daynight.includes(String(p.daynight))
+        f.daynight.includes(String(p.daynight)) &&
+        (!f.area || String(p[f.area.level] ?? "") === f.area.name)
       );
     }),
   };

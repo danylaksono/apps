@@ -27,12 +27,15 @@ export interface GibsSpec {
   maxzoom: number;
   /** tile extension; GIBS serves png for the science products */
   ext: string;
+  /** set for static composites, which need no date probe at all */
+  fixedDate?: string;
 }
 
 /** Registry layers whose tiles are dated, for MapView's sync pass. */
 export const GIBS_BACKED: { id: string; spec: GibsSpec }[] = [
   { id: "haze-aod", spec: GIBS_LAYERS.aod },
   { id: "haze-smoke", spec: GIBS_LAYERS.trueColor },
+  { id: "night-lights", spec: GIBS_LAYERS.nightLights },
 ];
 
 export function gibsTiles(spec: GibsSpec, date: string): string {
@@ -88,9 +91,10 @@ async function hasImagery(spec: GibsSpec, date: string): Promise<boolean> {
 const resolved = new Map<string, string>();
 const started = new Set<string>();
 
-/** The newest day with imagery, or null while that is still being resolved. */
+/** The newest day with imagery, or null while that is still being resolved.
+ *  Static composites answer immediately — there is nothing to probe. */
 export function gibsDate(spec: GibsSpec): string | null {
-  return resolved.get(spec.layer) ?? null;
+  return spec.fixedDate ?? resolved.get(spec.layer) ?? null;
 }
 
 export type GibsStatus = (
@@ -102,7 +106,7 @@ export type GibsStatus = (
  *  settle; the settle call is also what re-runs the layer's `add()`, because it
  *  lands in the store and MapView re-applies on every store change. */
 export function ensureGibsDate(spec: GibsSpec, onStatus: GibsStatus): void {
-  if (started.has(spec.layer)) return;
+  if (spec.fixedDate || started.has(spec.layer)) return;
   started.add(spec.layer);
 
   onStatus("checking", "finding latest imagery…");

@@ -362,6 +362,7 @@ export function BarChart({
   color,
   unit,
   onSelect,
+  activeName,
 }: {
   title: string;
   subtitle?: string;
@@ -369,6 +370,8 @@ export function BarChart({
   color: string;
   unit: string;
   onSelect?: (row: BarRow) => void;
+  /** row currently scoping the dashboard, shown selected */
+  activeName?: string;
 }) {
   const max = Math.max(1, ...rows.map((r) => r.value));
   return (
@@ -403,9 +406,15 @@ export function BarChart({
               disabled={!onSelect}
               onClick={() => onSelect?.(r)}
               title={r.sub ? `${r.name} · ${r.sub}` : r.name}
-              className="group flex w-full items-center gap-2 rounded px-1 py-[3px] text-left enabled:hover:bg-ink-700/40"
+              className={`group flex w-full items-center gap-2 rounded px-1 py-[3px] text-left enabled:hover:bg-ink-700/40 ${
+                r.name === activeName ? "bg-fire-400/15" : ""
+              }`}
             >
-              <span className="w-[92px] shrink-0 truncate text-[10px] text-ink-300 group-enabled:group-hover:text-ink-100">
+              <span
+                className={`w-[92px] shrink-0 truncate text-[10px] group-enabled:group-hover:text-ink-100 ${
+                  r.name === activeName ? "text-fire-300" : "text-ink-300"
+                }`}
+              >
                 {r.name}
               </span>
               <span className="relative h-2.5 flex-1 overflow-hidden">

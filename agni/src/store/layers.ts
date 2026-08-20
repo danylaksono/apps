@@ -31,8 +31,9 @@ export interface LayersState {
    *  Captured when the steps arrive rather than derived during render, which
    *  would mean calling Date.now() in a component body. */
   camsForecastFrom: number;
-  /** dashboard rail */
+  /** panels. On a phone these are mutually exclusive; see App. */
   railOpen: boolean;
+  layersOpen: boolean;
   /** one filter set, shared by the map and every chart, so they can never
    *  disagree about which detections are in scope */
   fireFilters: FireFilters;
@@ -48,6 +49,7 @@ export interface LayersState {
   setCamsIndex(i: number): void;
   setCamsPlaying(playing: boolean): void;
   setRailOpen(open: boolean): void;
+  setLayersOpen(open: boolean): void;
   setFireFilters(patch: Partial<FireFilters>): void;
   setProbePoint(p: ProbePoint | null): void;
 }
@@ -90,6 +92,7 @@ export const useLayersStore = create<LayersState>((set) => ({
   camsPlaying: false,
   camsForecastFrom: 0,
   railOpen: true,
+  layersOpen: true,
   fireFilters: DEFAULT_FILTERS,
   probePoint: null,
   setBasemap: (id) => set({ basemap: id }),
@@ -118,6 +121,7 @@ export const useLayersStore = create<LayersState>((set) => ({
   setCamsIndex: (i) => set({ camsIndex: i }),
   setCamsPlaying: (playing) => set({ camsPlaying: playing }),
   setRailOpen: (open) => set({ railOpen: open }),
+  setLayersOpen: (open) => set({ layersOpen: open }),
   setFireFilters: (patch) =>
     set((s) => ({ fireFilters: { ...s.fireFilters, ...patch } })),
   setProbePoint: (p) => set({ probePoint: p }),

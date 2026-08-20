@@ -6,7 +6,7 @@
  *  pixels it is already drawing. */
 
 import { useEffect, useMemo, useState } from "react";
-import { CaretRight, ChartLine, Crosshair } from "@phosphor-icons/react";
+import { CaretRight, ChartLine, Crosshair, Funnel } from "@phosphor-icons/react";
 import type { FeatureCollection, MultiPolygon, Polygon } from "geojson";
 import { CAMS_LAYERS } from "../lib/config";
 import { loadKabKota } from "../lib/geo";
@@ -100,10 +100,7 @@ export default function DashboardRail() {
     [fires, filters, latest],
   );
 
-  const areas = useMemo(
-    () => (scoped && kab ? rollupByArea(scoped, kab) : null),
-    [scoped, kab],
-  );
+  const areas = useMemo(() => (scoped ? rollupByArea(scoped) : null), [scoped]);
 
   // --- exposure -----------------------------------------------------------
   // Results carry the scope they were computed for, so a stale answer is
@@ -173,10 +170,22 @@ export default function DashboardRail() {
 
   const forecastFrom = useLayersStore((s) => s.camsForecastFrom);
 
-  const zoomTo = (prop: "name" | "provinsi_name", value: string) => {
+  const setFilters = useLayersStore((s) => s.setFireFilters);
+
+  /** Clicking a ranked bar both scopes the whole dashboard to that area and
+   *  flies to it — the two together are what makes the chart a control rather
+   *  than a readout. Clicking the active one again clears the scope. */
+  const selectArea = (level: "provinsi" | "kabkota", name: string) => {
+    const active = filters.area?.level === level && filters.area.name === name;
+    setFilters({ area: active ? null : { level, name } });
+    if (active) return;
     const map = getMapRef();
     if (!map || !kab) return;
-    const b = boundsOf(kab, prop, value);
+    const b = boundsOf(
+      kab,
+      level === "provinsi" ? "provinsi_name" : "name",
+      name,
+    );
     if (b) map.fitBounds(b, { padding: 60, duration: 700 });
   };
 
@@ -193,7 +202,7 @@ export default function DashboardRail() {
         type="button"
         onClick={() => setOpen(true)}
         aria-label="Open dashboard"
-        className="absolute right-3 top-14 z-10 flex items-center gap-1.5 rounded-lg border border-ink-700/60 bg-ink-900/85 px-2.5 py-1.5 text-[10px] font-semibold uppercase tracking-widest text-ink-300 shadow-2xl backdrop-blur hover:text-ink-100"
+        className="absolute right-3 top-14 z-10 hidden items-center gap-1.5 rounded-lg border border-ink-700/60 bg-ink-900/85 px-2.5 py-1.5 text-[10px] font-semibold uppercase tracking-widest text-ink-300 shadow-2xl backdrop-blur hover:text-ink-100 md:flex"
       >
         <ChartLine size={13} weight="duotone" className="text-fire-400" />
         Dashboard
@@ -202,7 +211,11 @@ export default function DashboardRail() {
   }
 
   return (
-    <aside className="agni-scroll absolute right-3 top-14 z-10 max-h-[calc(100%-140px)] w-80 space-y-2 overflow-y-auto rounded-xl border border-ink-700/60 bg-ink-900/85 p-2.5 shadow-2xl backdrop-blur">
+    <aside
+      className="agni-scroll absolute z-20 space-y-2 overflow-y-auto border border-ink-700/60 bg-ink-900/95 p-2.5 shadow-2xl backdrop-blur md:bg-ink-900/85
+        inset-x-2 bottom-[3.75rem] max-h-[62svh] rounded-xl
+        md:inset-x-auto md:bottom-auto md:right-3 md:top-14 md:max-h-[calc(100%-140px)] md:w-80"
+    >
       <header className="flex items-center justify-between">
         <h2 className="flex items-center gap-1.5 text-[10px] font-semibold uppercase tracking-widest text-ink-300">
           <ChartLine size={13} weight="duotone" className="text-fire-400" />
@@ -217,6 +230,18 @@ export default function DashboardRail() {
           <CaretRight size={14} weight="bold" />
         </button>
       </header>
+
+      {filters.area && (
+        <button
+          type="button"
+          onClick={() => setFilters({ area: null })}
+          className="flex w-full items-center gap-1.5 rounded-lg bg-fire-400/15 px-2.5 py-1.5 text-left text-[10px] text-fire-300 hover:bg-fire-400/25"
+        >
+          <Funnel size={12} weight="fill" className="shrink-0" />
+          <span className="truncate font-medium">{filters.area.name}</span>
+          <span className="ml-auto shrink-0 text-ink-300">clear ×</span>
+        </button>
+      )}
 
       <StatTile
         label="People near active fire"
@@ -260,7 +285,8 @@ export default function DashboardRail() {
           }))}
           color={SERIES.fire}
           unit="detections"
-          onSelect={(row) => zoomTo("provinsi_name", row.name)}
+          onSelect={(row) => selectArea("provinsi", row.name)}
+          activeName={filters.area?.level === "provinsi" ? filters.area.name : undefined}
         />
       )}
 
@@ -276,7 +302,8 @@ export default function DashboardRail() {
           }))}
           color={SERIES.fire}
           unit="detections"
-          onSelect={(row) => zoomTo("name", row.name)}
+          onSelect={(row) => selectArea("kabkota", row.name)}
+          activeName={filters.area?.level === "kabkota" ? filters.area.name : undefined}
         />
       )}
 

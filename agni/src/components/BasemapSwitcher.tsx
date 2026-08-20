@@ -7,7 +7,7 @@ export default function BasemapSwitcher() {
   const setBasemap = useLayersStore((s) => s.setBasemap);
 
   return (
-    <div className="absolute right-3 top-3 flex items-center gap-1 rounded-xl border border-ink-700/60 bg-ink-900/85 p-1 shadow-2xl backdrop-blur">
+    <div className="absolute right-2 top-2 md:right-3 md:top-3 flex items-center gap-1 rounded-xl border border-ink-700/60 bg-ink-900/85 p-1 shadow-2xl backdrop-blur">
       <Globe size={14} className="mx-1.5 text-ink-300" weight="duotone" />
       {BASEMAPS.map((b) => (
         <button

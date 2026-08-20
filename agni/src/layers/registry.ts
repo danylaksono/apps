@@ -8,8 +8,10 @@ import {
   BOUNDARIES_PMTILES_URL,
   CAMS_LAYERS,
   GFW_DATASETS,
+  GFW_TREE_COVER_LOSS_VERSION,
   GIBS_LAYERS,
 } from "../lib/config";
+import { gfwLossTileUrl } from "../lib/gfwRaster";
 import { gibsDate, gibsTiles } from "../lib/gibs";
 import { gfwPolygonLayer } from "./gfw";
 import { camsImageLayer } from "./cams";
@@ -388,6 +390,35 @@ export const LAYERS: LayerDescriptor[] = [
     },
   }),
 
+  {
+    id: "night-lights",
+    group: "haze",
+    label: "Night lights (Black Marble)",
+    description:
+      "VIIRS Black Marble 2016 composite — settlements, roads and gas flares as points of light. Context for who is downwind, and a check on whether a hotspot sits near infrastructure. Source: NASA GIBS.",
+    layerType: "raster",
+    defaultVisible: false,
+    defaultOpacity: 0.55,
+    add(map) {
+      const date = gibsDate(GIBS_LAYERS.nightLights);
+      if (!date) return;
+      addSourceSafe(map, "gibs-night", {
+        type: "raster",
+        tiles: [gibsTiles(GIBS_LAYERS.nightLights, date)],
+        tileSize: 256,
+        maxzoom: GIBS_LAYERS.nightLights.maxzoom,
+        attribution: "NASA GIBS / VIIRS Black Marble",
+      });
+      if (!map.getLayer("night-lights")) {
+        map.addLayer({ id: "night-lights", type: "raster", source: "gibs-night" });
+      }
+    },
+    remove(map) {
+      removeLayerSafe(map, "night-lights");
+      removeSourceIfUnused(map, "gibs-night");
+    },
+  },
+
   // -------------------------------------------------------- population ---
   {
     id: "population",
@@ -400,8 +431,11 @@ export const LAYERS: LayerDescriptor[] = [
     defaultOpacity: 0.75,
     // Density rather than headcount, so the ramp means the same thing at every
     // zoom — an aggregated res-5 cell holds ~343x the people of a res-8 one.
+    // One hue, dark to light. The old ramp ran purple → magenta → yellow, which
+    // is a rainbow on a magnitude scale, and its violet was indistinguishable
+    // from the peat layer sitting under it. Teal is unused elsewhere on the map.
     gradientLegend: {
-      css: "linear-gradient(90deg, #3a2568, #6d28d9, #a855f7, #e879f9, #fbbf24)",
+      css: "linear-gradient(90deg, #134e4a, #0f766e, #14b8a6, #5eead4, #ccfbf1)",
       min: "10 /km²",
       max: "5,000+",
     },
@@ -421,15 +455,15 @@ export const LAYERS: LayerDescriptor[] = [
               ["get", "density"],
               "rgba(0,0,0,0)",
               10,
-              "#3a2568",
+              "#134e4a",
               100,
-              "#6d28d9",
+              "#0f766e",
               500,
-              "#a855f7",
+              "#14b8a6",
               2000,
-              "#e879f9",
+              "#5eead4",
               5000,
-              "#fbbf24",
+              "#ccfbf1",
             ],
           },
         });
@@ -438,6 +472,42 @@ export const LAYERS: LayerDescriptor[] = [
     remove(map) {
       removeLayerSafe(map, "population");
       removeSourceIfUnused(map, "population");
+    },
+  },
+
+  {
+    id: "tree-cover-loss",
+    group: "concessions",
+    label: "Tree cover loss (2001–2025)",
+    description:
+      "Annual forest loss from UMD/Hansen, brightest for the most recent seasons. Cleared land is where burning tends to follow, so this is the backstory to a hotspot rather than a snapshot of it. Source: GFW, decoded in the browser.",
+    layerType: "raster",
+    defaultVisible: false,
+    defaultOpacity: 0.7,
+    gradientLegend: {
+      css: "linear-gradient(90deg, #365314, #4d7c0f, #84cc16, #bef264)",
+      min: "2001",
+      max: "2022+",
+    },
+    add(map) {
+      addSourceSafe(map, "tree-cover-loss", {
+        type: "raster",
+        tiles: [gfwLossTileUrl(GFW_TREE_COVER_LOSS_VERSION)],
+        tileSize: 256,
+        maxzoom: 12,
+        attribution: "Hansen/UMD/Google/USGS/NASA via GFW",
+      });
+      if (!map.getLayer("tree-cover-loss")) {
+        map.addLayer({
+          id: "tree-cover-loss",
+          type: "raster",
+          source: "tree-cover-loss",
+        });
+      }
+    },
+    remove(map) {
+      removeLayerSafe(map, "tree-cover-loss");
+      removeSourceIfUnused(map, "tree-cover-loss");
     },
   },
 
