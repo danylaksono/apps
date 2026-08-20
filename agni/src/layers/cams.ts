@@ -24,7 +24,13 @@ interface CamsOptions {
   id: string;
   label: string;
   description: string;
-  entry: { layer: string; style: string };
+  entry: {
+    layer: string;
+    style: string;
+    /** degrees of hue rotation applied to the rendered image — see the
+     *  CAMS_LAYERS note in config.ts for why PM2.5 needs one */
+    hueRotate?: number;
+  };
   defaultVisible?: boolean;
   gradientLegend?: { css: string; min: string; max: string };
 }
@@ -35,9 +41,14 @@ export const CAMS_SOURCES: Record<
   { sourceId: string; layer: string; style: string }
 > = {};
 
+/** These styles carry their own alpha ramp — thin smoke is already nearly
+ *  transparent — so the slider starts near the top rather than at the 0.5 a
+ *  flat, fully opaque contour fill would need. */
+const DEFAULT_OPACITY = 0.9;
+
 export function camsImageLayer(o: CamsOptions): LayerDescriptor {
   const sourceId = `cams-${o.id}`;
-  CAMS_SOURCES[o.id] = { sourceId, ...o.entry };
+  CAMS_SOURCES[o.id] = { sourceId, layer: o.entry.layer, style: o.entry.style };
 
   return {
     id: o.id,
@@ -46,7 +57,7 @@ export function camsImageLayer(o: CamsOptions): LayerDescriptor {
     description: o.description,
     layerType: "raster",
     defaultVisible: o.defaultVisible ?? false,
-    defaultOpacity: 0.5,
+    defaultOpacity: DEFAULT_OPACITY,
     gradientLegend: o.gradientLegend,
     add(map: MaplibreMap) {
       if (!map.getSource(sourceId)) {
@@ -62,7 +73,13 @@ export function camsImageLayer(o: CamsOptions): LayerDescriptor {
           id: o.id,
           type: "raster",
           source: sourceId,
-          paint: { "raster-opacity": 0.5, "raster-fade-duration": 0 },
+          paint: {
+            "raster-opacity": DEFAULT_OPACITY,
+            "raster-fade-duration": 0,
+            ...(o.entry.hueRotate
+              ? { "raster-hue-rotate": o.entry.hueRotate }
+              : {}),
+          },
         });
       }
     },

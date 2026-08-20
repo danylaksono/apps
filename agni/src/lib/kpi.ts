@@ -2,18 +2,13 @@
  *
  *  Everything here is computed from data already in the browser. Anything we
  *  cannot compute honestly is not shown at all — a permanent "—" card is worse
- *  than no card, because it reads as "zero" rather than "not measured". */
+ *  than no card, because it reads as "zero" rather than "not measured".
+ *
+ *  The fire set reaching this module is already clipped to Kalimantan (see
+ *  firms.ts), so these counts describe Kalimantan rather than a bounding box. */
 
-import booleanPointInPolygon from "@turf/boolean-point-in-polygon";
-import bbox from "@turf/bbox";
-import type {
-  Feature,
-  FeatureCollection,
-  Point,
-  Polygon,
-  MultiPolygon,
-} from "geojson";
-import { KECAMATAN_GEOJSON_URL } from "./config";
+import type { Feature, FeatureCollection, Point } from "geojson";
+import { indexPolygons, polygonAt, type PolyFC, type PolyIndex } from "./geo";
 
 export interface Kpi {
   fires: number | null;
@@ -23,54 +18,28 @@ export interface Kpi {
   peatFires: number | null;
 }
 
-type PolyFC = FeatureCollection<Polygon | MultiPolygon>;
-type PolyFeature = Feature<Polygon | MultiPolygon, { code?: string }>;
-
-let kecCache: Promise<PolyFC> | null = null;
-
-export function loadKecamatan(): Promise<PolyFC> {
-  if (!kecCache) {
-    kecCache = fetch(KECAMATAN_GEOJSON_URL).then((r) => {
-      if (!r.ok) throw new Error(`kecamatan ${r.status}`);
-      return r.json();
-    });
-  }
-  return kecCache;
-}
-
-/** Pre-computed bbox index — the polygon sets here are small (101–7k) and the
- *  fire sets are a few thousand points, so a bbox reject before the exact
- *  point-in-polygon test is enough to keep this well under a frame. */
-function indexed(polys: PolyFC) {
-  return polys.features.map((f) => ({ f, b: bbox(f) }));
-}
-
-function hitsAny(
-  pt: Feature<Point>,
-  index: ReturnType<typeof indexed>,
-): PolyFeature | null {
-  const [lon, lat] = pt.geometry.coordinates;
-  for (const { f, b } of index) {
-    if (lon < b[0] || lat < b[1] || lon > b[2] || lat > b[3]) continue;
-    if (booleanPointInPolygon(pt, f as PolyFeature)) return f as PolyFeature;
-  }
-  return null;
-}
-
 function firePoints(fires: FeatureCollection): Feature<Point>[] {
   return fires.features.filter(
     (f): f is Feature<Point> => f.geometry?.type === "Point",
   );
 }
 
+function countHits(fires: FeatureCollection, index: PolyIndex): number {
+  let n = 0;
+  for (const pt of firePoints(fires)) {
+    if (polygonAt(pt, index)) n += 1;
+  }
+  return n;
+}
+
 export function countAffectedKecamatan(
   fires: FeatureCollection,
   kec: PolyFC,
 ): number {
-  const index = indexed(kec);
+  const index = indexPolygons(kec);
   const found = new Set<string>();
   for (const pt of firePoints(fires)) {
-    const hit = hitsAny(pt, index);
+    const hit = polygonAt(pt, index);
     if (hit) found.add(String(hit.properties?.code ?? ""));
   }
   return found.size;
@@ -78,12 +47,7 @@ export function countAffectedKecamatan(
 
 /** Fire detections falling on mapped peat soil. */
 export function countPeatFires(fires: FeatureCollection, peat: PolyFC): number {
-  const index = indexed(peat);
-  let n = 0;
-  for (const pt of firePoints(fires)) {
-    if (hitsAny(pt, index)) n += 1;
-  }
-  return n;
+  return countHits(fires, indexPolygons(peat));
 }
 
 export function computeKpi(

@@ -8,9 +8,10 @@ import {
   BOUNDARIES_PMTILES_URL,
   CAMS_LAYERS,
   GFW_DATASETS,
-  GIBS_WMTS,
+  GIBS_LAYERS,
   POPULATION_PMTILES_URL,
 } from "../lib/config";
+import { gibsDate, gibsTiles } from "../lib/gibs";
 import { gfwPolygonLayer } from "./gfw";
 import { camsImageLayer } from "./cams";
 
@@ -106,7 +107,7 @@ export const LAYERS: LayerDescriptor[] = [
     group: "fire",
     label: "Active fires",
     description:
-      "VIIRS SNPP near real-time detections from the last 48 hours. Source: NASA FIRMS.",
+      "VIIRS SNPP near real-time detections from the last 48 hours, clipped to Kalimantan. Source: NASA FIRMS.",
     layerType: "circle",
     defaultVisible: true,
     defaultOpacity: 0.9,
@@ -287,23 +288,29 @@ export const LAYERS: LayerDescriptor[] = [
     group: "haze",
     label: "Aerosol Optical Depth",
     description:
-      "MODIS Aqua aerosol optical depth, latest available. Source: NASA GIBS (keyless WMTS).",
+      "MODIS Aqua aerosol optical depth for the most recent day with imagery. Satellite-observed total column, so it includes dust and sea salt as well as smoke. Source: NASA GIBS (keyless WMTS).",
     layerType: "raster",
     defaultVisible: false,
     defaultOpacity: 0.7,
+    // Sampled from GIBS' own colormap (colormaps/v1.3/MODIS_VIIRS_AOD.xml) at
+    // the AOD values the stops sit on, so the bar is the palette the tiles are
+    // actually drawn with rather than an invented blue-to-red ramp. Its fine
+    // steps stop around 0.75; everything above that is the same dark red.
     gradientLegend: {
-      css: "linear-gradient(90deg, #2c7fb8, #f0c419, #d73a2e)",
+      css: "linear-gradient(90deg, #fffcc7 0%, #ffde6a 17%, #ffad35 33%, #ff701e 50%, #f52810 67%, #c7030d 83%, #9b000e 100%)",
       min: "AOD 0",
-      max: "AOD 1+",
+      max: "0.75+",
     },
     add(map) {
+      // No date resolved yet: MapView's sync pass starts the probe, and the
+      // store change it settles with brings the applier back here to finish.
+      const date = gibsDate(GIBS_LAYERS.aod);
+      if (!date) return;
       addSourceSafe(map, "gibs-aod", {
         type: "raster",
-        tiles: [
-          `${GIBS_WMTS}/MODIS_Aqua_Aerosol/default/default/GoogleMapsCompatible_Level6/{z}/{y}/{x}.png`,
-        ],
+        tiles: [gibsTiles(GIBS_LAYERS.aod, date)],
         tileSize: 256,
-        maxzoom: 6,
+        maxzoom: GIBS_LAYERS.aod.maxzoom,
         attribution: "NASA GIBS / MODIS Aqua",
       });
       if (!map.getLayer("haze-aod")) {
@@ -324,18 +331,18 @@ export const LAYERS: LayerDescriptor[] = [
     group: "haze",
     label: "True-color smoke",
     description:
-      "MODIS Terra corrected reflectance, latest available. Source: NASA GIBS.",
+      "MODIS Terra corrected reflectance for the most recent day with imagery — smoke as the eye would see it. Source: NASA GIBS.",
     layerType: "raster",
     defaultVisible: false,
     defaultOpacity: 0.65,
     add(map) {
+      const date = gibsDate(GIBS_LAYERS.trueColor);
+      if (!date) return;
       addSourceSafe(map, "gibs-smoke", {
         type: "raster",
-        tiles: [
-          `${GIBS_WMTS}/MODIS_Terra_CorrectedReflectance_TrueColor/default/default/GoogleMapsCompatible_Level9/{z}/{y}/{x}.png`,
-        ],
+        tiles: [gibsTiles(GIBS_LAYERS.trueColor, date)],
         tileSize: 256,
-        maxzoom: 9,
+        maxzoom: GIBS_LAYERS.trueColor.maxzoom,
         attribution: "NASA GIBS / MODIS Terra",
       });
       if (!map.getLayer("haze-smoke")) {
@@ -352,6 +359,9 @@ export const LAYERS: LayerDescriptor[] = [
     },
   },
 
+  // The two gradients below are the WMS styles' own band colours and alphas
+  // (PM2.5's already spun through `hueRotate`), so the legend swatch matches
+  // what the map actually draws rather than approximating it.
   camsImageLayer({
     id: "haze-cams-smoke",
     label: "CAMS smoke (biomass burning AOD)",
@@ -360,22 +370,22 @@ export const LAYERS: LayerDescriptor[] = [
     entry: CAMS_LAYERS.bbaod,
     defaultVisible: false,
     gradientLegend: {
-      css: "linear-gradient(90deg, rgba(255,255,255,0), #ffe08a, #f59e0b, #b91c1c, #6b21a8)",
-      min: "clear",
-      max: "dense smoke",
+      css: "linear-gradient(90deg, rgba(255,236,246,0.05), rgba(254,206,230,0.15), rgba(252,161,206,0.4), rgba(224,2,138,0.65), rgba(109,0,74,1))",
+      min: "AOD 0.1",
+      max: "1+",
     },
   }),
   camsImageLayer({
     id: "haze-cams-pm25",
     label: "CAMS surface PM2.5",
     description:
-      "Ground-level fine particulate matter (PM2.5), on the same 3-hourly timeline and forecast.",
+      "Ground-level fine particulate matter (PM2.5), on the same 3-hourly timeline and forecast. The WHO 24-hour guideline is 15 µg/m³; Indonesia's ISPU “berbahaya” band starts around 250.",
     entry: CAMS_LAYERS.pm25,
     defaultVisible: false,
     gradientLegend: {
-      css: "linear-gradient(90deg, #4ade80, #facc15, #f97316, #dc2626, #7f1d1d)",
-      min: "good",
-      max: "hazardous",
+      css: "linear-gradient(90deg, rgba(238,194,248,0.14), rgba(218,135,238,0.29), rgba(192,73,234,0.43), rgba(162,16,223,0.57), rgba(125,0,202,0.71), rgba(91,0,156,0.86), rgba(64,0,116,1))",
+      min: "30 µg/m³",
+      max: "240+",
     },
   }),
 

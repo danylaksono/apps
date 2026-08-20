@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import type { FeatureCollection, MultiPolygon, Polygon } from "geojson";
-import { computeKpi, loadKecamatan } from "../lib/kpi";
+import { computeKpi } from "../lib/kpi";
+import { loadKecamatan } from "../lib/geo";
 import { getPeatExtent } from "../lib/peat";
 import { useLayersStore } from "../store/layers";
 
@@ -42,7 +43,7 @@ export default function KpiBar() {
     {
       label: "Active fires",
       value: firesStatus === "loading" ? "…" : value(kpi.fires),
-      hint: "VIIRS SNPP · 48 h",
+      hint: "VIIRS SNPP · 48 h · Kalimantan",
     },
     {
       label: "Total FRP",

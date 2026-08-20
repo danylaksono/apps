@@ -21,6 +21,7 @@ import { BASEMAPS, DEFAULT_BASEMAP, basemapSourceId } from "../layers/basemaps";
 import { buildInspectHtml } from "../lib/inspect";
 import { applyMapState } from "../layers/apply";
 import { BIG_BACKED, applyBigData, ensureBigLayer } from "../lib/peat";
+import { GIBS_BACKED, ensureGibsDate } from "../lib/gibs";
 import { setCamsTime } from "../layers/cams";
 import { useLayersStore } from "../store/layers";
 
@@ -102,11 +103,19 @@ export default function MapView() {
     map.on("load", () => {
       applyAll();
     });
-    // BIG layers are fetched the first time they are switched on, not upfront
+    // BIG layers are fetched the first time they are switched on, not upfront;
+    // GIBS layers resolve their date the same way. Both report through
+    // setAvailability, which re-triggers applyAll once they settle.
     const syncBigLayers = () => {
-      const { visibility } = useLayersStore.getState();
+      const { visibility, setAvailability } = useLayersStore.getState();
       for (const b of BIG_BACKED) {
         if (visibility[b.id]) ensureBigLayer(map, b.id);
+      }
+      for (const g of GIBS_BACKED) {
+        if (!visibility[g.id]) continue;
+        ensureGibsDate(g.spec, (status, reason) =>
+          setAvailability(g.id, status, reason),
+        );
       }
     };
     // repoint the CAMS image sources; setCamsTime skips sources already there
