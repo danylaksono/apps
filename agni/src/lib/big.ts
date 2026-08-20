@@ -14,7 +14,7 @@
  *  Layers are fetched lazily (on first toggle) and cached for the session. */
 
 import type { FeatureCollection, MultiPolygon, Polygon } from "geojson";
-import { BIG_MAPSERVER, KALIMANTAN_BBOX } from "./config";
+import { BIG_MAPSERVER, INDONESIA_BBOX } from "./config";
 
 export type PeatFC = FeatureCollection<Polygon | MultiPolygon>;
 
@@ -37,7 +37,7 @@ function queryUrl(spec: BigLayerSpec, offset: number): string {
   const params = new URLSearchParams({
     where: "1=1",
     outFields: spec.outFields.join(","),
-    geometry: KALIMANTAN_BBOX,
+    geometry: INDONESIA_BBOX,
     geometryType: "esriGeometryEnvelope",
     inSR: "4326",
     outSR: "4326",
@@ -65,23 +65,41 @@ async function fetchPage(spec: BigLayerSpec, offset: number): Promise<PeatFC> {
   return json;
 }
 
-const cache = new Map<number, Promise<PeatFC>>();
+export interface BigLayerResult {
+  fc: PeatFC;
+  /** true when `maxFeatures` cut the paging short, so the layer is partial */
+  truncated: boolean;
+}
 
-/** Fetch a BIG layer clipped to Kalimantan, paging until exhausted. */
-export function loadBigLayer(spec: BigLayerSpec): Promise<PeatFC> {
+const cache = new Map<number, Promise<BigLayerResult>>();
+
+/** Fetch a BIG layer over the national envelope, paging until exhausted.
+ *
+ *  Nationally these layers are much larger than they were over Kalimantan
+ *  alone — fire hazard is 17,774 features for Kalimantan and its national count
+ *  query times out — so the `maxFeatures` cap now bites in normal use. When it
+ *  does, say so rather than presenting a partial layer as complete. */
+export function loadBigLayer(spec: BigLayerSpec): Promise<BigLayerResult> {
   const hit = cache.get(spec.layerId);
   if (hit) return hit;
 
   const task = (async () => {
     const features: PeatFC["features"] = [];
     const cap = spec.maxFeatures ?? 20000;
+    let truncated = true;
     for (let offset = 0; offset < cap; offset += PAGE) {
       const page = await fetchPage(spec, offset);
       features.push(...page.features);
       // A short page means we've reached the end.
-      if (page.features.length < PAGE) break;
+      if (page.features.length < PAGE) {
+        truncated = false;
+        break;
+      }
     }
-    return { type: "FeatureCollection", features } as PeatFC;
+    return {
+      fc: { type: "FeatureCollection", features } as PeatFC,
+      truncated,
+    };
   })();
 
   cache.set(spec.layerId, task);

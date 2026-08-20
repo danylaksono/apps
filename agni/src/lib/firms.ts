@@ -1,4 +1,4 @@
-/** NASA FIRMS fetching: CSV → GeoJSON (in-browser), clipped to Kalimantan. */
+/** NASA FIRMS fetching: CSV → GeoJSON (in-browser), clipped to Indonesia. */
 
 import { useEffect } from "react";
 import type { FeatureCollection, Feature, Point } from "geojson";
@@ -6,11 +6,11 @@ import {
   FIRMS_API_KEY,
   FIRMS_DAYS,
   FIRMS_SOURCE,
-  KALIMANTAN_BBOX,
+  INDONESIA_BBOX,
 } from "./config";
 import {
   indexPolygons,
-  loadKecamatan,
+  loadKabKota,
   nearPolygon,
   polygonAt,
   type PolyFC,
@@ -18,7 +18,7 @@ import {
 import { useLayersStore } from "../store/layers";
 
 export function firmsUrl(): string {
-  return `https://firms.modaps.eosdis.nasa.gov/api/area/csv/${FIRMS_API_KEY}/${FIRMS_SOURCE}/${KALIMANTAN_BBOX}/${FIRMS_DAYS}`;
+  return `https://firms.modaps.eosdis.nasa.gov/api/area/csv/${FIRMS_API_KEY}/${FIRMS_SOURCE}/${INDONESIA_BBOX}/${FIRMS_DAYS}`;
 }
 
 /** Parse FIRMS CSV (columns: latitude,longitude,bright_ti4,scan,track,
@@ -51,27 +51,35 @@ export function parseFirmsCsv(csv: string): FeatureCollection {
   return { type: "FeatureCollection", features };
 }
 
-/** How far outside a sub-district polygon a detection may still be kept.
+/** How far outside a kab/kota polygon a detection may still be kept.
  *
- *  The shipped kecamatan outlines are simplified to ~28k vertices for the whole
- *  island, so the coastline sits tens to hundreds of metres off the true shore.
- *  Without this slack every fire within a pixel or two of the coast — which in
- *  Kalimantan is where the peat and the people are — would be clipped away.
- *  Sulawesi is >100 km across the Makassar Strait, so nothing there survives. */
-const COAST_TOLERANCE_M = 5000;
+ *  The shipped outlines are simplified to ~0.008 degrees, so the coastline sits
+ *  up to ~900 m off the true shore. Without some slack, fires within a pixel or
+ *  two of the coast — which in the peat provinces is where the people are —
+ *  would be clipped away.
+ *
+ *  Kept deliberately tight because Indonesia, unlike Kalimantan alone, has
+ *  three long *land* borders. Slack that only ever met coastline now also meets
+ *  Malaysia, Papua New Guinea and Timor-Leste, and there it admits foreign
+ *  fires rather than recovering Indonesian ones. Measured over 10,236
+ *  detections: at 5 km the tolerance readmitted 94 points of which 55 were
+ *  across a land border; at 1.5 km it recovers most of the genuine coastal
+ *  detections while roughly halving that leak. A detection within ~1 km of the
+ *  border is ambiguous at this resolution either way. */
+const COAST_TOLERANCE_M = 1500;
 
-/** Drop detections that are not in Kalimantan.
+/** Drop detections that are not in Indonesia.
  *
- *  FIRMS only accepts a rectangle, and no rectangle around Kalimantan can
- *  exclude west Sulawesi — the two overlap in longitude. So the raw response
- *  arrives with a strip of Sulawesi, Sabah and Natuna fires that stops dead at
+ *  FIRMS only accepts a rectangle, and no rectangle around Indonesia excludes
+ *  its neighbours. So the raw response arrives with strips of Malaysia, Brunei,
+ *  Timor-Leste, Papua New Guinea and the southern Philippines that stop dead at
  *  the bbox edge, which reads as a data artefact on the map and quietly
- *  inflates every KPI. Clip against the island's own outline instead. */
-export function clipToKalimantan(
+ *  inflates every KPI. Clip against the country's own outline instead. */
+export function clipToIndonesia(
   fires: FeatureCollection,
-  kec: PolyFC,
+  kab: PolyFC,
 ): FeatureCollection {
-  const index = indexPolygons(kec);
+  const index = indexPolygons(kab);
   const features = fires.features.filter((f) => {
     if (f.geometry?.type !== "Point") return false;
     const pt = f as Feature<Point>;
@@ -83,14 +91,14 @@ export function clipToKalimantan(
 }
 
 export async function fetchFires(): Promise<FeatureCollection> {
-  // Both in flight together: the clip needs the kecamatan polygons, so serial
+  // Both in flight together: the clip needs the kab/kota polygons, so serial
   // fetches would add their latencies rather than overlap them.
-  const [res, kec] = await Promise.all([
+  const [res, kab] = await Promise.all([
     fetch(firmsUrl()),
     // A missing clip is better than no fires at all — fall back to the raw
     // (bbox-cropped) set and say so, rather than failing the whole layer.
-    loadKecamatan().catch((err) => {
-      console.warn("[agni] kecamatan load failed; fires left unclipped", err);
+    loadKabKota().catch((err) => {
+      console.warn("[agni] kab/kota load failed; fires left unclipped", err);
       return null;
     }),
   ]);
@@ -99,7 +107,7 @@ export async function fetchFires(): Promise<FeatureCollection> {
   if (text.toLowerCase().includes("invalid"))
     throw new Error("FIRMS: invalid API response");
   const fc = parseFirmsCsv(text);
-  return kec ? clipToKalimantan(fc, kec) : fc;
+  return kab ? clipToIndonesia(fc, kab) : fc;
 }
 
 /** Kick off a FIRMS fetch on mount; result lands in the store. */

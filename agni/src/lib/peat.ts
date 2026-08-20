@@ -67,10 +67,12 @@ export function ensureBigLayer(map: MaplibreMap, id: string): void {
   setAvailability(id, "checking", "loading…");
 
   loadBigLayer(entry.spec)
-    .then((fc) => {
+    .then(({ fc, truncated }) => {
       loaded.set(id, fc);
       applyBigData(map);
-      setAvailability(id, "ok");
+      // Still usable when truncated, so it stays "ok" — but the panel says the
+      // coverage is partial rather than implying the whole country is drawn.
+      setAvailability(id, "ok", truncated ? "partial coverage" : undefined);
       if (id === "peat-extent") setPeatLoaded(fc.features.length);
     })
     .catch((err) => {

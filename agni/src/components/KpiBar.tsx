@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import type { FeatureCollection, MultiPolygon, Polygon } from "geojson";
 import { computeKpi } from "../lib/kpi";
-import { loadKecamatan } from "../lib/geo";
+import { loadKabKota } from "../lib/geo";
 import { getPeatExtent } from "../lib/peat";
 import { useLayersStore } from "../store/layers";
 
@@ -14,36 +14,40 @@ function value(v: number | null): string {
 export default function KpiBar() {
   const fires = useLayersStore((s) => s.firesGeojson);
   const firesStatus = useLayersStore((s) => s.firesStatus);
-  const [kec, setKec] = useState<FeatureCollection<
+  const [kab, setKab] = useState<FeatureCollection<
     Polygon | MultiPolygon
   > | null>(null);
 
   useEffect(() => {
-    if (firesStatus !== "ok" || kec) return;
+    if (firesStatus !== "ok" || kab) return;
     let cancelled = false;
-    loadKecamatan()
-      .then((fc) => {
-        if (!cancelled) setKec(fc);
+    // Already resolved by the time fires land — the clip fetches the same
+    // promise — so this is a cache read, not a second download.
+    loadKabKota()
+      .then((fc: FeatureCollection<Polygon | MultiPolygon>) => {
+        if (!cancelled) setKab(fc);
       })
-      .catch((err) => console.warn("[agni] kecamatan load failed", err));
+      .catch((err: unknown) =>
+        console.warn("[agni] kab/kota load failed", err),
+      );
     return () => {
       cancelled = true;
     };
-  }, [firesStatus, kec]);
+  }, [firesStatus, kab]);
 
   // peatFeatureCount changes when the peat polygons finish loading; that is
   // the signal to recompute, since getPeatExtent() itself is not reactive.
   const peatCount = useLayersStore((s) => s.peatFeatureCount);
   const kpi = useMemo(
-    () => computeKpi(fires, kec, peatCount > 0 ? getPeatExtent() : null),
-    [fires, kec, peatCount],
+    () => computeKpi(fires, kab, peatCount > 0 ? getPeatExtent() : null),
+    [fires, kab, peatCount],
   );
 
   const cards: { label: string; value: string; hint: string }[] = [
     {
       label: "Active fires",
       value: firesStatus === "loading" ? "…" : value(kpi.fires),
-      hint: "VIIRS SNPP · 48 h · Kalimantan",
+      hint: "VIIRS SNPP · 48 h · Indonesia",
     },
     {
       label: "Total FRP",
@@ -51,24 +55,30 @@ export default function KpiBar() {
       hint: "radiative power",
     },
     {
-      label: "Kecamatan affected",
+      label: "Kabupaten affected",
       value:
-        kpi.affectedKecamatan === null
+        kpi.affectedKabKota === null
           ? "—"
-          : `${value(kpi.affectedKecamatan)} / 628`,
+          : `${value(kpi.affectedKabKota)} / 514`,
       hint: "with ≥1 detection",
     },
     {
+      // BIG publishes peat for Kalimantan only — 146 polygons nationally, all
+      // of them on Borneo. The share is therefore taken over Kalimantan
+      // detections, not national ones, or it would shrink for no reason as the
+      // rest of the country burns.
       label: "Fires on peat",
       value:
         kpi.peatFires === null
           ? "…"
           : `${value(kpi.peatFires)}${
-              kpi.fires
-                ? ` · ${Math.round((kpi.peatFires / kpi.fires) * 100)}%`
+              kpi.kalimantanFires
+                ? ` · ${Math.round(
+                    (kpi.peatFires / kpi.kalimantanFires) * 100,
+                  )}%`
                 : ""
             }`,
-      hint: peatCount ? "on peat soil (BIG)" : "loading peat map…",
+      hint: peatCount ? "of Kalimantan fires (BIG)" : "loading peat map…",
     },
   ];
 

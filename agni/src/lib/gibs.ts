@@ -48,18 +48,26 @@ function utcDay(offsetDays: number): string {
   return d.toISOString().slice(0, 10);
 }
 
-/** The four z5 tiles that cover KALIMANTAN_BBOX, as [z, x, y].
+/** Six z5 tiles spread across the archipelago, as [z, x, y] — Sumatra, Java,
+ *  north and south Kalimantan/Sulawesi, Maluku, Papua.
  *
  *  Probing the area of interest rather than the globe is the whole point. GIBS
  *  404s per tile as well as per day, so a day whose only swath so far clipped
- *  the Philippines answers "yes" to a global probe and then renders nothing
- *  here — measured on 2026-08-20, when MODIS Aqua AOD had a global z0 tile but
- *  0 of 24 z6 tiles over Kalimantan. */
+ *  the Pacific answers "yes" to a global probe and then renders nothing here —
+ *  measured on 2026-08-20, when MODIS Aqua AOD served a global z0 tile while
+ *  0 of 24 z6 tiles over Kalimantan existed.
+ *
+ *  z5 is the coarsest zoom that still discriminates: at z4 a single tile spans
+ *  ~2,500 km and picks up data from well outside Indonesia. A spread sample
+ *  rather than all 15 covering tiles keeps this to six HEADs per candidate
+ *  date, and "any tile has data" is the rule either way. */
 const PROBE_TILES: readonly (readonly [number, number, number])[] = [
-  [5, 25, 15],
-  [5, 26, 15],
+  [5, 24, 16],
   [5, 25, 16],
+  [5, 26, 15],
   [5, 26, 16],
+  [5, 27, 16],
+  [5, 28, 16],
 ];
 
 /** True if any probe tile for `date` carries data. */
@@ -73,7 +81,7 @@ async function hasImagery(spec: GibsSpec, date: string): Promise<boolean> {
   try {
     return await Promise.any(probes);
   } catch {
-    return false; // every probe rejected: no data over Kalimantan that day
+    return false; // every probe rejected: no data over Indonesia that day
   }
 }
 

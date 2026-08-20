@@ -10,7 +10,7 @@
  *  1. It is a **render-on-demand** service — every GetMap spawns a plot worker
  *     and 302s to a streaming PNG. Requesting an XYZ pyramid would mean dozens
  *     of renders per pan. So each layer is a single MapLibre `image` source
- *     covering the Kalimantan bbox: one render per time step, and the image
+ *     covering the whole archipelago: one render per time step, and the image
  *     swaps in place as you scrub.
  *  2. It has a **time dimension** — 3-hourly, roughly 5 days of analysis plus
  *     4 days of forecast. That is the animation. The available steps are read
@@ -19,13 +19,17 @@
 
 import { CAMS_WMS } from "./config";
 
-/** Deliberately wider than KALIMANTAN_BBOX: this is one flat image, so its
- *  edge is a visible straight line. Pushing the edge well outside the area of
- *  interest keeps it off-screen at the zoom levels people actually use. */
-const CAMS_BBOX: [number, number, number, number] = [101, -11, 128, 14];
+/** Deliberately wider than INDONESIA_BBOX: this is one flat image, so its edge
+ *  is a visible straight line. Pushing the edge well outside the area of
+ *  interest keeps it off-screen at the zoom levels people actually use.
+ *
+ *  Widening this costs nothing in fidelity — CAMS runs on a ~0.4° grid, so even
+ *  across the full 51° of Indonesia one 1024 px render is far finer than the
+ *  underlying data. */
+const CAMS_BBOX: [number, number, number, number] = [92, -13, 143, 8];
 
 /** CAMS image extent as MapLibre corners (clockwise from top-left). */
-export function kalimantanCorners(): [
+export function camsCorners(): [
   [number, number],
   [number, number],
   [number, number],
@@ -76,6 +80,42 @@ export function camsImageUrl(
     time,
   });
   return `${CAMS_WMS}?${params}`;
+}
+
+/** Frames already fetched, or in flight, keyed by URL.
+ *
+ *  Playback needs this because ECMWF renders on demand: a frame takes well
+ *  over a second to come back, and `ImageSource.updateImage` aborts whatever
+ *  is still in flight when the next frame is asked for. Driving the animation
+ *  straight off a timer therefore cancels most frames before they arrive —
+ *  measured at 5 of 13 frames aborted over a 10 s run. Fetching each frame
+ *  ourselves first means `updateImage` is served from the browser cache
+ *  instead, and a second pass through the timeline costs nothing: both the
+ *  redirect and the PNG it points at come back with a long `max-age`.
+ *
+ *  The bytes live in the HTTP cache, not here — these entries are just the
+ *  in-flight promises, so the map stays small however long the session runs. */
+const frameCache = new Map<string, Promise<void>>();
+
+/** Warm the browser cache for one CAMS frame. Idempotent, and never rejects:
+ *  a frame that fails to render should not stall playback, it should just
+ *  arrive late (or blank) like any other. */
+export function prefetchCamsFrame(url: string): Promise<void> {
+  let task = frameCache.get(url);
+  if (!task) {
+    task = fetch(url)
+      .then((r) => {
+        if (!r.ok) throw new Error(`CAMS frame ${r.status}`);
+        return r.blob(); // the body has to be read for the response to cache
+      })
+      .then(() => undefined)
+      .catch((err) => {
+        console.warn("[agni] CAMS frame prefetch failed", err);
+        frameCache.delete(url); // let it be retried
+      });
+    frameCache.set(url, task);
+  }
+  return task;
 }
 
 /** Expand an ISO 8601 `start/end/PT3H`-style extent into discrete steps. */

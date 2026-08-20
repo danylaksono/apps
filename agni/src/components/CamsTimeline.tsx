@@ -1,12 +1,25 @@
 import { useEffect, useState } from "react";
 import { Pause, Play, SkipBack, SkipForward } from "@phosphor-icons/react";
-import { CAMS_LAYER_IDS } from "../layers/cams";
-import { camsTimeSteps } from "../lib/cams";
+import { CAMS_LAYER_IDS, CAMS_SOURCES } from "../layers/cams";
+import { camsImageUrl, camsTimeSteps, prefetchCamsFrame } from "../lib/cams";
 import { CAMS_LAYERS } from "../lib/config";
 import { useLayersStore } from "../store/layers";
 
-/** ms per frame while playing — slow enough that each render can arrive. */
-const FRAME_MS = 900;
+/** Minimum time a frame stays on screen once it is ready. The data is
+ *  3-hourly, so this is about legibility, not smoothness. */
+const MIN_FRAME_MS = 450;
+
+/** Stop waiting on a frame that is taking too long and show the next one
+ *  anyway, so one slow render cannot wedge playback. */
+const FRAME_WAIT_MS = 6000;
+
+/** How many frames to render ahead of the one on screen. ECMWF renders on
+ *  demand at well over a second a frame, so without a lookahead playback can
+ *  never beat that; with three in flight the queue stays ahead of MIN_FRAME_MS
+ *  and the run plays at a steady rate. */
+const LOOKAHEAD = 3;
+
+const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
 
 const stamp = new Intl.DateTimeFormat("en-GB", {
   weekday: "short",
@@ -14,7 +27,10 @@ const stamp = new Intl.DateTimeFormat("en-GB", {
   month: "short",
   hour: "2-digit",
   minute: "2-digit",
-  timeZone: "Asia/Pontianak", // WIB — local time for Kalimantan
+  // Indonesia spans WIB/WITA/WIT. One reference clock is far easier to read
+  // than three on a national timeline, so use WIB and label it — the same
+  // convention BMKG uses for national products.
+  timeZone: "Asia/Jakarta",
 });
 
 export default function CamsTimeline() {
@@ -49,15 +65,48 @@ export default function CamsTimeline() {
     };
   }, [active, steps.length, setCamsSteps]);
 
-  // playback
+  // Playback, gated on the frame actually being ready rather than on a timer:
+  // see prefetchCamsFrame for why a plain interval cancels most of its frames.
+  const visibleKey = CAMS_LAYER_IDS.filter((id) => visibility[id]).join(",");
   useEffect(() => {
     if (!playing || !active || steps.length < 2) return;
-    const t = setInterval(() => {
-      const s = useLayersStore.getState();
-      s.setCamsIndex((s.camsIndex + 1) % s.camsSteps.length);
-    }, FRAME_MS);
-    return () => clearInterval(t);
-  }, [playing, active, steps.length]);
+    let cancelled = false;
+
+    const framesAt = (time: string | undefined) =>
+      time
+        ? CAMS_LAYER_IDS.filter((id) => CAMS_SOURCES[id])
+            .filter((id) => useLayersStore.getState().visibility[id])
+            .map((id) =>
+              camsImageUrl(
+                CAMS_SOURCES[id].layer,
+                CAMS_SOURCES[id].style,
+                time,
+              ),
+            )
+        : [];
+    const warm = (time: string | undefined) =>
+      Promise.all(framesAt(time).map(prefetchCamsFrame));
+
+    void (async () => {
+      while (!cancelled) {
+        const { camsIndex, camsSteps } = useLayersStore.getState();
+        const next = (camsIndex + 1) % camsSteps.length;
+        await Promise.race([warm(camsSteps[next]), sleep(FRAME_WAIT_MS)]);
+        if (cancelled) return;
+
+        useLayersStore.getState().setCamsIndex(next);
+        // keep the queue full while this frame is on screen
+        for (let i = 1; i <= LOOKAHEAD; i++) {
+          void warm(camsSteps[(next + i) % camsSteps.length]);
+        }
+        await sleep(MIN_FRAME_MS);
+      }
+    })();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [playing, active, steps.length, visibleKey]);
 
   // stop playing when the layers are switched off
   useEffect(() => {

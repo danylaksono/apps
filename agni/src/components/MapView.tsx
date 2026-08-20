@@ -22,6 +22,7 @@ import { buildInspectHtml } from "../lib/inspect";
 import { applyMapState } from "../layers/apply";
 import { BIG_BACKED, applyBigData, ensureBigLayer } from "../lib/peat";
 import { GIBS_BACKED, ensureGibsDate } from "../lib/gibs";
+import { refreshPopulation } from "../lib/population";
 import { setCamsTime } from "../layers/cams";
 import { useLayersStore } from "../store/layers";
 
@@ -75,8 +76,10 @@ export default function MapView() {
     const map = new MaplibreMap({
       container: containerRef.current!,
       style: buildBaseStyle(),
-      center: [113.2, 0.4],
-      zoom: 5.4,
+      // Sabang to Merauke: 46 degrees of longitude, offset east of centre so
+      // the layer panel does not cover Sumatra.
+      center: [119.5, -2.2],
+      zoom: 4.5,
       attributionControl: { compact: true },
     });
     map.addControl(new NavigationControl(), "bottom-right");
@@ -127,8 +130,15 @@ export default function MapView() {
       applyAll();
       syncBigLayers();
       syncCamsTime();
+      refreshPopulation(map);
     });
     map.on("load", syncBigLayers);
+
+    // Population is aggregated per viewport in DuckDB rather than tiled, so it
+    // is re-queried when the view settles. refreshPopulation no-ops unless the
+    // layer is on and the viewport moved far enough to change the answer.
+    const onMoveEnd = () => refreshPopulation(map);
+    map.on("moveend", onMoveEnd);
 
     // click-to-inspect: report the whole land-context stack under the cursor
     // closeOnClick would race our own click handler — MapLibre removes the
@@ -151,6 +161,7 @@ export default function MapView() {
     map.on("click", onClick);
 
     return () => {
+      map.off("moveend", onMoveEnd);
       map.off("click", onClick);
       popup.remove();
       unsubscribe();

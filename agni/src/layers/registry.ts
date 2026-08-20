@@ -9,7 +9,6 @@ import {
   CAMS_LAYERS,
   GFW_DATASETS,
   GIBS_LAYERS,
-  POPULATION_PMTILES_URL,
 } from "../lib/config";
 import { gibsDate, gibsTiles } from "../lib/gibs";
 import { gfwPolygonLayer } from "./gfw";
@@ -107,7 +106,7 @@ export const LAYERS: LayerDescriptor[] = [
     group: "fire",
     label: "Active fires",
     description:
-      "VIIRS SNPP near real-time detections from the last 48 hours, clipped to Kalimantan. Source: NASA FIRMS.",
+      "VIIRS SNPP near real-time detections from the last 48 hours, clipped to Indonesia. Source: NASA FIRMS.",
     layerType: "circle",
     defaultVisible: true,
     defaultOpacity: 0.9,
@@ -395,38 +394,39 @@ export const LAYERS: LayerDescriptor[] = [
     group: "population",
     label: "Population (Kontur H3)",
     description:
-      "Modeled population per H3 hexagon. Source: Kontur, served as PMTiles.",
+      "Modelled population density per H3 hexagon, aggregated to a resolution that suits the zoom. Source: Kontur, queried from Parquet with DuckDB.",
     layerType: "fill",
     defaultVisible: false,
     defaultOpacity: 0.75,
+    // Density rather than headcount, so the ramp means the same thing at every
+    // zoom — an aggregated res-5 cell holds ~343x the people of a res-8 one.
     gradientLegend: {
       css: "linear-gradient(90deg, #3a2568, #6d28d9, #a855f7, #e879f9, #fbbf24)",
-      min: "sparse",
-      max: "dense",
+      min: "10 /km²",
+      max: "5,000+",
     },
     add(map) {
-      addSourceSafe(map, "population", {
-        type: "vector",
-        url: POPULATION_PMTILES_URL,
-      });
+      // Fed by lib/population.ts on every moveend rather than by a tile
+      // source: nationally this is 874,919 hexagons, which is ~113 MB tiled
+      // but 3.9 MB as a geometry-free Parquet.
+      addSourceSafe(map, "population", { type: "geojson", data: EMPTY_FC });
       if (!map.getLayer("population")) {
         map.addLayer({
           id: "population",
           type: "fill",
           source: "population",
-          "source-layer": "population",
           paint: {
             "fill-color": [
               "step",
-              ["get", "population"],
+              ["get", "density"],
               "rgba(0,0,0,0)",
-              1,
+              10,
               "#3a2568",
-              50,
+              100,
               "#6d28d9",
-              200,
+              500,
               "#a855f7",
-              1000,
+              2000,
               "#e879f9",
               5000,
               "#fbbf24",
@@ -446,7 +446,7 @@ export const LAYERS: LayerDescriptor[] = [
     id: "boundaries-kecamatan",
     group: "boundaries",
     label: "Kecamatan",
-    description: "Sub-district boundaries (628 in Kalimantan).",
+    description: "Sub-district boundaries (7,275 nationally).",
     layerType: "line",
     defaultVisible: false,
     defaultOpacity: 0.5,
@@ -479,7 +479,7 @@ export const LAYERS: LayerDescriptor[] = [
     id: "boundaries-kabkota",
     group: "boundaries",
     label: "Kabupaten/Kota",
-    description: "Regency/city boundaries (56 in Kalimantan).",
+    description: "Regency/city boundaries (514 nationally).",
     layerType: "line",
     defaultVisible: true,
     defaultOpacity: 0.65,
@@ -511,7 +511,7 @@ export const LAYERS: LayerDescriptor[] = [
     id: "boundaries-provinsi",
     group: "boundaries",
     label: "Provinsi",
-    description: "Provincial boundaries (5 Kalimantan provinces).",
+    description: "Provincial boundaries (38 provinces).",
     layerType: "line",
     defaultVisible: true,
     defaultOpacity: 0.9,
@@ -547,7 +547,7 @@ export const LAYERS: LayerDescriptor[] = [
     mapLayerIds: ["peat-extent", "peat-extent-line"],
     label: "Lahan gambut (peat soil)",
     description:
-      "Official peat soil extent from BIG SatuPeta, covering 45,000 km² across Kalimantan. Peat fires burn below the surface, resist rainfall, and account for most haze emissions.",
+      "Official peat soil extent from BIG SatuPeta. Peat fires burn below the surface, resist rainfall, and account for most haze emissions. BIG publishes only Kalimantan on this service (146 polygons, 45,000 km²) — Sumatra and Papua peat is not shown.",
     layerType: "fill",
     defaultVisible: true,
     defaultOpacity: 0.9,

@@ -1,12 +1,12 @@
 /** CAMS haze layers as time-animated MapLibre image sources.
  *
  *  ECMWF's WMS renders on demand, so an XYZ pyramid would trigger dozens of
- *  renders per pan. One image over the Kalimantan bbox instead: a single
+ *  renders per pan. One image over the whole region instead: a single
  *  render per time step, swapped in place via `updateImage` as you scrub. */
 
 import type { ImageSource, Map as MaplibreMap } from "maplibre-gl";
 import type { LayerDescriptor } from "./registry";
-import { camsImageUrl, kalimantanCorners } from "../lib/cams";
+import { camsImageUrl, camsCorners } from "../lib/cams";
 
 export const CAMS_LAYER_IDS = ["haze-cams-smoke", "haze-cams-pm25"] as const;
 
@@ -64,7 +64,7 @@ export function camsImageLayer(o: CamsOptions): LayerDescriptor {
         map.addSource(sourceId, {
           type: "image",
           url: BLANK_PNG,
-          coordinates: kalimantanCorners(),
+          coordinates: camsCorners(),
         });
         appliedTime.delete(sourceId);
       }
@@ -104,7 +104,7 @@ export function setCamsTime(map: MaplibreMap, time: string): void {
     appliedTime.set(cfg.sourceId, time);
     src.updateImage({
       url: camsImageUrl(cfg.layer, cfg.style, time),
-      coordinates: kalimantanCorners(),
+      coordinates: camsCorners(),
     });
   }
 }

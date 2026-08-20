@@ -16,9 +16,12 @@ OUT = Path(__file__).parent / "out"
 PUBLIC = Path(__file__).parent.parent / "public" / "data"
 
 # (staging file, pmtiles name, minzoom, maxzoom)
+#
+# Population is no longer tiled — nationally it is ~113 MB as PMTiles, past
+# GitHub's per-file limit. It ships as public/data/population_h3.parquet and is
+# queried through DuckDB-WASM instead; see pipeline/build_tiles.py.
 JOBS = [
     ("boundaries.geojson", "boundaries", 2, 12),
-    ("population.geojson", "population", 5, 12),
 ]
 
 

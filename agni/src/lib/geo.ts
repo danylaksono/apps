@@ -14,10 +14,13 @@ import type {
   Polygon,
   Position,
 } from "geojson";
-import { KECAMATAN_GEOJSON_URL } from "./config";
+import { KABKOTA_GEOJSON_URL } from "./config";
 
 export type PolyFC = FeatureCollection<Polygon | MultiPolygon>;
-export type PolyFeature = Feature<Polygon | MultiPolygon, { code?: string }>;
+export type PolyFeature = Feature<
+  Polygon | MultiPolygon,
+  { code?: string; provinsi_code?: string }
+>;
 
 interface Indexed {
   f: PolyFeature;
@@ -105,20 +108,24 @@ export function nearPolygon(
   return false;
 }
 
-let kecCache: Promise<PolyFC> | null = null;
+let kabCache: Promise<PolyFC> | null = null;
 
-/** Kalimantan sub-district polygons (628), shipped with the app. Used both as
- *  the KPI's spatial join and as the clip that keeps neighbouring islands out
- *  of the fire layer — see `clipToKalimantan` in firms.ts. */
-export function loadKecamatan(): Promise<PolyFC> {
-  if (!kecCache) {
-    kecCache = fetch(KECAMATAN_GEOJSON_URL).then((r) => {
-      if (!r.ok) throw new Error(`kecamatan ${r.status}`);
+/** Indonesian regency/city polygons (514), shipped with the app. Used both as
+ *  the KPI's spatial join and as the clip that keeps neighbouring countries out
+ *  of the fire layer — see `clipToIndonesia` in firms.ts.
+ *
+ *  Kab/kota rather than kecamatan: the 7,275 sub-districts are a 13 MB
+ *  download and 14x the point-in-polygon work, for a national count too fine
+ *  to read. */
+export function loadKabKota(): Promise<PolyFC> {
+  if (!kabCache) {
+    kabCache = fetch(KABKOTA_GEOJSON_URL).then((r) => {
+      if (!r.ok) throw new Error(`kab/kota ${r.status}`);
       return r.json();
     });
-    kecCache.catch(() => {
-      kecCache = null; // let a failed load be retried
+    kabCache.catch(() => {
+      kabCache = null; // let a failed load be retried
     });
   }
-  return kecCache;
+  return kabCache;
 }

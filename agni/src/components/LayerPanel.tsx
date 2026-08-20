@@ -59,9 +59,11 @@ function LayerRow({ d }: { d: LayerDescriptor }) {
         >
           {d.label}
         </span>
-        {unavailable && (
+        {(unavailable || (visible && reason)) && (
           <span
-            className="ml-auto flex items-center gap-1 text-[10px] uppercase tracking-wide text-fire-300"
+            className={`ml-auto flex items-center gap-1 text-[10px] uppercase tracking-wide ${
+              unavailable ? "text-fire-300" : "text-ink-400"
+            }`}
             title={reason}
           >
             <WarningCircle size={12} weight="fill" /> {reason ?? "unavailable"}
@@ -135,7 +137,7 @@ export default function LayerPanel() {
           AGNI
         </h1>
         <p className="text-[10px] uppercase tracking-widest text-ink-400">
-          Kalimantan fire & haze
+          Indonesia fire & haze
         </p>
       </div>
       {groups.map(({ group, layers }) => {

@@ -7,14 +7,15 @@ export const FIRMS_SOURCE = "VIIRS_SNPP_NRT";
 // day, which reads as "no fires" rather than "no data yet". 2 always has data.
 export const FIRMS_DAYS = 2;
 
-// Kalimantan bbox (west,south,east,north), used as the FIRMS request envelope
-// and the BIG spatial filter. Sized to the shipped kecamatan extent
-// (108.60,-4.94 → 119.04,4.41) plus a small margin.
+// Indonesia bbox (west,south,east,north), used as the FIRMS request envelope
+// and the BIG spatial filter. Sabang to Merauke, plus a small margin.
 //
-// This is a request envelope, not the area of interest: no rectangle around
-// Kalimantan can exclude west Sulawesi, which overlaps it in longitude. Fires
-// are clipped to the island's own outline afterwards — see clipToKalimantan().
-export const KALIMANTAN_BBOX = "108.4,-5.1,119.3,4.6";
+// This is a request envelope, not the area of interest. No rectangle around
+// Indonesia excludes its neighbours — this one also contains Malaysia, Brunei,
+// Singapore, Timor-Leste, Papua New Guinea and the southern Philippines — so
+// fires are clipped to the country's own outline afterwards. See
+// clipToIndonesia() in firms.ts.
+export const INDONESIA_BBOX = "94.9,-11.2,141.1,6.2";
 
 // CAMS (Copernicus Atmosphere Monitoring Service) via ECMWF's public WMS.
 // Keyless with `token=public`; CORS echoes the request Origin. Render-on-
@@ -92,7 +93,12 @@ export const BIG_MAPSERVER =
 
 /** Layer ids within BIG_MAPSERVER, with the fields worth keeping.
  *
- *  Coverage differs a lot between the three peat layers, which matters if you
+ *  Coverage is the thing to watch here. BIG's peat layers stop at Kalimantan:
+ *  layer 6 returns 146 polygons nationally and every one of them is on Borneo,
+ *  so the peat KPI is scoped to Kalimantan and labelled as such. Sumatra and
+ *  Papua hold most of the country's remaining peat and are simply absent.
+ *
+ *  Coverage also differs between the three peat layers, which matters if you
  *  compute anything from them. Measured over Kalimantan (Aug 2026):
  *    - `peatland` (6):     45,486 km2 — matches the ~50,000 km2 of peat that
  *                          Kalimantan is known to have. Use this one for stats.
@@ -125,8 +131,10 @@ export const BIG_LAYERS = {
 const BASE = import.meta.env.BASE_URL; // always has a trailing slash
 
 export const BOUNDARIES_PMTILES_URL = `pmtiles://${location.origin}${BASE}data/boundaries.pmtiles`;
-export const POPULATION_PMTILES_URL = `pmtiles://${location.origin}${BASE}data/population.pmtiles`;
-export const KECAMATAN_GEOJSON_URL = `${BASE}data/kecamatan_kalimantan.geojson`;
+/** Kab/kota polygons: the fire clip and the "kabupaten affected" KPI. */
+export const KABKOTA_GEOJSON_URL = `${BASE}data/kabkota_indonesia.geojson`;
+/** Kontur H3 population, queried through DuckDB — see lib/population.ts. */
+export const POPULATION_PARQUET_URL = `${BASE}data/population_h3.parquet`;
 
 // ---------------------------------------------------------------- context ---
 // Global Forest Watch open data API. Keyless, CORS-open (verified Aug 2026).
