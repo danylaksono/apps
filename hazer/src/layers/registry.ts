@@ -105,7 +105,8 @@ export const LAYERS: LayerDescriptor[] = [
     id: "fires",
     group: "fire",
     label: "Active fires",
-    description: "VIIRS SNPP NRT detections, last 48 h — NASA FIRMS.",
+    description:
+      "VIIRS SNPP near real-time detections from the last 48 hours. Source: NASA FIRMS.",
     layerType: "circle",
     defaultVisible: true,
     defaultOpacity: 0.9,
@@ -161,7 +162,8 @@ export const LAYERS: LayerDescriptor[] = [
     id: "fires-heat",
     group: "fire",
     label: "Fire heatmap",
-    description: "FRP-weighted density glow derived from FIRMS points.",
+    description:
+      "FRP-weighted density surface derived from FIRMS detection points.",
     layerType: "heatmap",
     defaultVisible: false,
     defaultOpacity: 0.85,
@@ -238,7 +240,7 @@ export const LAYERS: LayerDescriptor[] = [
     mapLayerIds: ["fire-hazard"],
     label: "Fire hazard (rawan karhutla)",
     description:
-      "Official forest & land fire hazard classes — BIG SatuPeta. Where fire was already expected, versus where it is a surprise. Large layer; loads on demand.",
+      "Official forest and land fire hazard classes from BIG SatuPeta, showing where fire is expected under baseline conditions. Large layer; loads on demand.",
     layerType: "fill",
     defaultVisible: false,
     defaultOpacity: 0.6,
@@ -284,7 +286,8 @@ export const LAYERS: LayerDescriptor[] = [
     id: "haze-aod",
     group: "haze",
     label: "Aerosol Optical Depth",
-    description: "MODIS Aqua AOD — NASA GIBS (keyless WMTS), latest.",
+    description:
+      "MODIS Aqua aerosol optical depth, latest available. Source: NASA GIBS (keyless WMTS).",
     layerType: "raster",
     defaultVisible: false,
     defaultOpacity: 0.7,
@@ -320,7 +323,8 @@ export const LAYERS: LayerDescriptor[] = [
     id: "haze-smoke",
     group: "haze",
     label: "True-color smoke",
-    description: "MODIS Terra corrected reflectance — NASA GIBS, latest.",
+    description:
+      "MODIS Terra corrected reflectance, latest available. Source: NASA GIBS.",
     layerType: "raster",
     defaultVisible: false,
     defaultOpacity: 0.65,
@@ -352,7 +356,7 @@ export const LAYERS: LayerDescriptor[] = [
     id: "haze-cams-smoke",
     label: "CAMS smoke (biomass burning AOD)",
     description:
-      "Aerosol from burning vegetation only — the haze plume itself, separated from dust and sea salt. 3-hourly, with forecast. Scrub the timeline to animate.",
+      "Biomass-burning aerosol optical depth, isolating the haze plume from dust and sea salt. 3-hourly, with forecast. Use the timeline to animate.",
     entry: CAMS_LAYERS.bbaod,
     defaultVisible: false,
     gradientLegend: {
@@ -365,7 +369,7 @@ export const LAYERS: LayerDescriptor[] = [
     id: "haze-cams-pm25",
     label: "CAMS surface PM2.5",
     description:
-      "Ground-level fine particulate — what people actually breathe. Same 3-hourly timeline and forecast.",
+      "Ground-level fine particulate matter (PM2.5), on the same 3-hourly timeline and forecast.",
     entry: CAMS_LAYERS.pm25,
     defaultVisible: false,
     gradientLegend: {
@@ -380,7 +384,8 @@ export const LAYERS: LayerDescriptor[] = [
     id: "population",
     group: "population",
     label: "Population (Kontur H3)",
-    description: "Modeled population per H3 hexagon — Kontur, PMTiles.",
+    description:
+      "Modeled population per H3 hexagon. Source: Kontur, served as PMTiles.",
     layerType: "fill",
     defaultVisible: false,
     defaultOpacity: 0.75,
@@ -532,7 +537,7 @@ export const LAYERS: LayerDescriptor[] = [
     mapLayerIds: ["peat-extent", "peat-extent-line"],
     label: "Lahan gambut (peat soil)",
     description:
-      "Official peat soil extent — BIG SatuPeta. 45,000 km² across Kalimantan. Peat fires burn underground, resist rain, and produce most of the haze.",
+      "Official peat soil extent from BIG SatuPeta, covering 45,000 km² across Kalimantan. Peat fires burn below the surface, resist rainfall, and account for most haze emissions.",
     layerType: "fill",
     defaultVisible: true,
     defaultOpacity: 0.9,
@@ -580,7 +585,7 @@ export const LAYERS: LayerDescriptor[] = [
     mapLayerIds: ["peat-khg", "peat-khg-line"],
     label: "KHG (kesatuan hidrologis gambut)",
     description:
-      "Peat hydrological units — the unit Indonesian peat policy is written in. Note: BIG publishes only part of the national set (78 of 101 Kalimantan units are in Kalbar), so do not read extent from it.",
+      "Peat hydrological units (KHG), the unit in which Indonesian peat policy is written. BIG publishes only part of the national set (78 of 101 Kalimantan units fall in Kalbar), so extent should not be read from this layer.",
     layerType: "fill",
     defaultVisible: false,
     defaultOpacity: 0.9,
@@ -628,7 +633,7 @@ export const LAYERS: LayerDescriptor[] = [
     mapLayerIds: ["peat-function", "peat-function-line"],
     label: "Fungsi ekosistem gambut",
     description:
-      "Peat depth and legal function — lindung (>3 m) may not be cleared, budidaya (<3 m) may. Deeper peat burns longer. Same partial coverage as KHG, so use it to inspect places, not to total them.",
+      "Peat depth and legal function: lindung (>3 m) may not be cleared, budidaya (<3 m) may. Deeper peat burns longer. Coverage is partial, as with KHG, so use the layer to inspect individual sites rather than to compute totals.",
     layerType: "fill",
     defaultVisible: false,
     defaultOpacity: 0.9,
@@ -694,7 +699,7 @@ export const LAYERS: LayerDescriptor[] = [
     group: "concessions",
     label: "Oil palm concessions",
     description:
-      "Mapped oil palm concession boundaries (batas perkebunan sawit) — GFW. Fires clustered inside a concession point to land clearing rather than wildfire.",
+      "Mapped oil palm concession boundaries (batas perkebunan sawit) from GFW. Fires clustered inside a concession indicate land clearing rather than wildfire.",
     entry: GFW_DATASETS.oilPalm,
     color: "#f472b6",
     nameField: "conc_name",
@@ -705,7 +710,7 @@ export const LAYERS: LayerDescriptor[] = [
     group: "concessions",
     label: "RSPO oil palm mills",
     description:
-      "RSPO-certified oil palm concessions. Burning inside a certified area is a compliance signal, not just an environmental one.",
+      "RSPO-certified oil palm concessions. Burning inside a certified area carries compliance implications in addition to environmental ones.",
     entry: GFW_DATASETS.rspoOilPalm,
     color: "#fb7185",
     nameField: "company",
@@ -716,7 +721,7 @@ export const LAYERS: LayerDescriptor[] = [
     group: "concessions",
     label: "Pulpwood (HTI)",
     description:
-      "Wood fiber / industrial timber plantation concessions — often drained peat, which is exactly what burns.",
+      "Wood fiber and industrial timber plantation concessions, frequently sited on drained peat.",
     entry: GFW_DATASETS.woodFiber,
     color: "#a78bfa",
     nameField: "conc_name",
@@ -737,7 +742,7 @@ export const LAYERS: LayerDescriptor[] = [
     id: "conc-mining",
     group: "concessions",
     label: "Mining concessions",
-    description: "Mining concession boundaries — GFW.",
+    description: "Mining concession boundaries. Source: GFW.",
     entry: GFW_DATASETS.mining,
     color: "#94a3b8",
     nameField: "conc_name",
@@ -750,7 +755,7 @@ export const LAYERS: LayerDescriptor[] = [
     group: "protection",
     label: "Moratorium (PIPPIB)",
     description:
-      "Indonesia's primary forest & peatland moratorium areas. New concessions are barred here, so fires inside are a governance red flag.",
+      "Indonesia's primary forest and peatland moratorium areas. New concessions are barred here, so fires inside them warrant scrutiny.",
     entry: GFW_DATASETS.moratorium,
     color: "#22d3ee",
     nameField: "pippib_en",
@@ -760,7 +765,7 @@ export const LAYERS: LayerDescriptor[] = [
     group: "protection",
     label: "Kawasan hutan",
     description:
-      "Official forest estate classes (produksi / lindung / konservasi) — legal land status behind each fire.",
+      "Official forest estate classes (produksi, lindung, konservasi), giving the legal land status underlying each fire.",
     entry: GFW_DATASETS.forestArea,
     color: "#34d399",
     fillAlpha: 0.14,
@@ -793,7 +798,7 @@ export const LAYERS: LayerDescriptor[] = [
     group: "protection",
     label: "Protected areas (WDPA)",
     description:
-      "National parks and reserves. Fire inside a protected area is the highest-severity case for biodiversity.",
+      "National parks and reserves. Fire inside a protected area carries the greatest biodiversity impact.",
     entry: GFW_DATASETS.protectedAreas,
     color: "#4ade80",
     nameField: "name",
