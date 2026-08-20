@@ -25,6 +25,11 @@ import { GIBS_BACKED, ensureGibsDate } from "../lib/gibs";
 import { refreshPopulation } from "../lib/population";
 import { setMapRef } from "../lib/mapRef";
 import { GFW_LOSS_PROTOCOL, gfwLossProtocol } from "../lib/gfwRaster";
+import { CLMS_BA_PROTOCOL, clmsBurntAreaProtocol } from "../lib/clms";
+import { setRasterDate } from "../lib/gibs";
+import { setRasterDayOffset } from "../lib/rasterDate";
+import { burntAreaDate } from "../layers/registry";
+import { clmsBurntAreaTiles } from "../lib/clms";
 import { setCamsTime } from "../layers/cams";
 import { useLayersStore } from "../store/layers";
 
@@ -78,6 +83,9 @@ export default function MapView() {
     // GFW ships tree cover loss as data-in-pixels; this decodes each tile to a
     // styled PNG before MapLibre ever sees it. See lib/gfwRaster.ts.
     addProtocol(GFW_LOSS_PROTOCOL, gfwLossProtocol);
+    // CLMS burnt area paints "nothing burned" as an opaque pale fill; this
+    // drops it so the layer is burns only. See lib/clms.ts.
+    addProtocol(CLMS_BA_PROTOCOL, clmsBurntAreaProtocol);
 
     const map = new MaplibreMap({
       container: containerRef.current!,
@@ -133,7 +141,23 @@ export default function MapView() {
       const { camsSteps, camsIndex } = useLayersStore.getState();
       setCamsTime(map, camsSteps[camsIndex] ?? "");
     };
+    // Dated rasters (GIBS daily products, CLMS burnt area) all read one shared
+    // offset, so the slider moves them together.
+    let lastOffset = -1;
+    const syncRasterDate = () => {
+      const { rasterDayOffset: offset } = useLayersStore.getState();
+      setRasterDayOffset(offset);
+      if (offset === lastOffset) return;
+      lastOffset = offset;
+      setRasterDate(map, offset);
+      const ba = map.getSource("burnt-area") as
+        | { setTiles?: (t: string[]) => void }
+        | undefined;
+      ba?.setTiles?.([clmsBurntAreaTiles(burntAreaDate(offset))]);
+    };
+
     const unsubscribe = useLayersStore.subscribe(() => {
+      syncRasterDate();
       applyAll();
       syncBigLayers();
       syncCamsTime();
@@ -181,6 +205,7 @@ export default function MapView() {
       map.remove();
       removeProtocol("pmtiles");
       removeProtocol(GFW_LOSS_PROTOCOL);
+      removeProtocol(CLMS_BA_PROTOCOL);
     };
   }, []);
 

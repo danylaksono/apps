@@ -4,6 +4,7 @@
 
 import type { Map as MaplibreMap } from "maplibre-gl";
 import type { FeatureCollection } from "geojson";
+import { rasterDayOffset } from "../lib/rasterDate";
 import {
   BOUNDARIES_PMTILES_URL,
   CAMS_LAYERS,
@@ -12,7 +13,8 @@ import {
   GIBS_LAYERS,
 } from "../lib/config";
 import { gfwLossTileUrl } from "../lib/gfwRaster";
-import { gibsDate, gibsTiles } from "../lib/gibs";
+import { gibsDateAt, gibsTiles } from "../lib/gibs";
+import { clmsBurntAreaTiles } from "../lib/clms";
 import { gfwPolygonLayer } from "./gfw";
 import { camsImageLayer } from "./cams";
 
@@ -99,6 +101,15 @@ function removeSourceIfUnused(map: MaplibreMap, id: string): void {
     (l) => (l as { source?: string }).source === id,
   );
   if (!stillUsed) map.removeSource(id);
+}
+
+/** CLMS publishes to today with a short processing lag, and unlike GIBS it
+ *  offers nothing to probe for the newest populated day — so this counts back
+ *  from today and lets the slider find the imagery. */
+export function burntAreaDate(daysBack: number): string {
+  const d = new Date();
+  d.setUTCDate(d.getUTCDate() - daysBack);
+  return d.toISOString().slice(0, 10);
 }
 
 export const LAYERS: LayerDescriptor[] = [
@@ -283,6 +294,39 @@ export const LAYERS: LayerDescriptor[] = [
     },
   },
 
+  {
+    id: "burnt-area",
+    group: "fire",
+    label: "Burnt area (Copernicus 300 m)",
+    description:
+      "Burned fraction for a single day, from Sentinel-3 and VIIRS. A day at a time is sparse by nature — burn scars accumulate — so use the date slider to step back through the season and watch them build. Source: Copernicus Land Monitoring Service.",
+    layerType: "raster",
+    defaultVisible: false,
+    defaultOpacity: 0.9,
+    gradientLegend: {
+      css: "linear-gradient(90deg, #fecf92, #f7705c, #b63679, #641a80, #241257)",
+      min: "low burned fraction",
+      max: "high",
+    },
+    add(map) {
+      const date = burntAreaDate(rasterDayOffset());
+      addSourceSafe(map, "burnt-area", {
+        type: "raster",
+        tiles: [clmsBurntAreaTiles(date)],
+        tileSize: 256,
+        maxzoom: 12,
+        attribution: "Copernicus Land Monitoring Service",
+      });
+      if (!map.getLayer("burnt-area")) {
+        map.addLayer({ id: "burnt-area", type: "raster", source: "burnt-area" });
+      }
+    },
+    remove(map) {
+      removeLayerSafe(map, "burnt-area");
+      removeSourceIfUnused(map, "burnt-area");
+    },
+  },
+
   // -------------------------------------------------------------- haze ---
   {
     id: "haze-aod",
@@ -305,7 +349,10 @@ export const LAYERS: LayerDescriptor[] = [
     add(map) {
       // No date resolved yet: MapView's sync pass starts the probe, and the
       // store change it settles with brings the applier back here to finish.
-      const date = gibsDate(GIBS_LAYERS.aod);
+      const date = gibsDateAt(
+        GIBS_LAYERS.aod,
+        rasterDayOffset(),
+      );
       if (!date) return;
       addSourceSafe(map, "gibs-aod", {
         type: "raster",
@@ -337,7 +384,10 @@ export const LAYERS: LayerDescriptor[] = [
     defaultVisible: false,
     defaultOpacity: 0.65,
     add(map) {
-      const date = gibsDate(GIBS_LAYERS.trueColor);
+      const date = gibsDateAt(
+        GIBS_LAYERS.trueColor,
+        rasterDayOffset(),
+      );
       if (!date) return;
       addSourceSafe(map, "gibs-smoke", {
         type: "raster",
@@ -400,7 +450,7 @@ export const LAYERS: LayerDescriptor[] = [
     defaultVisible: false,
     defaultOpacity: 0.55,
     add(map) {
-      const date = gibsDate(GIBS_LAYERS.nightLights);
+      const date = gibsDateAt(GIBS_LAYERS.nightLights, 0);
       if (!date) return;
       addSourceSafe(map, "gibs-night", {
         type: "raster",

@@ -31,11 +31,12 @@ export interface GibsSpec {
   fixedDate?: string;
 }
 
-/** Registry layers whose tiles are dated, for MapView's sync pass. */
-export const GIBS_BACKED: { id: string; spec: GibsSpec }[] = [
-  { id: "haze-aod", spec: GIBS_LAYERS.aod },
-  { id: "haze-smoke", spec: GIBS_LAYERS.trueColor },
-  { id: "night-lights", spec: GIBS_LAYERS.nightLights },
+/** Registry layers whose tiles are dated, for MapView's sync pass. `sourceId`
+ *  lets the date slider repoint an existing source instead of rebuilding it. */
+export const GIBS_BACKED: { id: string; sourceId: string; spec: GibsSpec }[] = [
+  { id: "haze-aod", sourceId: "gibs-aod", spec: GIBS_LAYERS.aod },
+  { id: "haze-smoke", sourceId: "gibs-smoke", spec: GIBS_LAYERS.trueColor },
+  { id: "night-lights", sourceId: "gibs-night", spec: GIBS_LAYERS.nightLights },
 ];
 
 export function gibsTiles(spec: GibsSpec, date: string): string {
@@ -97,6 +98,22 @@ export function gibsDate(spec: GibsSpec): string | null {
   return spec.fixedDate ?? resolved.get(spec.layer) ?? null;
 }
 
+/** Step a resolved date back by whole days. A static composite ignores the
+ *  offset: there is only ever the one date to show. */
+export function shiftDate(date: string, daysBack: number): string {
+  if (!daysBack) return date;
+  const d = new Date(`${date}T00:00:00Z`);
+  d.setUTCDate(d.getUTCDate() - daysBack);
+  return d.toISOString().slice(0, 10);
+}
+
+/** The date a dated layer should draw at the shared offset. */
+export function gibsDateAt(spec: GibsSpec, daysBack: number): string | null {
+  const latest = gibsDate(spec);
+  if (!latest) return null;
+  return spec.fixedDate ? latest : shiftDate(latest, daysBack);
+}
+
 export type GibsStatus = (
   status: "checking" | "ok" | "unavailable",
   reason?: string,
@@ -127,3 +144,31 @@ export function ensureGibsDate(spec: GibsSpec, onStatus: GibsStatus): void {
     started.delete(spec.layer); // allow a retry on the next toggle
   })();
 }
+
+/** Repoint every dated raster source at `daysBack`.
+ *
+ *  `setTiles` rather than remove-and-re-add: rebuilding the source would drop
+ *  the tile cache and flash the layer away on every step of the slider. */
+export function setRasterDate(
+  map: {
+    getSource: (id: string) => unknown;
+  },
+  daysBack: number,
+): void {
+  for (const g of GIBS_BACKED) {
+    const date = gibsDateAt(g.spec, daysBack);
+    if (!date) continue;
+    const src = map.getSource(g.sourceId) as
+      | { setTiles?: (t: string[]) => void }
+      | undefined;
+    const url = gibsTiles(g.spec, date);
+    if (src?.setTiles && appliedTiles.get(g.sourceId) !== url) {
+      appliedTiles.set(g.sourceId, url);
+      src.setTiles([url]);
+    }
+  }
+}
+
+/** Last tile template pushed per source, so a slider that has not moved past a
+ *  whole day does not churn the tile cache. */
+const appliedTiles = new Map<string, string>();

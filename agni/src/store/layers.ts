@@ -31,6 +31,10 @@ export interface LayersState {
    *  Captured when the steps arrive rather than derived during render, which
    *  would mean calling Date.now() in a component body. */
   camsForecastFrom: number;
+  /** Days back from each dated raster layer's newest imagery. One offset
+   *  shared by the GIBS layers and CLMS burnt area, so a single slider moves
+   *  them together and they always show the same day. */
+  rasterDayOffset: number;
   /** panels. On a phone these are mutually exclusive; see App. */
   railOpen: boolean;
   layersOpen: boolean;
@@ -48,6 +52,7 @@ export interface LayersState {
   setCamsSteps(steps: string[]): void;
   setCamsIndex(i: number): void;
   setCamsPlaying(playing: boolean): void;
+  setRasterDayOffset(days: number): void;
   setRailOpen(open: boolean): void;
   setLayersOpen(open: boolean): void;
   setFireFilters(patch: Partial<FireFilters>): void;
@@ -91,6 +96,7 @@ export const useLayersStore = create<LayersState>((set) => ({
   camsIndex: 0,
   camsPlaying: false,
   camsForecastFrom: 0,
+  rasterDayOffset: 0,
   railOpen: true,
   layersOpen: true,
   fireFilters: DEFAULT_FILTERS,
@@ -120,6 +126,7 @@ export const useLayersStore = create<LayersState>((set) => ({
     }),
   setCamsIndex: (i) => set({ camsIndex: i }),
   setCamsPlaying: (playing) => set({ camsPlaying: playing }),
+  setRasterDayOffset: (days) => set({ rasterDayOffset: Math.max(0, days) }),
   setRailOpen: (open) => set({ railOpen: open }),
   setLayersOpen: (open) => set({ layersOpen: open }),
   setFireFilters: (patch) =>

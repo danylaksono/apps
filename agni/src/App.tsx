@@ -5,6 +5,7 @@ import LayerPanel from "./components/LayerPanel";
 import BasemapSwitcher from "./components/BasemapSwitcher";
 import KpiBar from "./components/KpiBar";
 import CamsTimeline from "./components/CamsTimeline";
+import RasterTimeline from "./components/RasterTimeline";
 import DashboardRail from "./components/DashboardRail";
 import { useFirms } from "./lib/firms";
 import { useIsCompact } from "./lib/useMedia";
@@ -93,6 +94,7 @@ export default function App() {
       <BasemapSwitcher />
       <DashboardRail />
       <CamsTimeline />
+      <RasterTimeline />
       <KpiBar />
       <MobileBar />
     </div>
