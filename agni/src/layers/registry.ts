@@ -19,7 +19,12 @@ import { gfwLossTileUrl } from "../lib/gfwRaster";
 import { gibsDateAt, gibsTiles } from "../lib/gibs";
 import { clmsBurntAreaTiles } from "../lib/clms";
 import { FRP_COLORS, FRP_LABELS } from "../lib/fireGlyph";
-import { GLYPH_LAYER, GLYPH_SOURCE, clusterProperties } from "./glyphs";
+import {
+  GLYPH_LAYER,
+  GLYPH_SOURCE,
+  clusterProperties,
+  setGlyphScale,
+} from "./glyphs";
 import { gfwPolygonLayer } from "./gfw";
 import { camsImageLayer } from "./cams";
 
@@ -48,6 +53,9 @@ export interface LayerDescriptor {
   defaultOpacity: number;
   /** base paint opacity multiplied by the slider value (default 1) */
   baseOpacity?: number;
+  /** What the layer's single slider actually controls. Defaults to opacity;
+   *  set it where the slider drives something else, so the panel can say so. */
+  sliderLabel?: string;
   legend?: LegendItem[];
   gradientLegend?: { css: string; min: string; max: string };
   /** Alternative ways of drawing the same layer, offered as a small segmented
@@ -263,7 +271,9 @@ export const LAYERS: LayerDescriptor[] = [
       "Detections aggregated into donut glyphs: the ring splits each group by fire radiative power, the inner arc is the share seen on the night overpass, and the number is how many. Click one for its breakdown and timing.",
     layerType: "circle",
     defaultVisible: false,
-    defaultOpacity: 1,
+    // mid-slider is 1:1 — the slider is size for this layer, see setOpacity
+    defaultOpacity: 0.25,
+    sliderLabel: "Size",
     modes: [
       { value: "cluster", label: "Clusters" },
       { value: "province", label: "Provinces" },
@@ -291,6 +301,17 @@ export const LAYERS: LayerDescriptor[] = [
           filter: ["==", ["get", "cluster"], true],
           paint: { "circle-radius": 1, "circle-opacity": 0 },
         });
+      }
+    },
+    setOpacity(map, slider) {
+      // The slider is size here, not opacity: 0 -> 0.6x, 1 -> 2.2x.
+      setGlyphScale(0.6 + slider * 1.6);
+      // And the anchor layer stays invisible. The default opacity path would
+      // write circle-opacity onto it — it is a 1 px circle that exists only to
+      // keep the source loaded, and was being turned on at full opacity,
+      // drawing a stray dot at every cluster.
+      if (map.getLayer(GLYPH_LAYER)) {
+        map.setPaintProperty(GLYPH_LAYER, "circle-opacity", 0);
       }
     },
     remove(map) {

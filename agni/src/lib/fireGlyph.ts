@@ -12,7 +12,8 @@
  *  glyph at the mean position of its own detections.
  *
  *  What is encoded, kept to what survives at 30–68 px:
- *    - radius and the centre number: how many detections
+ *    - radius and the centre number: how many detections, times the size the
+ *      reader has chosen — the ladder of sizes is preserved, just scaled
  *    - ring composition: how that total splits across FRP classes
  *    - inner arc: the share detected on the night overpass, and only on glyphs
  *      big enough to carry a second ring
@@ -101,9 +102,9 @@ const INK = "#d5dce4";
 
 /** Draw the glyph. Rendered at devicePixelRatio so it stays crisp, then sized
  *  back down in CSS — a canvas marker is otherwise soft on a retina screen. */
-export function drawFireGlyph(data: GlyphData): HTMLCanvasElement {
+export function drawFireGlyph(data: GlyphData, scale = 1): HTMLCanvasElement {
   const { counts, total } = data;
-  const r = radiusFor(total);
+  const r = Math.round(radiusFor(total) * scale);
   const r0 = Math.round(r * 0.62);
   const w = r * 2;
   const dpr = Math.min(3, globalThis.devicePixelRatio || 1);

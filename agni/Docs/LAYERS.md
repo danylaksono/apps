@@ -54,7 +54,7 @@ The map applies it as a MapLibre `filter` expression (`fireFilterExpression`) ra
 ## Styling conventions
 
 - **Fires:** circle radius scales with `frp`; colour by `confidence` (low amber, nominal orange, high red).
-- **Fire glyphs:** canvas donuts as DOM markers. Ring splits by **FRP class** (YlOrRd, semantic heat, with a scale legend); inner arc is the night-overpass share in a blue deliberately outside the FRP ramp; radius and centre number are the count. Two modes — `cluster` and `province` — one at a time, drawn by the same function so they read against each other.
+- **Fire glyphs:** canvas donuts as DOM markers. Ring splits by **FRP class** (YlOrRd, semantic heat, with a scale legend); inner arc is the night-overpass share in a blue deliberately outside the FRP ramp; radius and centre number are the count. Two modes — `cluster` and `province` — one at a time, drawn by the same function so they read against each other. The layer's slider is **size**, not opacity (`sliderLabel`): these are DOM markers, so paint properties never reach them, and a size that reads at street zoom is a speck across the archipelago.
 - **Population:** single-hue teal ramp, dark→light, coloured by **density (people/km²)** not headcount — an aggregated res-5 cell holds ~343× the people of a res-8 one, so a ramp on the raw sum would change meaning at every zoom.
 - **Peat:** violet `#8b5cf6` fill + lighter outline; KHG `#3ddc97`; fungsi ekosistem blue.
 - **CAMS haze:** sequential, alpha-ramped WMS styles — smoke `sh_Oranges_aod` spun to magenta, PM2.5 `sh_OrangesTransparent240` spun to violet, both via `raster-hue-rotate`. The defaults are rainbows and were replaced; see METHODOLOGY.md.

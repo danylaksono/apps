@@ -147,6 +147,26 @@ function swap(set: MarkerSet, next: Record<string, Marker>, map: MaplibreMap) {
   set.onScreen = next;
 }
 
+/** Size multiplier for the glyphs.
+ *
+ *  The panel's slider drives this rather than opacity: these are DOM markers,
+ *  so MapLibre paint properties never reach them, and a canvas donut is opaque
+ *  by construction — size is the dimension actually worth a control. A glyph
+ *  that reads at street zoom is a speck across the archipelago.
+ *
+ *  Changing it has to rebuild the markers, because the size is baked into the
+ *  canvas at draw time. Dropping the cache is enough: the sync pass that runs
+ *  straight after redraws whatever is on screen. */
+let glyphScale = 1;
+
+export function setGlyphScale(value: number): boolean {
+  if (value === glyphScale) return false;
+  glyphScale = value;
+  clearSet(clusters);
+  clearSet(provinces);
+  return true;
+}
+
 let popup: Popup | null = null;
 
 function showPopup(map: MaplibreMap, lngLat: [number, number], html: string) {
@@ -190,7 +210,7 @@ function updateClusterGlyphs(map: MaplibreMap, visible: boolean): void {
     let marker = clusters.markers[id];
     if (!marker) {
       const data = glyphFromCluster(props);
-      const el = drawFireGlyph(data);
+      const el = drawFireGlyph(data, glyphScale);
       el.addEventListener("click", (e) => {
         e.stopPropagation();
         // Pull the cluster's actual member detections rather than reporting
@@ -261,7 +281,7 @@ function updateProvinceGlyphs(
     const id = `${name}|${t.total}`;
     let marker = provinces.markers[id];
     if (!marker) {
-      const el = drawFireGlyph(t);
+      const el = drawFireGlyph(t, glyphScale);
       const top = topKabupaten(list);
       el.addEventListener("click", (e) => {
         e.stopPropagation();

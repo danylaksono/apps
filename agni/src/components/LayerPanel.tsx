@@ -108,16 +108,23 @@ function LayerRow({ d }: { d: LayerDescriptor }) {
               })}
             </div>
           )}
-          <input
-            type="range"
-            min={0}
-            max={1}
-            step={0.05}
-            value={opacity}
-            onChange={(e) => setOpacity(d.id, Number(e.target.value))}
-            className="agni-slider w-full"
-            aria-label={`${d.label} opacity`}
-          />
+          <div className="flex items-center gap-2">
+            {d.sliderLabel && (
+              <span className="w-[46px] shrink-0 text-[9px] uppercase tracking-widest text-ink-400">
+                {d.sliderLabel}
+              </span>
+            )}
+            <input
+              type="range"
+              min={0}
+              max={1}
+              step={0.05}
+              value={opacity}
+              onChange={(e) => setOpacity(d.id, Number(e.target.value))}
+              className="agni-slider flex-1"
+              aria-label={`${d.label} ${d.sliderLabel ?? "opacity"}`}
+            />
+          </div>
           {d.legend && (
             <div className="mt-1.5 flex flex-wrap gap-x-3 gap-y-1">
               {d.legend.map((l) => (
