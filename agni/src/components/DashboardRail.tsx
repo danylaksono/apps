@@ -9,7 +9,7 @@ import { useEffect, useMemo, useState } from "react";
 import { CaretRight, ChartLine, Crosshair, Funnel } from "@phosphor-icons/react";
 import type { FeatureCollection, MultiPolygon, Polygon } from "geojson";
 import { CAMS_LAYERS } from "../lib/config";
-import { loadKabKota } from "../lib/geo";
+import { boundsOf, loadKabKota } from "../lib/geo";
 import {
   applyFireFilters,
   dailyTrend,
@@ -42,38 +42,6 @@ const stepLabel = new Intl.DateTimeFormat("en-GB", {
 });
 
 type PolyFC = FeatureCollection<Polygon | MultiPolygon>;
-
-/** Bounding box of every polygon whose `prop` equals `value`. Provinces are
- *  many kab/kota, so this unions them rather than taking the first hit. */
-function boundsOf(
-  kab: PolyFC,
-  prop: "name" | "provinsi_name",
-  value: string,
-): [number, number, number, number] | null {
-  let w = 180;
-  let s = 90;
-  let e = -180;
-  let n = -90;
-  let found = false;
-  for (const f of kab.features) {
-    if (String((f.properties as Record<string, unknown>)?.[prop]) !== value) {
-      continue;
-    }
-    found = true;
-    const g = f.geometry;
-    const rings =
-      g.type === "Polygon" ? g.coordinates : g.coordinates.flat();
-    for (const ring of rings) {
-      for (const [lon, lat] of ring) {
-        if (lon < w) w = lon;
-        if (lon > e) e = lon;
-        if (lat < s) s = lat;
-        if (lat > n) n = lat;
-      }
-    }
-  }
-  return found ? [w, s, e, n] : null;
-}
 
 export default function DashboardRail() {
   const open = useLayersStore((s) => s.railOpen);

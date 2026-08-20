@@ -129,3 +129,36 @@ export function loadKabKota(): Promise<PolyFC> {
   }
   return kabCache;
 }
+
+/** Bounding box of every polygon whose `prop` equals `value`.
+ *
+ *  Unions rather than taking the first hit: a province is many kab/kota, and a
+ *  kabupaten can be several islands. */
+export function boundsOf(
+  polys: PolyFC,
+  prop: "name" | "provinsi_name",
+  value: string,
+): [number, number, number, number] | null {
+  let w = 180;
+  let s = 90;
+  let e = -180;
+  let n = -90;
+  let found = false;
+  for (const f of polys.features) {
+    if (String((f.properties as Record<string, unknown>)?.[prop]) !== value) {
+      continue;
+    }
+    found = true;
+    const g = f.geometry;
+    const rings = g.type === "Polygon" ? g.coordinates : g.coordinates.flat();
+    for (const ring of rings) {
+      for (const [lon, lat] of ring) {
+        if (lon < w) w = lon;
+        if (lon > e) e = lon;
+        if (lat < s) s = lat;
+        if (lat > n) n = lat;
+      }
+    }
+  }
+  return found ? [w, s, e, n] : null;
+}

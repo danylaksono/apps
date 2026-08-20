@@ -82,6 +82,17 @@ Two sources ship data in pixels rather than colour, and MapLibre 6 has no `raste
 | `tree-cover-loss` | B = year − 2000, R = intensity, A = loss mask | `lib/gfwRaster.ts` |
 | `burnt-area` | pre-styled, but "no burn" is an **opaque** `#fcfdbf` over all land | `lib/clms.ts` |
 
+## Search
+
+The panel's search box is both a layer filter and a place search (`src/lib/geocode.ts`). It answers from two sources, in this order:
+
+1. **The app's own boundaries** — the 514 kab/kota already in memory for the fire clip, plus the 38 provinces derived from their `provinsi_name`. Free, offline, and it returns the *exact* polygon the KPIs and charts count, so searching "Ketapang" lands on the boundary the numbers refer to. Provinces are listed first: a bare "Riau" almost always means the province.
+2. **Photon** (`photon.komoot.io`) for everything else — villages, rivers, landmarks. Keyless, CORS-open, and built for type-ahead, unlike Nominatim whose usage policy caps at ~1 req/s. Requests are bbox-scoped to Indonesia and then filtered on `countrycode === "ID"`, because any box around the archipelago also contains Malaysia, Brunei, Timor-Leste and PNG.
+
+Results are deduped **positionally, not by name** — a remote hit is a duplicate only if it falls inside the admin polygon of the same name. Indonesia reuses place names heavily (there is a Ketapang in West Kalimantan and three more elsewhere), so name-matching would hide the very places the geocoder exists to find.
+
+Picking a result fits its bounds, or flies to `zoom: 11` when it has none. A filled pin marks a local boundary, an outline pin a geocoder hit.
+
 ## Click-to-inspect
 
 Clicking the map reports every layer under the cursor in render order (`src/lib/inspect.ts`), **and** sets the CAMS probe point for the forecast charts in the rail. Glyph markers have their own popups. Raster layers cannot be queried this way — they answer visually only.

@@ -1,10 +1,11 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import {
   CaretDown,
   CaretLeft,
   CloudFog,
   Fire,
   MagnifyingGlass,
+  MapPin,
   MapTrifold,
   Plant,
   ShieldCheck,
@@ -14,6 +15,9 @@ import {
 } from "@phosphor-icons/react";
 import FireFilters from "./FireFilters";
 import AboutButton from "./AboutButton";
+import { getMapRef } from "../lib/mapRef";
+import { loadKabKota, type PolyFC } from "../lib/geo";
+import { searchAdmin, searchGeocoder, type PlaceHit } from "../lib/geocode";
 import type { LayerDescriptor, LayerGroup } from "../layers/registry";
 import { LAYERS } from "../layers/registry";
 import { useLayersStore } from "../store/layers";
@@ -176,6 +180,67 @@ export default function LayerPanel() {
   );
 
   const q = query.trim().toLowerCase();
+
+  // The kab/kota polygons are already fetched to clip the fire layer, so this
+  // is a cache read rather than a second download.
+  const [kab, setKab] = useState<PolyFC | null>(null);
+  useEffect(() => {
+    loadKabKota()
+      .then((fc: PolyFC) => setKab(fc))
+      .catch(() => setKab(null));
+  }, []);
+
+  const adminHits = useMemo(() => searchAdmin(query, kab), [query, kab]);
+  const [remote, setRemote] = useState<{ q: string; hits: PlaceHit[] }>({
+    q: "",
+    hits: [],
+  });
+
+  // Debounced, and aborted on the next keystroke: typing "ketapang" should
+  // cost one request at the end, not eight along the way.
+  useEffect(() => {
+    const term = query.trim();
+    if (term.length < 3) return;
+    const ctrl = new AbortController();
+    const timer = setTimeout(() => {
+      searchGeocoder(term, ctrl.signal)
+        .then((hits) => setRemote({ q: term, hits }))
+        .catch(() => undefined);
+    }, 300);
+    return () => {
+      clearTimeout(timer);
+      ctrl.abort();
+    };
+  }, [query]);
+
+  const places = useMemo(() => {
+    // Dedupe by position, not by name: Indonesia reuses place names heavily —
+    // there is a Ketapang in West Kalimantan and another in East Java — so
+    // dropping every remote hit that shares a name with a local one would hide
+    // the very places the geocoder is there to find. A remote hit is only a
+    // duplicate if it falls inside the admin area of the same name.
+    const inside = (h: PlaceHit) =>
+      adminHits.some(
+        (a) =>
+          a.name.toLowerCase() === h.name.toLowerCase() &&
+          a.bounds &&
+          h.center[0] >= a.bounds[0] &&
+          h.center[0] <= a.bounds[2] &&
+          h.center[1] >= a.bounds[1] &&
+          h.center[1] <= a.bounds[3],
+      );
+    const extra =
+      remote.q === query.trim() ? remote.hits.filter((h) => !inside(h)) : [];
+    return [...adminHits, ...extra].slice(0, 8);
+  }, [adminHits, remote, query]);
+
+  const goTo = (hit: PlaceHit) => {
+    const map = getMapRef();
+    if (!map) return;
+    if (hit.bounds) map.fitBounds(hit.bounds, { padding: 60, duration: 800 });
+    else map.flyTo({ center: hit.center, zoom: 11, duration: 800 });
+    setQuery("");
+  };
   const groups = useMemo(() => {
     const out: { group: LayerGroup; layers: LayerDescriptor[] }[] = [];
     for (const d of LAYERS) {
@@ -236,8 +301,15 @@ export default function LayerPanel() {
           <input
             value={query}
             onChange={(e) => setQuery(e.target.value)}
-            placeholder="Search layers"
-            aria-label="Search layers"
+            // Enter goes to the top place, which is what a search box is
+            // expected to do. Escape clears rather than leaving a stale term
+            // filtering the layer list.
+            onKeyDown={(e) => {
+              if (e.key === "Enter" && places[0]) goTo(places[0]);
+              else if (e.key === "Escape") setQuery("");
+            }}
+            placeholder="Search layers or places"
+            aria-label="Search layers or places"
             className="w-full bg-transparent text-[11px] text-ink-100 placeholder:text-ink-400 focus:outline-none"
           />
           {query && (
@@ -252,6 +324,39 @@ export default function LayerPanel() {
           )}
         </div>
       </div>
+
+      {q && places.length > 0 && (
+        <section className="border-b border-ink-700/40 py-1.5">
+          <p className="px-3 pb-1 pt-1 text-[10px] font-semibold uppercase tracking-widest text-ink-300">
+            Places
+          </p>
+          <ul>
+            {places.map((hit) => (
+              <li key={hit.id}>
+                <button
+                  type="button"
+                  onClick={() => goTo(hit)}
+                  className="flex w-full items-start gap-2 px-3 py-1.5 text-left hover:bg-ink-700/40"
+                >
+                  <MapPin
+                    size={12}
+                    weight={hit.source === "admin" ? "fill" : "regular"}
+                    className="mt-0.5 shrink-0 text-fire-400"
+                  />
+                  <span className="min-w-0">
+                    <span className="block truncate text-[11px] text-ink-100">
+                      {hit.name}
+                    </span>
+                    <span className="block truncate text-[10px] text-ink-400">
+                      {hit.context}
+                    </span>
+                  </span>
+                </button>
+              </li>
+            ))}
+          </ul>
+        </section>
+      )}
 
       {groups.map(({ group, layers }) => {
         const Icon = GROUP_META[group].icon;
@@ -288,9 +393,9 @@ export default function LayerPanel() {
         );
       })}
 
-      {groups.length === 0 && (
+      {groups.length === 0 && places.length === 0 && (
         <p className="px-3 py-4 text-center text-[11px] text-ink-400">
-          No layer matches “{query}”.
+          Nothing matches “{query}”.
         </p>
       )}
     </aside>
