@@ -51,11 +51,24 @@ export interface MapSyncState {
   fireFilters: FireFilters;
 }
 
-let lastFires: FeatureCollection | null = null;
+/** What has been pushed into each *source instance*.
+ *
+ *  Keyed on the source object rather than on the FeatureCollection, because
+ *  toggling a layer off removes its source and toggling it back on creates a
+ *  new, empty one — while the store still holds the very same data object. A
+ *  guard that only compared the data would conclude "already applied" and leave
+ *  the rebuilt source empty, which is exactly what it used to do: the layer came
+ *  back with no fires in it. A new source has no entry here, so it gets filled.
+ *  Weak, so removed sources are not retained. */
+const appliedData = new WeakMap<object, FeatureCollection>();
+/** Filter last set on each *layer instance*, for the same reason — a re-added
+ *  layer starts with no filter and must have it re-applied. */
+const appliedFilter = new WeakMap<object, string>();
+
 /** Latest detection time in the current set — the anchor the time filter is
  *  measured back from. Recomputed only when the data itself changes. */
 let firesLatest = 0;
-let lastFilterKey = "";
+let lastFiresData: FeatureCollection | null = null;
 
 /** Map layers driven by the fire filter. The charts apply the same predicate
  *  through applyFireFilters, so the two views cannot drift apart. */
@@ -107,26 +120,32 @@ export function applyMapState(map: MaplibreMap, state: MapSyncState): boolean {
 
   enforceOrder(map);
 
-  // push fire data when it (or its source) changes
+  // push fire data whenever this source instance has not had it
   const src = map.getSource("fires") as GeoJSONSource | undefined;
-  if (src && state.firesGeojson && state.firesGeojson !== lastFires) {
+  if (src && state.firesGeojson && appliedData.get(src) !== state.firesGeojson) {
     src.setData(state.firesGeojson);
-    lastFires = state.firesGeojson;
-    firesLatest = latestTimestamp(state.firesGeojson);
-    lastFilterKey = ""; // force the filter to be re-applied to the new data
+    appliedData.set(src, state.firesGeojson);
+    if (state.firesGeojson !== lastFiresData) {
+      lastFiresData = state.firesGeojson;
+      firesLatest = latestTimestamp(state.firesGeojson);
+    }
   }
 
   // Filtering happens in the style, not by re-slicing the source: the whole
   // 5-day set stays loaded and a filter change is a repaint, not a refetch.
-  const filterKey = `${firesLatest}|${JSON.stringify(state.fireFilters)}`;
-  if (firesLatest && filterKey !== lastFilterKey) {
-    lastFilterKey = filterKey;
-    const expr = fireFilterExpression(
-      state.fireFilters,
-      firesLatest,
-    ) as unknown as FilterSpecification;
+  if (firesLatest) {
+    const filterKey = `${firesLatest}|${JSON.stringify(state.fireFilters)}`;
+    let expr: FilterSpecification | null = null;
     for (const id of FIRE_FILTERED) {
-      if (map.getLayer(id)) map.setFilter(id, expr);
+      const layer = map.getLayer(id);
+      if (!layer) continue;
+      if (appliedFilter.get(layer) === filterKey) continue;
+      expr ??= fireFilterExpression(
+        state.fireFilters,
+        firesLatest,
+      ) as unknown as FilterSpecification;
+      map.setFilter(id, expr);
+      appliedFilter.set(layer, filterKey);
     }
   }
 

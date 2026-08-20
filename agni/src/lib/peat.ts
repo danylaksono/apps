@@ -36,7 +36,11 @@ const started = new Set<string>();
  *  a `setData` aimed at a missing source is silently lost. `applyBigData` is
  *  re-run on every map sync and repairs any source that is empty. */
 const loaded = new Map<string, PeatFC>();
-const appliedTo = new Map<string, PeatFC>();
+/** What each *source instance* holds. Keyed on the source object, not its id:
+ *  toggling a layer off removes the source and toggling it on creates a new
+ *  empty one, so an id-keyed guard would decide the data was already there and
+ *  the layer would come back blank. */
+const appliedTo = new WeakMap<object, PeatFC>();
 
 /** Full peat extent (BIG layer 6) once loaded — backs the peat-fires KPI.
  *  Deliberately not KHG: see the coverage note in config.ts. */
@@ -49,11 +53,11 @@ export function getPeatExtent(): PeatFC | null {
 export function applyBigData(map: MaplibreMap): void {
   for (const entry of BIG_BACKED) {
     const fc = loaded.get(entry.id);
-    if (!fc || appliedTo.get(entry.sourceId) === fc) continue;
+    if (!fc) continue;
     const src = map.getSource(entry.sourceId) as GeoJSONSource | undefined;
-    if (!src) continue;
+    if (!src || appliedTo.get(src) === fc) continue;
     src.setData(fc);
-    appliedTo.set(entry.sourceId, fc);
+    appliedTo.set(src, fc);
   }
 }
 
