@@ -35,6 +35,10 @@ export interface LayersState {
    *  shared by the GIBS layers and CLMS burnt area, so a single slider moves
    *  them together and they always show the same day. */
   rasterDayOffset: number;
+  /** Selected mode per layer, for layers that declare `modes`. Generic rather
+   *  than a glyph-specific flag, so the next layer with two ways of showing
+   *  itself needs no new state. */
+  layerMode: Record<string, string>;
   /** panels. On a phone these are mutually exclusive; see App. */
   railOpen: boolean;
   layersOpen: boolean;
@@ -52,6 +56,7 @@ export interface LayersState {
   setCamsSteps(steps: string[]): void;
   setCamsIndex(i: number): void;
   setCamsPlaying(playing: boolean): void;
+  setLayerMode(id: string, value: string): void;
   setRasterDayOffset(days: number): void;
   setRailOpen(open: boolean): void;
   setLayersOpen(open: boolean): void;
@@ -96,6 +101,9 @@ export const useLayersStore = create<LayersState>((set) => ({
   camsIndex: 0,
   camsPlaying: false,
   camsForecastFrom: 0,
+  layerMode: Object.fromEntries(
+    LAYERS.filter((l) => l.modes?.length).map((l) => [l.id, l.modes![0].value]),
+  ),
   rasterDayOffset: 0,
   railOpen: true,
   layersOpen: true,
@@ -126,6 +134,8 @@ export const useLayersStore = create<LayersState>((set) => ({
     }),
   setCamsIndex: (i) => set({ camsIndex: i }),
   setCamsPlaying: (playing) => set({ camsPlaying: playing }),
+  setLayerMode: (id, value) =>
+    set((s) => ({ layerMode: { ...s.layerMode, [id]: value } })),
   setRasterDayOffset: (days) => set({ rasterDayOffset: Math.max(0, days) }),
   setRailOpen: (open) => set({ railOpen: open }),
   setLayersOpen: (open) => set({ layersOpen: open }),

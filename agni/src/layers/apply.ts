@@ -8,10 +8,12 @@ import { GROUP_RANK, LAYERS, OPACITY_PROPS } from "./registry";
 import type { LayerDescriptor } from "./registry";
 import { BASEMAPS, basemapSourceId } from "./basemaps";
 import {
+  applyFireFilters,
   fireFilterExpression,
   latestTimestamp,
   type FireFilters,
 } from "../lib/analytics";
+import { GLYPH_SOURCE } from "./glyphs";
 import type { FilterSpecification } from "maplibre-gl";
 
 function rankOf(d: LayerDescriptor): number {
@@ -74,6 +76,19 @@ let lastFiresData: FeatureCollection | null = null;
  *  through applyFireFilters, so the two views cannot drift apart. */
 const FIRE_FILTERED = ["fires", "fires-heat"];
 
+/** The filtered slice, shared by the glyph source and the glyph markers.
+ *
+ *  Recomputed only when the data or the filters actually change: it is a pass
+ *  over ~27,000 features, and the applier runs on every store change. */
+let filteredFires: FeatureCollection | null = null;
+let filteredKey = "";
+
+/** What the glyph layers should summarise — already filtered, so clustering
+ *  cannot count anything the dots are hiding. */
+export function currentFilteredFires(): FeatureCollection | null {
+  return filteredFires;
+}
+
 /** Returns false if the style was not ready and nothing was applied — the
  *  caller must retry, or the store change is lost for good (the store only
  *  notifies on change, so there is no second chance otherwise). */
@@ -135,6 +150,22 @@ export function applyMapState(map: MaplibreMap, state: MapSyncState): boolean {
   // 5-day set stays loaded and a filter change is a repaint, not a refetch.
   if (firesLatest) {
     const filterKey = `${firesLatest}|${JSON.stringify(state.fireFilters)}`;
+
+    // The glyphs are the exception: MapLibre clusters at the source, below
+    // where a style filter reaches, so they need the sliced data itself.
+    if (state.firesGeojson && filterKey !== filteredKey) {
+      filteredKey = filterKey;
+      filteredFires = applyFireFilters(
+        state.firesGeojson,
+        state.fireFilters,
+        firesLatest,
+      );
+    }
+    const glyphSrc = map.getSource(GLYPH_SOURCE) as GeoJSONSource | undefined;
+    if (glyphSrc && filteredFires && appliedData.get(glyphSrc) !== filteredFires) {
+      glyphSrc.setData(filteredFires);
+      appliedData.set(glyphSrc, filteredFires);
+    }
     let expr: FilterSpecification | null = null;
     for (const id of FIRE_FILTERED) {
       const layer = map.getLayer(id);

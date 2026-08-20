@@ -34,6 +34,8 @@ function LayerRow({ d }: { d: LayerDescriptor }) {
   const reason = useLayersStore((s) => s.availabilityReason[d.id]);
   const toggleLayer = useLayersStore((s) => s.toggleLayer);
   const setOpacity = useLayersStore((s) => s.setOpacity);
+  const mode = useLayersStore((s) => s.layerMode[d.id]);
+  const setMode = useLayersStore((s) => s.setLayerMode);
   const unavailable = availability === "unavailable";
 
   return (
@@ -79,6 +81,32 @@ function LayerRow({ d }: { d: LayerDescriptor }) {
       </p>
       {visible && !unavailable && (
         <div className="mt-1.5 pl-9">
+          {d.modes && d.modes.length > 1 && (
+            <div
+              role="group"
+              aria-label={`${d.label} mode`}
+              className="mb-1.5 flex gap-0.5 rounded-md bg-ink-850 p-0.5"
+            >
+              {d.modes.map((m) => {
+                const on = (mode ?? d.modes![0].value) === m.value;
+                return (
+                  <button
+                    key={m.value}
+                    type="button"
+                    aria-pressed={on}
+                    onClick={() => setMode(d.id, m.value)}
+                    className={`flex-1 rounded px-1.5 py-0.5 text-[10px] font-medium transition-colors ${
+                      on
+                        ? "bg-fire-400/20 text-fire-300"
+                        : "text-ink-400 hover:text-ink-200"
+                    }`}
+                  >
+                    {m.label}
+                  </button>
+                );
+              })}
+            </div>
+          )}
           <input
             type="range"
             min={0}

@@ -19,7 +19,8 @@ import { Protocol } from "pmtiles";
 import "maplibre-gl/dist/maplibre-gl.css";
 import { BASEMAPS, DEFAULT_BASEMAP, basemapSourceId } from "../layers/basemaps";
 import { buildInspectHtml } from "../lib/inspect";
-import { applyMapState } from "../layers/apply";
+import { applyMapState, currentFilteredFires } from "../layers/apply";
+import { GLYPH_SOURCE, updateGlyphs, type GlyphMode } from "../layers/glyphs";
 import { BIG_BACKED, applyBigData, ensureBigLayer } from "../lib/peat";
 import { GIBS_BACKED, ensureGibsDate } from "../lib/gibs";
 import { refreshPopulation } from "../lib/population";
@@ -162,14 +163,50 @@ export default function MapView() {
       syncBigLayers();
       syncCamsTime();
       refreshPopulation(map);
+      syncGlyphsWhenSettled();
     });
     map.on("load", syncBigLayers);
 
     // Population is aggregated per viewport in DuckDB rather than tiled, so it
     // is re-queried when the view settles. refreshPopulation no-ops unless the
     // layer is on and the viewport moved far enough to change the answer.
-    const onMoveEnd = () => refreshPopulation(map);
+    // Glyphs are DOM markers, so they are rebuilt from what is on screen —
+    // cluster glyphs follow the viewport, province glyphs only the data.
+    const syncGlyphs = () => {
+      const { visibility, layerMode } = useLayersStore.getState();
+      updateGlyphs(map, {
+        visible: Boolean(visibility["fire-glyphs"]),
+        mode: (layerMode["fire-glyphs"] ?? "cluster") as GlyphMode,
+        fires: currentFilteredFires(),
+      });
+    };
+
+    const onMoveEnd = () => {
+      refreshPopulation(map);
+      syncGlyphs();
+    };
     map.on("moveend", onMoveEnd);
+    // Cluster glyphs follow the viewport; province glyphs do not move, so a
+    // pan only needs the cluster pass.
+    map.on("move", () => {
+      const { visibility, layerMode } = useLayersStore.getState();
+      if (visibility["fire-glyphs"] && layerMode["fire-glyphs"] !== "province") {
+        syncGlyphs();
+      }
+    });
+    // Clustering finishes asynchronously; without this the first draw after a
+    // filter change would show the previous tally.
+    map.on("sourcedata", (e) => {
+      if (e.sourceId === GLYPH_SOURCE && e.isSourceLoaded) syncGlyphs();
+    });
+    /** Clustering finishes after the store change that switched the layer on,
+     *  so drawing immediately finds no clusters and the glyphs only appear on
+     *  the next pan. `idle` is the point at which everything has settled;
+     *  `once` keeps it to a single extra pass rather than one per frame. */
+    const syncGlyphsWhenSettled = () => {
+      syncGlyphs();
+      map.once("idle", syncGlyphs);
+    };
 
     // click-to-inspect: report the whole land-context stack under the cursor
     // closeOnClick would race our own click handler — MapLibre removes the

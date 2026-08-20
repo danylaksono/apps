@@ -15,6 +15,8 @@ import {
 import { gfwLossTileUrl } from "../lib/gfwRaster";
 import { gibsDateAt, gibsTiles } from "../lib/gibs";
 import { clmsBurntAreaTiles } from "../lib/clms";
+import { FRP_COLORS, FRP_LABELS } from "../lib/fireGlyph";
+import { GLYPH_LAYER, GLYPH_SOURCE, clusterProperties } from "./glyphs";
 import { gfwPolygonLayer } from "./gfw";
 import { camsImageLayer } from "./cams";
 
@@ -45,6 +47,9 @@ export interface LayerDescriptor {
   baseOpacity?: number;
   legend?: LegendItem[];
   gradientLegend?: { css: string; min: string; max: string };
+  /** Alternative ways of drawing the same layer, offered as a small segmented
+   *  control in the panel. The first is the default. */
+  modes?: { value: string; label: string }[];
   /** every map layer this descriptor creates, bottom-first; defaults to [id].
    *  Used to enforce render order independently of toggle order. */
   mapLayerIds?: string[];
@@ -294,6 +299,49 @@ export const LAYERS: LayerDescriptor[] = [
     },
   },
 
+  {
+    id: "fire-glyphs",
+    group: "fire",
+    label: "Fire glyphs",
+    description:
+      "Detections aggregated into donut glyphs: the ring splits each group by fire radiative power, the inner arc is the share seen on the night overpass, and the number is how many. Reads the same filtered set the dots do. Click one for its breakdown and timing.",
+    layerType: "circle",
+    defaultVisible: false,
+    defaultOpacity: 1,
+    modes: [
+      { value: "cluster", label: "Clusters" },
+      { value: "province", label: "Provinces" },
+    ],
+    legend: FRP_COLORS.map((color, i) => ({ color, label: FRP_LABELS[i] })),
+    add(map) {
+      // The source carries pre-filtered data — clustering happens below the
+      // style, so a layer filter would not reach it. See applyMapState.
+      addSourceSafe(map, GLYPH_SOURCE, {
+        type: "geojson",
+        data: EMPTY_FC,
+        cluster: true,
+        clusterRadius: 70,
+        clusterMaxZoom: 14,
+        clusterProperties: clusterProperties(),
+      });
+      // An invisible anchor layer: the glyphs themselves are DOM markers, but
+      // MapLibre only keeps a source loaded while some layer references it,
+      // and querySourceFeatures needs it loaded.
+      if (!map.getLayer(GLYPH_LAYER)) {
+        map.addLayer({
+          id: GLYPH_LAYER,
+          type: "circle",
+          source: GLYPH_SOURCE,
+          filter: ["==", ["get", "cluster"], true],
+          paint: { "circle-radius": 1, "circle-opacity": 0 },
+        });
+      }
+    },
+    remove(map) {
+      removeLayerSafe(map, GLYPH_LAYER);
+      removeSourceIfUnused(map, GLYPH_SOURCE);
+    },
+  },
   {
     id: "burnt-area",
     group: "fire",
