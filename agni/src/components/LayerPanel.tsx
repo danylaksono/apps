@@ -13,6 +13,7 @@ import {
   WarningCircle,
 } from "@phosphor-icons/react";
 import FireFilters from "./FireFilters";
+import AboutButton from "./AboutButton";
 import type { LayerDescriptor, LayerGroup } from "../layers/registry";
 import { LAYERS } from "../layers/registry";
 import { useLayersStore } from "../store/layers";
@@ -203,9 +204,12 @@ export default function LayerPanel() {
     >
       <div className="flex items-start justify-between border-b border-ink-700/60 px-3 py-2.5">
         <div>
-          <h1 className="font-display text-sm font-bold tracking-wide text-ink-100">
-            AGNI
-          </h1>
+          <div className="flex items-center gap-1.5">
+            <h1 className="font-display text-sm font-bold tracking-wide text-ink-100">
+              AGNI
+            </h1>
+            <AboutButton />
+          </div>
           <p className="text-[10px] uppercase tracking-widest text-ink-400">
             Indonesia fire &amp; haze
           </p>

@@ -27,3 +27,6 @@ pipeline/bin/
 
 # browser-automation scratch
 .playwright-mcp/
+
+# no longer needed, but keep for a while in case we want to restore
+AGENTS.md

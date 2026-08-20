@@ -304,7 +304,7 @@ export const LAYERS: LayerDescriptor[] = [
     group: "fire",
     label: "Fire glyphs",
     description:
-      "Detections aggregated into donut glyphs: the ring splits each group by fire radiative power, the inner arc is the share seen on the night overpass, and the number is how many. Reads the same filtered set the dots do. Click one for its breakdown and timing.",
+      "Detections aggregated into donut glyphs: the ring splits each group by fire radiative power, the inner arc is the share seen on the night overpass, and the number is how many. Click one for its breakdown and timing.",
     layerType: "circle",
     defaultVisible: false,
     defaultOpacity: 1,
@@ -347,7 +347,7 @@ export const LAYERS: LayerDescriptor[] = [
     group: "fire",
     label: "Burnt area (Copernicus 300 m)",
     description:
-      "Burned fraction for a single day, from Sentinel-3 and VIIRS. A day at a time is sparse by nature — burn scars accumulate — so use the date slider to step back through the season and watch them build. Source: Copernicus Land Monitoring Service.",
+      "Burned fraction for a single day, from Sentinel-3 and VIIRS. Source: Copernicus Land Monitoring Service.",
     layerType: "raster",
     defaultVisible: false,
     defaultOpacity: 0.9,
@@ -366,7 +366,11 @@ export const LAYERS: LayerDescriptor[] = [
         attribution: "Copernicus Land Monitoring Service",
       });
       if (!map.getLayer("burnt-area")) {
-        map.addLayer({ id: "burnt-area", type: "raster", source: "burnt-area" });
+        map.addLayer({
+          id: "burnt-area",
+          type: "raster",
+          source: "burnt-area",
+        });
       }
     },
     remove(map) {
@@ -381,7 +385,7 @@ export const LAYERS: LayerDescriptor[] = [
     group: "haze",
     label: "Aerosol Optical Depth",
     description:
-      "MODIS Aqua aerosol optical depth for the most recent day with imagery. Satellite-observed total column, so it includes dust and sea salt as well as smoke. Source: NASA GIBS (keyless WMTS).",
+      "MODIS Aqua aerosol optical depth for the most recent day with imagery. Satellite-observed total column, so it includes dust and sea salt as well as smoke. Source: NASA GIBS.",
     layerType: "raster",
     defaultVisible: false,
     defaultOpacity: 0.7,
@@ -397,10 +401,7 @@ export const LAYERS: LayerDescriptor[] = [
     add(map) {
       // No date resolved yet: MapView's sync pass starts the probe, and the
       // store change it settles with brings the applier back here to finish.
-      const date = gibsDateAt(
-        GIBS_LAYERS.aod,
-        rasterDayOffset(),
-      );
+      const date = gibsDateAt(GIBS_LAYERS.aod, rasterDayOffset());
       if (!date) return;
       addSourceSafe(map, "gibs-aod", {
         type: "raster",
@@ -427,15 +428,12 @@ export const LAYERS: LayerDescriptor[] = [
     group: "haze",
     label: "True-color smoke",
     description:
-      "MODIS Terra corrected reflectance for the most recent day with imagery — smoke as the eye would see it. Source: NASA GIBS.",
+      "MODIS Terra corrected reflectance for the most recent day with imagery, i.e. smoke as the eye would see it. Source: NASA GIBS.",
     layerType: "raster",
     defaultVisible: false,
     defaultOpacity: 0.65,
     add(map) {
-      const date = gibsDateAt(
-        GIBS_LAYERS.trueColor,
-        rasterDayOffset(),
-      );
+      const date = gibsDateAt(GIBS_LAYERS.trueColor, rasterDayOffset());
       if (!date) return;
       addSourceSafe(map, "gibs-smoke", {
         type: "raster",
@@ -493,7 +491,7 @@ export const LAYERS: LayerDescriptor[] = [
     group: "haze",
     label: "Night lights (Black Marble)",
     description:
-      "VIIRS Black Marble 2016 composite — settlements, roads and gas flares as points of light. Context for who is downwind, and a check on whether a hotspot sits near infrastructure. Source: NASA GIBS.",
+      "VIIRS Black Marble 2016 composite: settlements, roads and gas flares as points of light. Context for who is downwind, and a check on whether a hotspot sits near infrastructure. Source: NASA GIBS.",
     layerType: "raster",
     defaultVisible: false,
     defaultOpacity: 0.55,
@@ -508,7 +506,11 @@ export const LAYERS: LayerDescriptor[] = [
         attribution: "NASA GIBS / VIIRS Black Marble",
       });
       if (!map.getLayer("night-lights")) {
-        map.addLayer({ id: "night-lights", type: "raster", source: "gibs-night" });
+        map.addLayer({
+          id: "night-lights",
+          type: "raster",
+          source: "gibs-night",
+        });
       }
     },
     remove(map) {
@@ -523,7 +525,7 @@ export const LAYERS: LayerDescriptor[] = [
     group: "population",
     label: "Population (Kontur H3)",
     description:
-      "Modelled population density per H3 hexagon, aggregated to a resolution that suits the zoom. Source: Kontur, queried from Parquet with DuckDB.",
+      "Modelled population density per H3 hexagon, aggregated to a resolution that suits the zoom. Source: Kontur / Facebook Data for Good.",
     layerType: "fill",
     defaultVisible: false,
     defaultOpacity: 0.75,
@@ -715,7 +717,7 @@ export const LAYERS: LayerDescriptor[] = [
     mapLayerIds: ["peat-extent", "peat-extent-line"],
     label: "Lahan gambut (peat soil)",
     description:
-      "Official peat soil extent from BIG SatuPeta. Peat fires burn below the surface, resist rainfall, and account for most haze emissions. BIG publishes only Kalimantan on this service (146 polygons, 45,000 km²) — Sumatra and Papua peat is not shown.",
+      "Official peat soil extent from BIG SatuPeta. Peat fires burn below the surface, resist rainfall, and account for most haze emissions. Only Kalimantan on this service (146 polygons, 45,000 km²)is available.",
     layerType: "fill",
     defaultVisible: true,
     defaultOpacity: 0.9,
@@ -763,7 +765,7 @@ export const LAYERS: LayerDescriptor[] = [
     mapLayerIds: ["peat-khg", "peat-khg-line"],
     label: "KHG (kesatuan hidrologis gambut)",
     description:
-      "Peat hydrological units (KHG), the unit in which Indonesian peat policy is written. BIG publishes only part of the national set (78 of 101 Kalimantan units fall in Kalbar), so extent should not be read from this layer.",
+      "Peat hydrological units (KHG), the unit in which Indonesian peat policy is written. Only part of the national set (mostly in Kalbar) is published, so extent should not be read from this layer.",
     layerType: "fill",
     defaultVisible: false,
     defaultOpacity: 0.9,

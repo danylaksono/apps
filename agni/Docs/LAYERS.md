@@ -1,6 +1,6 @@
 # LAYERS.md — Agni layer catalog
 
-Every layer is a descriptor in `src/layers/registry.ts`. IDs are stable — the Zustand store keys visibility/opacity by them.
+Every layer is a descriptor in `src/layers/registry.ts`. IDs are stable — the Zustand store keys visibility, opacity and mode by them.
 
 ## Basemaps (mutually exclusive)
 
@@ -13,88 +13,86 @@ Every layer is a descriptor in `src/layers/registry.ts`. IDs are stable — the 
 
 ## Overlay layers
 
-| ID                     | Group       | Label                            | Source                                                        | Type                                    | Default |
-| ---------------------- | ----------- | -------------------------------- | ------------------------------------------------------------- | --------------------------------------- | ------- |
-| `fires`                | Fire        | Active fires (VIIRS SNPP NRT)    | FIRMS `/api/area/csv`, 2 days, Kalimantan bbox                | circle (FRP-scaled, confidence-colored) | on      |
-| `fires-heat`           | Fire        | Fire heatmap                     | derived from FIRMS points                                     | heatmap                                 | off     |
-| `haze-aod`             | Haze        | Aerosol Optical Depth (Aqua)     | NASA GIBS `MODIS_Aqua_Aerosol` WMTS                           | raster                                  | off     |
-| `haze-cams-smoke`      | Haze        | CAMS smoke (biomass burning AOD) | CAMS via ECMWF WMS, 3-hourly + forecast                       | image (time-animated)                   | off     |
-| `haze-cams-pm25`       | Haze        | CAMS surface PM2.5               | CAMS via ECMWF WMS, 3-hourly + forecast                       | image (time-animated)                   | off     |
-| `haze-smoke`           | Haze        | True-color smoke (Terra)         | NASA GIBS `MODIS_Terra_CorrectedReflectance_TrueColor` WMTS   | raster                                  | off     |
-| `population`           | Population  | Kontur H3 population             | `public/data/population.pmtiles`                              | fill choropleth (log-ish step scale)    | off     |
-| `boundaries-kecamatan` | Boundaries  | Kecamatan                        | `public/data/boundaries.pmtiles` / `kecamatan`                | line                                    | off     |
-| `boundaries-kabkota`   | Boundaries  | Kabupaten/Kota                   | `public/data/boundaries.pmtiles` / `kab_kota`                 | line                                    | on      |
-| `boundaries-provinsi`  | Boundaries  | Provinsi                         | `public/data/boundaries.pmtiles` / `provinsi`                 | line                                    | on      |
-| `peat-extent`          | Peatland    | Lahan gambut (peat soil)         | BIG SatuPeta layer 6 — full peat extent, 45,486 km²           | fill + line                             | **on**  |
-| `peat-khg`             | Peatland    | KHG                              | BIG SatuPeta layer 37 — **partial coverage**                  | fill + line                             | off     |
-| `peat-function`        | Peatland    | Fungsi ekosistem gambut          | BIG SatuPeta layer 48 — depth + lindung/budidaya, **partial** | fill + line                             | off     |
-| `fire-hazard`          | Fire        | Fire hazard (rawan karhutla)     | BIG SatuPeta layer 47 — official hazard class                 | fill                                    | off     |
-| `conc-oil-palm`        | Concessions | Oil palm concessions             | GFW `gfw_oil_palm`                                            | fill + line                             | off     |
-| `conc-rspo`            | Concessions | RSPO oil palm                    | GFW `rspo_oil_palm`                                           | fill + line                             | off     |
-| `conc-wood-fiber`      | Concessions | Pulpwood (HTI)                   | GFW `gfw_wood_fiber`                                          | fill + line                             | off     |
-| `conc-logging`         | Concessions | Logging (HPH)                    | GFW `gfw_logging`                                             | fill + line                             | off     |
-| `conc-mining`          | Concessions | Mining concessions               | GFW `gfw_mining_concessions`                                  | fill + line                             | off     |
-| `prot-moratorium`      | Protection  | Moratorium (PIPPIB)              | GFW `idn_forest_moratorium`                                   | fill + line                             | off     |
-| `prot-forest-area`     | Protection  | Kawasan hutan                    | GFW `idn_forest_area`                                         | fill (by class) + line                  | off     |
-| `prot-wdpa`            | Protection  | Protected areas (WDPA)           | GFW `wdpa_protected_areas`                                    | fill + line                             | off     |
+Scope is **national** (Indonesia). FIRMS is requested over the national bbox and clipped to the kab/kota outline; see METHODOLOGY.md.
+
+| ID | Group | Label | Source | Type | Default |
+| --- | --- | --- | --- | --- | --- |
+| `fires` | Fire | Active fires | FIRMS `/api/area/csv`, **5 days**, national bbox | circle (FRP-scaled, confidence-coloured) | **on** |
+| `fires-heat` | Fire | Fire heatmap | derived from FIRMS points | heatmap | off |
+| `fire-glyphs` | Fire | Fire glyphs | derived from the filtered FIRMS set | canvas donut DOM markers | off |
+| `burnt-area` | Fire | Burnt area (Copernicus 300 m) | CLMS `ba_global_300m_daily_v4` WMTS, decoded | raster (protocol) | off |
+| `fire-hazard` | Fire | Fire hazard (rawan karhutla) | BIG SatuPeta layer 47 | fill | off |
+| `haze-aod` | Haze | Aerosol Optical Depth | GIBS `MODIS_Aqua_Aerosol` WMTS, dated | raster | off |
+| `haze-smoke` | Haze | True-color smoke | GIBS `MODIS_Terra_CorrectedReflectance_TrueColor`, dated | raster | off |
+| `night-lights` | Haze | Night lights (Black Marble) | GIBS `VIIRS_Black_Marble` (static 2016) | raster | off |
+| `haze-cams-smoke` | Haze | CAMS smoke (biomass burning AOD) | CAMS via ECMWF WMS, 3-hourly + forecast | image (time-animated) | off |
+| `haze-cams-pm25` | Haze | CAMS surface PM2.5 | CAMS via ECMWF WMS, 3-hourly + forecast | image (time-animated) | off |
+| `population` | Population | Population (Kontur H3) | `population_h3.parquet` via DuckDB-WASM | fill (per-viewport GeoJSON) | off |
+| `tree-cover-loss` | Concessions | Tree cover loss (2001–2025) | GFW `umd_tree_cover_loss` v1.13, decoded | raster (protocol) | off |
+| `boundaries-kecamatan` | Boundaries | Kecamatan | `boundaries.pmtiles` / `kecamatan` | line | off |
+| `boundaries-kabkota` | Boundaries | Kabupaten/Kota | `boundaries.pmtiles` / `kab_kota` | line | **on** |
+| `boundaries-provinsi` | Boundaries | Provinsi | `boundaries.pmtiles` / `provinsi` | line | **on** |
+| `peat-extent` | Peatland | Lahan gambut (peat soil) | BIG SatuPeta layer 6 — **Kalimantan only** | fill + line | **on** |
+| `peat-khg` | Peatland | KHG | BIG SatuPeta layer 37 — partial coverage | fill + line | off |
+| `peat-function` | Peatland | Fungsi ekosistem gambut | BIG SatuPeta layer 48 — partial coverage | fill + line | off |
+| `conc-oil-palm` | Concessions | Oil palm concessions | GFW `gfw_oil_palm` | fill + line | off |
+| `conc-rspo` | Concessions | RSPO oil palm mills | GFW `rspo_oil_palm` | fill + line | off |
+| `conc-wood-fiber` | Concessions | Pulpwood (HTI) | GFW `gfw_wood_fiber` | fill + line | off |
+| `conc-logging` | Concessions | Logging (HPH) | GFW `gfw_logging` | fill + line | off |
+| `conc-mining` | Concessions | Mining concessions | GFW `gfw_mining_concessions` | fill + line | off |
+| `prot-moratorium` | Protection | Moratorium (PIPPIB) | GFW `idn_forest_moratorium` | fill + line | off |
+| `prot-forest-area` | Protection | Kawasan hutan | GFW `idn_forest_area` | fill (by class) + line | off |
+| `prot-wdpa` | Protection | Protected areas (WDPA) | GFW `wdpa_protected_areas` | fill + line | off |
+
+## The filter row
+
+`FireFilters` writes one `FireFilters` object to the store — time window (or a pinned day), confidence classes, day/night, minimum FRP, and an optional area scope set by clicking a chart bar. It scopes **the map layers, the KPI cards and every chart at once**, so the three cannot disagree.
+
+The map applies it as a MapLibre `filter` expression (`fireFilterExpression`) rather than re-slicing the source: the whole five-day set stays loaded and a filter change is a repaint, not a refetch. `applyFireFilters` is the same predicate in JS, used where an expression cannot reach.
+
+**Clustering is the exception.** MapLibre clusters at the *source*, below where a layer filter reaches, so `fire-glyphs` is fed data that is already filtered (`currentFilteredFires()` in `apply.ts`).
 
 ## Styling conventions
 
-- **Fires:** circle radius scales with `frp`; color by `confidence` (low = amber, nominal = orange, high = red); white halo stroke for separation on dark basemaps.
-- **Heatmap:** weight from `frp`, density ramp transparent → yellow → orange → red.
-- **Population choropleth:** stepped fill (`population` property), transparent → purple → magenta → yellow; intended for dark basemap.
-- **Boundaries:** provinsi = brightest/thickest, kab_kota = medium, kecamatan = faint, thin, visible at higher zoom.
-- **Peat:** violet `#8b5cf6` fill + lighter outline; KHG teal `#3ddc97`; fungsi ekosistem gambut blue, split lindung `#0ea5e9` / budidaya `#7dd3fc`.
-- **CAMS haze:** the WMS bakes its own palette and paints a colour at every value (only ~22-29% of pixels are transparent), so it ships at 0.5 opacity to keep the basemap and fire points readable.
-- **Context polygons:** faint fill (`fill-opacity` ~0.18) + a brighter 0.4–1.2 px outline; the outline does the work on a dark basemap. Hues are deliberately cool so nothing competes with the fire palette — palm pink `#f472b6`, RSPO rose `#fb7185`, pulpwood violet `#a78bfa`, logging blue `#60a5fa`, mining slate `#94a3b8`, moratorium cyan `#22d3ee`, kawasan hutan greens, WDPA green `#4ade80`.
+- **Fires:** circle radius scales with `frp`; colour by `confidence` (low amber, nominal orange, high red).
+- **Fire glyphs:** canvas donuts as DOM markers. Ring splits by **FRP class** (YlOrRd, semantic heat, with a scale legend); inner arc is the night-overpass share in a blue deliberately outside the FRP ramp; radius and centre number are the count. Two modes — `cluster` and `province` — one at a time, drawn by the same function so they read against each other.
+- **Population:** single-hue teal ramp, dark→light, coloured by **density (people/km²)** not headcount — an aggregated res-5 cell holds ~343× the people of a res-8 one, so a ramp on the raw sum would change meaning at every zoom.
+- **Peat:** violet `#8b5cf6` fill + lighter outline; KHG `#3ddc97`; fungsi ekosistem blue.
+- **CAMS haze:** sequential, alpha-ramped WMS styles — smoke `sh_Oranges_aod` spun to magenta, PM2.5 `sh_OrangesTransparent240` spun to violet, both via `raster-hue-rotate`. The defaults are rainbows and were replaced; see METHODOLOGY.md.
+- **Tree cover loss:** lime ordinal ramp, brightest for recent years.
+- **Context polygons:** faint fill + brighter outline, cool hues so nothing competes with the fire palette.
+
+Chart colours live in `src/lib/chartTokens.ts` and are **not** the map tokens reused: dark-mode marks want OKLCH lightness 0.48–0.67, and the map's fire/haze tokens sit above that band.
 
 ## Render order
 
-Toggling a layer adds it to the map, so stacking would otherwise follow click
-order. `GROUP_RANK` in `src/layers/registry.ts` fixes the bottom-to-top order
-(peatland → concessions → protection → population → haze → boundaries → fire)
-and `apply.ts` re-asserts it whenever the set of present layers changes. A
-descriptor that creates more than one map layer must list them all in
-`mapLayerIds` or they will not be reordered.
+`GROUP_RANK` fixes bottom-to-top order (peatland → concessions → protection → population → haze → boundaries → fire) and `apply.ts` re-asserts it whenever the set of present layers changes. A descriptor creating more than one map layer must list them all in `mapLayerIds` or they will not be reordered.
 
-## Peat layers: which one to compute from
+## Dated rasters
 
-The three BIG peat layers cover very different areas, and only one is safe for
-statistics (measured over Kalimantan, Aug 2026, against 3,895 detections):
+`haze-aod`, `haze-smoke` and `burnt-area` all carry a date in their tile URL and share **one** offset (`rasterDayOffset`), driven by `RasterTimeline`. `setTiles` repoints an existing source rather than rebuilding it, so stepping a day does not flash the layer away. `night-lights` is a static 2016 composite and deliberately ignores the slider.
 
-| Layer                                   | Area       | Fires on it |
-| --------------------------------------- | ---------- | ----------- |
-| 6 — Lahan gambut (`peat-extent`)        | 45,486 km² | **30.7%**   |
-| 37 — KHG (`peat-khg`)                   | 8,758 km²  | 1.6%        |
-| 48 — Fungsi ekosistem (`peat-function`) | 8,712 km²  | 1.6%        |
+GIBS' `default` time resolves to *today*, which 404s until the day's granules are processed — `lib/gibs.ts` probes backwards over the area of interest instead. Probing must be at the AOI, not globally: a day whose only swath clipped the Pacific answers "yes" to a global probe and then renders nothing here.
 
-Layer 6 matches Kalimantan's known ~50,000 km² of peat. 37 and 48 are a partial
-publication skewed to Kalimantan Barat (78 of 101 KHG units) and nearly absent
-in Kalimantan Tengah. The KPI therefore uses layer 6; the other two are for
-inspecting a place (48 carries peat thickness and legal function), never for
-totals, and their panel descriptions say so.
+## Encoded rasters
 
-## CAMS timeline
+Two sources ship data in pixels rather than colour, and MapLibre 6 has no `raster-color`. Both decode through `addProtocol`, alongside PMTiles:
 
-`haze-cams-*` are single MapLibre `image` sources rather than tiled rasters:
-ECMWF renders each GetMap on demand, so a tile pyramid would mean dozens of
-renders per pan. `CamsTimeline` reads the WMS time dimension (72 3-hourly steps,
-~5 days analysis + ~4 days forecast), opens on the step nearest now, and
-`setCamsTime` swaps the image per step. Steps past now are badged _forecast_.
+| Layer | Encoding | Module |
+| --- | --- | --- |
+| `tree-cover-loss` | B = year − 2000, R = intensity, A = loss mask | `lib/gfwRaster.ts` |
+| `burnt-area` | pre-styled, but "no burn" is an **opaque** `#fcfdbf` over all land | `lib/clms.ts` |
 
 ## Click-to-inspect
 
-Clicking the map runs `queryRenderedFeatures` and reports every layer under the
-cursor in render order (`src/lib/inspect.ts`): the fire detection, then whose
-concession it sits in, its protection status, and the admin unit. Raster layers
-(peat, haze) cannot be queried this way — they only answer visually.
+Clicking the map reports every layer under the cursor in render order (`src/lib/inspect.ts`), **and** sets the CAMS probe point for the forecast charts in the rail. Glyph markers have their own popups. Raster layers cannot be queried this way — they answer visually only.
 
 ## Availability states
 
-Layers that depend on live/token-gated sources report `checking → ok | unavailable` to the store. Unavailable layers render disabled in the panel with the reason (e.g. "token required"). Static PMTiles layers are always available.
+Layers depending on live sources report `checking → ok | unavailable` to the store. Unavailable layers render disabled with the reason; a layer that loaded but hit its `maxFeatures` cap stays `ok` with a "partial coverage" note rather than implying it drew everything.
 
 ## Adding a layer
 
-1. Append a `LayerDescriptor` to `src/layers/registry.ts` (id, group, label, defaults, `add`/`remove`/`setOpacity`). For a GFW polygon dataset use the `gfwPolygonLayer()` factory in `src/layers/gfw.ts` instead — pass the dataset entry from `GFW_DATASETS` and it wires source, fill, outline, opacity and popup fields for you.
-2. If it needs fetched data, add a hook in `src/lib/` and wire it in `MapView`.
+1. Append a `LayerDescriptor` to `src/layers/registry.ts`. For a GFW polygon dataset use the `gfwPolygonLayer()` factory in `src/layers/gfw.ts`; for a CAMS WMS layer use `camsImageLayer()` in `src/layers/cams.ts`.
+2. If it needs fetched data, add a module in `src/lib/` and wire the sync in `MapView`. Note that the store imports the registry, so **the registry must not import the store** — pass values in through a small module the way `lib/rasterDate.ts` does.
 3. Update this file and `METHODOLOGY.md`.

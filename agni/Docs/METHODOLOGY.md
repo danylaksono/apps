@@ -1,23 +1,24 @@
 # METHODOLOGY.md — Agni
 
-How Agni sources, processes, and visualizes data. Read this before adding or modifying layers.
+How Agni sources, processes, and visualises data. Read this before adding or modifying layers.
 
 ## 1. Scope
 
-- **Geography:** Kalimantan (provinces `61` Kalimantan Barat, `62` Kalimantan Tengah, `63` Kalimantan Selatan, `64` Kalimantan Timur, `65` Kalimantan Utara).
-- **Theme:** immediate impact of forest/peatland fires — active fire detections, haze (aerosol) extent, and exposed population.
-- **Administrative depth:** down to **kecamatan** (`kel_desa` intentionally dropped for size/performance).
+- **Geography:** Indonesia, nationally. FIRMS is requested over the bbox `94.9,-11.2 → 141.1,6.2` and clipped to the kab/kota outline afterwards — no rectangle around Indonesia excludes its neighbours, so the raw response arrives with strips of Malaysia, Brunei, Timor-Leste, PNG and the southern Philippines that stop dead at the bbox edge.
+- **Theme:** immediate impact of forest/peatland fires — active detections, haze and its forecast, burnt area, deforestation history, and exposed population.
+- **Administrative depth:** **kab/kota** for analysis (514 polygons; the clip and the "kabupaten affected" KPI), kecamatan for display only (`kel_desa` dropped for size).
 
 ## 2. Design principles
 
-1. **Static-first, keyless-first.** Core layers (boundaries, population) are pre-baked into PMTiles and served from `public/data/` — no tile server, no API key, always render.
+1. **Static-first, keyless-first.** Boundaries are pre-baked into PMTiles and population into Parquet, served from `public/data/` — no tile server, no API key. Every live source but FIRMS is keyless.
 2. **Live layers degrade gracefully.** FIRMS (API key), GIBS (keyless), KHG (token-gated) are optional. If a source fails, the layer is marked unavailable in the UI; the rest of the map keeps working.
 3. **Config-driven layers.** Every layer is a typed descriptor in `src/layers/registry.ts`. Adding a layer = appending a descriptor; the store, panel, legend, and map sync pick it up automatically.
-4. **Client-side analytics.** KPIs are computed in the browser with turf.js from already-loaded data. No backend.
+4. **Client-side analytics.** KPIs and charts are computed in the browser — turf.js for spatial joins, DuckDB-WASM for the population aggregates. No backend.
+5. **One filter, one truth.** The filter row scopes the map, the KPI cards and every chart from a single `FireFilters` object, so the three cannot disagree.
 
 ## 3. Data pipeline (`pipeline/build_tiles.py`)
 
-Local source data lives outside this repo (`D:\personal\github\reach-ops\local-data`):
+Local source data lives outside this repo. The pipeline reads it, processes it, and writes the app's `public/data/`:
 
 | Input                                            | CRS           | Notes                                           |
 | ------------------------------------------------ | ------------- | ----------------------------------------------- |
@@ -28,30 +29,31 @@ Local source data lives outside this repo (`D:\personal\github\reach-ops\local-d
 
 Steps:
 
-1. **Filter to Kalimantan** by `provinsi_code ∈ {61..65}` (boundaries) or by bbox `108.8,-4.8 → 119.6,7.6` (population, filtered in EPSG:3857 then reprojected to EPSG:4326).
-2. **Stage** a GeoPackage with three boundary layers (`provinsi`, `kab_kota`, `kecamatan`) + a population GeoJSON.
-3. **Tile to PMTiles** with GDAL's MVT driver (GDAL ≥ 3.8 writes `.pmtiles` directly), run via WSL `ogr2ogr`:
-   - `public/data/boundaries.pmtiles` — 3 vector layers, z4–z12
-   - `public/data/population.pmtiles` — 1 vector layer (`population`), z5–z12
-4. **Emit analysis copy:** `public/data/kecamatan_kalimantan.geojson` (simplified, ~500 m tolerance) for client-side KPI spatial joins.
+1. **Stage** all three boundary levels nationally into one GeoJSON with a `level` property.
+2. **Tile to PMTiles** via pyogrio's MVT driver → MBTiles → `pmtiles.convert` (`pipeline/tile.py`; no tippecanoe):
+   - `public/data/boundaries.pmtiles` — one `boundaries` layer filtered by `level`, z2–z12, 37 MB
+3. **Emit the analysis copy:** `public/data/kabkota_indonesia.geojson` — 514 polygons, simplified 0.008°, written at `COORDINATE_PRECISION=5`. Backs both the fire clip and the "kabupaten affected" KPI.
+4. **Emit population as Parquet**, not tiles: `public/data/population_h3.parquet` — 874,919 rows of `h3` (res 8) with res-7/6/5 parents and `kab_kota_code`/`provinsi_code` precomputed, 3.9 MB.
 
-PMTiles are consumed in the browser via the `pmtiles` JS protocol (`pmtiles://` URLs registered on the MapLibre map). Fully static deploy.
+Population is not tiled since it's served as kontur H3 hexagons, which are geometry-free and queried in the browser by DuckDB-WASM. The full PMTile would be 113 MB, past GitHub's 100 MB per-file limit.
+
+PMTiles are consumed via the `pmtiles` JS protocol. Fully static deploy.
 
 ## 4. Live / remote sources
 
-| Source                  | Access                           | Method                                                                                                                                                                                                                                                                                                                                                                                                                      |
-| ----------------------- | -------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| **NASA FIRMS**          | API key (in `src/lib/config.ts`) | `GET /api/area/csv/{KEY}/{SOURCE}/{bbox}/{days}` → CSV parsed to GeoJSON in-browser. Default source `VIIRS_SNPP_NRT`, **2 days**, Kalimantan bbox. Note: source IDs use **underscores**; the `/api/country` path is invalid — always use `/api/area`. `days=1` means "today so far (UTC)" and returns a header-only CSV for the first hours of each UTC day, which reads as "no fires" rather than "no data yet" — hence 2. |
-| **NASA GIBS**           | keyless                          | RESTful WMTS tiles: `https://gibs.earthdata.nasa.gov/wmts/epsg3857/best/{LAYER}/default/{TIME}/{TILEMATRIXSET}/{z}/{y}/{x}.png`. Used as MapLibre raster sources. AOD: `MODIS_Aqua_Aerosol` (max z6). Smoke: `MODIS_Terra_CorrectedReflectance_TrueColor` (max z9). Time dimension `default` = latest available.                                                                                                            |
-| **BIG SatuPeta**        | keyless, CORS-open               | Official Indonesian layers (peat, KHG, fire hazard) as GeoJSON — see §4.3. Replaces the token-gated `services8.arcgis.com` KHG service, which is gone from the app.                                                                                                                                                                                                                                                         |
-| **CAMS (ECMWF WMS)**    | keyless (`token=public`)         | Animated haze — biomass-burning AOD and surface PM2.5, 3-hourly with forecast. See §4.4.                                                                                                                                                                                                                                                                                                                                    |
-| **Global Forest Watch** | keyless, CORS-open               | Peat, concession and protection context. Static vector tiles `https://tiles.globalforestwatch.org/{dataset}/{version}/default/{z}/{x}/{y}.pbf` (the MVT `source-layer` equals the dataset name); peat is a raster cache at the same path with `.png`. Versions are pinned in `GFW_DATASETS` — see §4.1.                                                                                                                     |
-| **Basemaps**            | keyless                          | CARTO Dark Matter, Esri World Imagery, OpenStreetMap standard, CARTO Voyager — all raster. Pre-registered as raster layers; switching toggles visibility (no `setStyle` churn). OSM is capped at z19 per the OSMF tile policy.                                                                                                                                                                                              |
+| Source                  | Access                           | Method                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                |
+| ----------------------- | -------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **NASA FIRMS**          | API key (in `src/lib/config.ts`) | `GET /api/area/csv/{KEY}/{SOURCE}/{bbox}/{days}` → CSV parsed to GeoJSON in-browser. Default source `VIIRS_SNPP_NRT`, **5 days** (the NRT endpoint rejects more — "Invalid day range. Expects [1..5]"), national bbox, then clipped to the kab/kota outline. Note: source IDs use **underscores**; the `/api/country` path is invalid — always use `/api/area`. `days=1` means "today so far (UTC)" and returns a header-only CSV for the first hours of each UTC day, which reads as "no fires" rather than "no data yet" — hence 2. |
+| **NASA GIBS**           | keyless                          | RESTful WMTS tiles: `https://gibs.earthdata.nasa.gov/wmts/epsg3857/best/{LAYER}/default/{TIME}/{TILEMATRIXSET}/{z}/{y}/{x}.png`. Used as MapLibre raster sources. AOD: `MODIS_Aqua_Aerosol` (max z6). Smoke: `MODIS_Terra_CorrectedReflectance_TrueColor` (max z9). Time dimension `default` = latest available.                                                                                                                                                                                                                      |
+| **BIG SatuPeta**        | keyless, CORS-open               | Official Indonesian layers (peat, KHG, fire hazard) as GeoJSON — see §4.3. Replaces the token-gated `services8.arcgis.com` KHG service, which is gone from the app.                                                                                                                                                                                                                                                                                                                                                                   |
+| **CAMS (ECMWF WMS)**    | keyless (`token=public`)         | Animated haze — biomass-burning AOD and surface PM2.5, 3-hourly with forecast. See §4.4.                                                                                                                                                                                                                                                                                                                                                                                                                                              |
+| **Global Forest Watch** | keyless, CORS-open               | Peat, concession and protection context. Static vector tiles `https://tiles.globalforestwatch.org/{dataset}/{version}/default/{z}/{x}/{y}.pbf` (the MVT `source-layer` equals the dataset name); peat is a raster cache at the same path with `.png`. Versions are pinned in `GFW_DATASETS` — see §4.1.                                                                                                                                                                                                                               |
+| **Basemaps**            | keyless                          | CARTO Dark Matter, Esri World Imagery, OpenStreetMap standard, CARTO Voyager — all raster. Pre-registered as raster layers; switching toggles visibility (no `setStyle` churn). OSM is capped at z19 per the OSMF tile policy.                                                                                                                                                                                                                                                                                                        |
 
 ### 4.1 Global Forest Watch context layers
 
 GFW's public data API is the practical replacement for the dead Indonesian
-government geoportals: no key, `Access-Control-Allow-Origin: *`, and it carries
+government geoportals (sorry): no key, `Access-Control-Allow-Origin: *`, and it carries
 the exact datasets this map needs.
 
 | Layer               | Dataset                  | Pinned version | Source maxzoom |
@@ -84,7 +86,7 @@ Rules of engagement, learned the hard way:
   at low zoom the downsampled alpha makes it faint. This is why the "peatland
   fires" KPI stays unimplemented — there is no polygon to intersect.
 
-Known-dead endpoints (BIG, BNPB, Kemenhut, BRGM, Dukcapil, ECMWF WMS) are documented in `AGENTS.md` — do not retry without new information.
+Known-dead endpoints: BIG, BNPB, Kemenhut, BRGM, Dukcapil, ECMWF WMS (most are token-gated ArcGIS services). GFW is the only one that works from a browser.
 
 ### 4.2 Basemaps
 
@@ -114,7 +116,7 @@ Layers used: **6** Lahan Gambut, **37** KHG, **47** Rawan Kebakaran Hutan dan
 Lahan, **48** Fungsi Ekosistem Gambut. Others worth a look: 0 penutup lahan,
 7 DAS, 17 curah hujan, 49 lahan kritis, 57 mangrove, 58 rawan banjir.
 
-**Coverage differs sharply between the peat layers, and it changes the answer.**
+**Coverage differs between the available peat layers, and it changes the answer.**
 Measured over Kalimantan against 3,895 detections:
 
 | Layer                        | Area       | Fires on it |
@@ -167,30 +169,50 @@ ship at 0.5 opacity.
 - Overlay ordering is controlled by inserting layers above the basemap stack in registry order.
 - FIRMS data flows: `useFirms` hook → store (`firesGeojson`, status) → `setData` on the fire GeoJSON source → circle + heatmap layers re-render.
 
-## 6. KPI methodology (scaffold)
+## 6. KPI methodology
 
-Computed client-side, recomputed when fire data refreshes:
+Computed client-side against **the filtered slice**, not the whole download — the
+cards, the charts and the map all read the same `FireFilters`.
 
-| KPI                | Method                                                                                                                   |
-| ------------------ | ------------------------------------------------------------------------------------------------------------------------ |
-| Active fires       | count of FIRMS points                                                                                                    |
-| Total FRP          | sum of `frp` (MW)                                                                                                        |
-| Affected kecamatan | turf point-in-polygon of fire points against `kecamatan_kalimantan.geojson` (bbox pre-filter), count of unique kecamatan |
-| Fires on peat      | turf point-in-polygon of fire points against BIG layer 6 (Lahan Gambut), shown as a count and a share of all detections  |
+| KPI                     | Method                                                                                               |
+| ----------------------- | ---------------------------------------------------------------------------------------------------- |
+| Active fires            | count of filtered FIRMS points                                                                       |
+| Total FRP               | sum of `frp` (MW)                                                                                    |
+| Kabupaten affected      | turf point-in-polygon against `kabkota_indonesia.geojson` (bbox pre-filter), unique kab/kota, of 514 |
+| Fires on peat           | point-in-polygon against BIG layer 6, as a count and a share **of Kalimantan detections**            |
+| People near active fire | Kontur population in res-7 H3 cells containing or adjacent to a detection (~2 km), summed in DuckDB  |
+
+Two of those need their reasoning stated, because the number is meaningless without it:
+
+**Fires on peat is scoped to Kalimantan.** BIG layer 6 returns 146 polygons
+nationally and every one is on Borneo — Sumatra and Papua peat is simply absent
+from the service. The share is therefore taken over Kalimantan detections, not
+national ones, or it would shrink for no reason as the rest of the country burns.
+
+**Exposure is only as meaningful as its radius and window.** The same detections
+give 2.1 M at ~1 km over 24 h and 84 M at ~5 km over 5 days — a 40× spread, and
+the wide figure covers 22% of the country and mostly describes Java's density.
+The tile prints its radius and window on its face for that reason.
+
+Attribution comes from the **kab/kota polygon join**, never from the population
+Parquet: Kontur only stores populated hexagons, so joining detections to it by
+H3 leaves ~70% unattributed — forest and peat fires are by definition where
+nobody lives — and ranks Java top. The polygon join attributes 97.7%. That join
+runs once, in `clipToIndonesia`, which tags every detection with its `provinsi`
+and `kabkota`; everything downstream counts tags rather than repeating it.
 
 Cards are removed rather than left as a permanent "—": an empty card reads as
-"zero", not as "not measured". A "population exposed" card was dropped for that
-reason — a fire-buffer sum over the Kontur H3 hexes is worth doing, but it needs
-the hexes as data rather than as vector tiles (which only cover the viewport),
-so it belongs in the pipeline, not the browser.
+"zero", not as "not measured".
 
 ## 7. Caveats
 
 - FIRMS NRT detections are **not** confirmed fires; confidence/filtering is exposed via point styling but no ground-truthing is applied.
-- GIBS `default` time may lag real time by hours; AOD is a column-integrated measure, not ground-level PM2.5.
+- GIBS `default` time resolves to _today_, which 404s until the day's granules are processed; dates are probed over the area of interest instead. AOD is a column-integrated measure, not ground-level PM2.5.
+- Copernicus burnt area is daily at 300 m and genuinely sparse day to day — burn scars accumulate, so a single date shows very little. Its "no burn" class is opaque and is stripped in the browser.
+- Tree cover loss is annual (UMD/Hansen, pinned to v1.13) and is history, not a current-season signal.
 - Kontur population is a modeled H3 grid (2022 vintage), not census counts.
 - "Fires on peat" counts detections whose centroid falls on mapped peat soil. VIIRS pixels are ~375 m, so a detection near a peat edge may be attributed either way; and peat maps are themselves generalised.
 - CAMS is a model reanalysis/forecast at ~40 km resolution, not measurement. It shows where smoke is _modelled_ to be, which is the right tool for plume direction and the wrong one for a specific address.
 - Concession boundaries are **where** a permit applies, not proof of who lit a fire. A detection inside a concession is a question worth asking, not an attribution. Coverage is also uneven — `gfw_oil_palm` includes plenty of "Unknown Concession" polygons, and Malaysian Borneo is mapped alongside Kalimantan.
 - `idn_forest_area` (2017) and `idn_forest_moratorium` (2020) are the newest versions GFW publishes; both are older than the fire data they are shown against.
-- Indonesian government (`.go.id`) endpoints are unreliable from most networks; KHG requires a token we do not have.
+- Indonesian government (`.go.id`) endpoints are unreliable from most networks; BIG SatuPeta in particular goes down for stretches, and layers that hit their `maxFeatures` cap report "partial coverage" rather than implying they drew everything.
