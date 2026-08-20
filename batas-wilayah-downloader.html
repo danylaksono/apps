@@ -1,0 +1,852 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Batas Wilayah — pengunduh batas administrasi Indonesia</title>
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans+Condensed:wght@500;600;700&family=IBM+Plex+Sans:wght@400;500&display=swap" rel="stylesheet">
+
+<link href="https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.css" rel="stylesheet" />
+<script src="https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.js"></script>
+<script src="https://unpkg.com/deck.gl@9.0.36/dist.min.js"></script>
+
+<style>
+:root{
+  --ink:#0C1418;
+  --panel:#131F26;
+  --panel-2:#0F1A20;
+  --line:#22333D;
+  --line-soft:#1A2830;
+  --paper:#E9EFF1;
+  --muted:#7E949E;
+  --hydro:#2E9BD6;
+  --survey:#F0A03C;
+  --danger:#E2685A;
+  --sans:"IBM Plex Sans",system-ui,sans-serif;
+  --cond:"IBM Plex Sans Condensed","IBM Plex Sans",sans-serif;
+  --mono:"IBM Plex Mono",ui-monospace,monospace;
+}
+*{box-sizing:border-box}
+html,body{margin:0;height:100%;background:var(--ink);color:var(--paper);font-family:var(--sans);font-size:14px;-webkit-font-smoothing:antialiased}
+button,select,input{font:inherit;color:inherit}
+
+#app{display:grid;grid-template-columns:344px 1fr;height:100%}
+#map{position:relative;height:100%}
+.maplibregl-ctrl-attrib{font-size:10px}
+
+/* ---------- panel ---------- */
+#panel{
+  background:var(--panel);
+  border-right:1px solid var(--line);
+  display:flex;flex-direction:column;
+  overflow-y:auto;
+  scrollbar-width:thin;scrollbar-color:var(--line) transparent;
+}
+
+.masthead{padding:18px 20px 16px;border-bottom:1px solid var(--line)}
+.masthead h1{
+  font-family:var(--cond);font-weight:700;font-size:21px;letter-spacing:.02em;
+  margin:0;line-height:1.1;text-transform:uppercase;
+}
+.masthead h1 span{color:var(--survey)}
+.masthead p{margin:7px 0 0;font-size:12.5px;color:var(--muted);line-height:1.45}
+
+/* stage = Shneiderman step; the numbering is the sequence, so it earns its place */
+.stage{border-bottom:1px solid var(--line);padding:16px 20px 18px}
+.stage-head{display:flex;align-items:baseline;gap:9px;margin-bottom:12px}
+.stage-num{
+  font-family:var(--mono);font-size:11px;color:var(--survey);
+  border:1px solid var(--line);padding:1px 5px;line-height:1.5;
+}
+.stage-title{font-family:var(--cond);font-weight:600;font-size:12.5px;letter-spacing:.14em;text-transform:uppercase;color:var(--paper)}
+.stage[data-idle="1"] .stage-title{color:var(--muted)}
+.stage[data-idle="1"] .stage-num{color:var(--muted)}
+.hint{font-size:12px;color:var(--muted);line-height:1.5;margin:0 0 11px}
+
+/* level pills */
+.levels{display:flex;flex-wrap:wrap;gap:5px}
+.pill{
+  font-family:var(--cond);font-size:12px;font-weight:600;letter-spacing:.05em;
+  background:transparent;border:1px solid var(--line);color:var(--muted);
+  padding:5px 9px;cursor:pointer;transition:border-color .12s,color .12s;
+}
+.pill:hover:not(:disabled){border-color:var(--hydro);color:var(--paper)}
+.pill[aria-pressed="true"]{border-color:var(--hydro);color:var(--ink);background:var(--hydro)}
+.pill:disabled{opacity:.35;cursor:not-allowed}
+
+/* selects */
+.field{margin-bottom:9px}
+.field label{
+  display:block;font-family:var(--cond);font-size:10.5px;letter-spacing:.14em;
+  text-transform:uppercase;color:var(--muted);margin-bottom:4px;
+}
+.field select{
+  width:100%;background:var(--panel-2);border:1px solid var(--line);
+  padding:7px 8px;font-size:13px;appearance:none;cursor:pointer;
+  background-image:linear-gradient(45deg,transparent 50%,var(--muted) 50%),linear-gradient(135deg,var(--muted) 50%,transparent 50%);
+  background-position:calc(100% - 15px) 14px,calc(100% - 10px) 14px;
+  background-size:5px 5px,5px 5px;background-repeat:no-repeat;
+}
+.field select:disabled{opacity:.4;cursor:not-allowed}
+.field select:focus-visible,.pill:focus-visible,button:focus-visible,input:focus-visible{outline:2px solid var(--survey);outline-offset:1px}
+
+/* ---------- signature: the sheet title block ---------- */
+.titleblock{
+  position:relative;border:1px solid var(--line);background:var(--panel-2);
+  padding:13px 14px 11px;margin-bottom:12px;
+}
+.titleblock::before,.titleblock::after{
+  content:"";position:absolute;width:7px;height:7px;border:1px solid var(--survey);
+}
+.titleblock::before{top:-1px;left:-1px;border-right:0;border-bottom:0}
+.titleblock::after{bottom:-1px;right:-1px;border-left:0;border-top:0}
+.tb-eyebrow{
+  font-family:var(--cond);font-size:10px;letter-spacing:.18em;text-transform:uppercase;
+  color:var(--survey);margin-bottom:6px;
+}
+.tb-name{
+  font-family:var(--cond);font-weight:700;font-size:19px;line-height:1.15;
+  margin:0 0 3px;word-break:break-word;
+}
+.tb-parent{font-size:11.5px;color:var(--muted);margin:0 0 11px;line-height:1.4}
+.tb-grid{
+  display:grid;grid-template-columns:1fr 1fr;gap:9px 12px;
+  border-top:1px solid var(--line-soft);padding-top:10px;
+}
+.tb-grid div{min-width:0}
+.tb-k{font-family:var(--cond);font-size:9.5px;letter-spacing:.14em;text-transform:uppercase;color:var(--muted);display:block;margin-bottom:2px}
+.tb-v{font-family:var(--mono);font-size:12.5px;color:var(--paper);overflow-wrap:anywhere}
+.tb-empty .tb-name{color:var(--muted);font-weight:600;font-size:14px}
+
+/* actions */
+.actions{display:flex;flex-direction:column;gap:7px}
+.btn{
+  font-family:var(--cond);font-weight:600;font-size:13px;letter-spacing:.06em;
+  text-transform:uppercase;padding:9px 12px;cursor:pointer;
+  border:1px solid var(--survey);background:var(--survey);color:#12191C;
+  transition:filter .12s;text-align:center;
+}
+.btn:hover:not(:disabled){filter:brightness(1.08)}
+.btn.ghost{background:transparent;color:var(--paper);border-color:var(--line)}
+.btn.ghost:hover:not(:disabled){border-color:var(--hydro)}
+.btn:disabled{opacity:.35;cursor:not-allowed}
+.btn small{display:block;font-family:var(--mono);font-size:10px;letter-spacing:0;text-transform:none;opacity:.75;margin-top:2px}
+
+/* progress */
+.prog{margin-top:11px;font-family:var(--mono);font-size:11px;color:var(--muted)}
+.prog-bar{height:2px;background:var(--line);margin-top:5px;overflow:hidden}
+.prog-bar i{display:block;height:100%;width:0;background:var(--survey);transition:width .2s}
+.warn{color:var(--survey)}
+.err{color:var(--danger)}
+
+/* footer / source */
+.srcbox{padding:14px 20px 20px}
+.srcbox summary{
+  font-family:var(--cond);font-size:10.5px;letter-spacing:.14em;text-transform:uppercase;
+  color:var(--muted);cursor:pointer;list-style:none;
+}
+.srcbox summary::-webkit-details-marker{display:none}
+.srcbox summary::before{content:"+ ";font-family:var(--mono)}
+.srcbox[open] summary::before{content:"– "}
+.srcbox .body{padding-top:11px}
+.srcbox input{
+  width:100%;background:var(--panel-2);border:1px solid var(--line);
+  padding:6px 8px;font-family:var(--mono);font-size:11px;
+}
+.srcbox p{font-size:11.5px;color:var(--muted);line-height:1.5;margin:9px 0 0}
+.srcbox a{color:var(--hydro)}
+
+/* map overlays */
+.map-note{
+  position:absolute;left:12px;top:12px;z-index:2;
+  background:rgba(12,20,24,.9);border:1px solid var(--line);
+  padding:7px 11px;font-family:var(--mono);font-size:11px;color:var(--muted);
+  max-width:min(420px,60vw);line-height:1.5;
+}
+.map-note b{color:var(--survey);font-weight:500}
+#scalebadge{
+  position:absolute;right:12px;bottom:26px;z-index:2;
+  background:rgba(12,20,24,.9);border:1px solid var(--line);
+  padding:5px 9px;font-family:var(--mono);font-size:10.5px;color:var(--muted);
+}
+.loading{opacity:.55}
+
+@media (max-width:860px){
+  #app{grid-template-columns:1fr;grid-template-rows:46vh 1fr}
+  #panel{order:2;border-right:0;border-top:1px solid var(--line)}
+  #map{order:1}
+}
+@media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
+</style>
+</head>
+<body>
+
+<div id="app">
+  <aside id="panel">
+
+    <div class="masthead">
+      <h1>Batas <span>Wilayah</span></h1>
+      <p>Cari dan unduh batas administrasi Indonesia — dari desa/kelurahan sampai provinsi. Sumber: layanan peta Badan Informasi Geospasial.</p>
+    </div>
+
+    <!-- 1 -->
+    <section class="stage" id="stage1">
+      <div class="stage-head"><span class="stage-num">01</span><span class="stage-title">Tampilan awal</span></div>
+      <p class="hint" id="discoverHint">Membaca daftar layer dari layanan…</p>
+      <div class="levels" id="levels"></div>
+    </section>
+
+    <!-- 2 -->
+    <section class="stage" id="stage2" data-idle="1">
+      <div class="stage-head"><span class="stage-num">02</span><span class="stage-title">Perbesar &amp; saring</span></div>
+      <div class="field">
+        <label for="selPr">Provinsi</label>
+        <select id="selPr" disabled><option value="">— semua provinsi —</option></select>
+      </div>
+      <div class="field">
+        <label for="selKk">Kabupaten / Kota</label>
+        <select id="selKk" disabled><option value="">— semua —</option></select>
+      </div>
+      <div class="field">
+        <label for="selKc">Kecamatan / Distrik</label>
+        <select id="selKc" disabled><option value="">— semua —</option></select>
+      </div>
+    </section>
+
+    <!-- 3 -->
+    <section class="stage" id="stage3" data-idle="1">
+      <div class="stage-head"><span class="stage-num">03</span><span class="stage-title">Rincian &amp; unduh</span></div>
+
+      <div class="titleblock tb-empty" id="titleblock">
+        <div class="tb-eyebrow">Keterangan objek</div>
+        <p class="tb-name" id="tbName">Klik satu wilayah di peta</p>
+        <p class="tb-parent" id="tbParent">Geometri hanya diambil saat dibutuhkan, jadi peta tetap ringan.</p>
+        <div class="tb-grid" id="tbGrid" hidden>
+          <div><span class="tb-k">Kode BPS</span><span class="tb-v" id="tbCode">—</span></div>
+          <div><span class="tb-k">Tipe</span><span class="tb-v" id="tbType">—</span></div>
+          <div><span class="tb-k">Luas (ha)</span><span class="tb-v" id="tbArea">—</span></div>
+          <div><span class="tb-k">Simpul</span><span class="tb-v" id="tbVerts">—</span></div>
+        </div>
+      </div>
+
+      <div class="actions">
+        <button class="btn" id="btnOne" disabled>Unduh objek terpilih</button>
+        <button class="btn ghost" id="btnMany" disabled>Unduh seluruh level ini<small id="btnManySub">pilih level dulu</small></button>
+      </div>
+
+      <div class="prog" id="prog" hidden>
+        <span id="progText">—</span>
+        <div class="prog-bar"><i id="progBar"></i></div>
+      </div>
+    </section>
+
+    <details class="srcbox">
+      <summary>Layanan &amp; sambungan</summary>
+      <div class="body">
+        <div class="field">
+          <label for="svcUrl">URL MapServer</label>
+          <input id="svcUrl" spellcheck="false" />
+        </div>
+        <div class="field">
+          <label for="proxyUrl">Awalan proksi (opsional)</label>
+          <input id="proxyUrl" spellcheck="false" placeholder="https://proksi-anda/?url=" />
+        </div>
+        <button class="btn ghost" id="btnReload">Muat ulang layanan</button>
+        <p>Kalau peramban memblokir permintaan karena CORS, isi awalan proksi di atas. Data © Badan Informasi Geospasial — sertakan atribusi saat memakai hasil unduhan.</p>
+      </div>
+    </details>
+  </aside>
+
+  <div id="map">
+    <div class="map-note" id="mapNote">Menyiapkan peta…</div>
+    <div id="scalebadge">z— · —</div>
+  </div>
+</div>
+
+<script>
+(function(){
+"use strict";
+
+/* ============================================================
+   Config
+   ============================================================ */
+const DEFAULT_SERVICE =
+  "https://geoservices.big.go.id/rbi/rest/services/BATASWILAYAH/BATAS_WILAYAH/MapServer";
+
+const PAGE = 1000;          // server maxRecordCount
+const BIG_WARN = 4000;      // warn above this many features
+const PRECISION = 6;        // ~11 cm — plenty for boundaries
+
+// Level model. Field names are shared across all layers in this service,
+// which is why one code path works for every level.
+const LEVELS = [
+  { key:"provinsi",  label:"Provinsi",           match:/provinsi/i,
+    nameF:"wadmpr", codeF:"kdpbps", parentF:null,     parentNameF:null,     minzoom:0 },
+  { key:"kabkota",   label:"Kabupaten/Kota",     match:/kabupaten|kab\.?\/?kota|\bkota\b/i,
+    nameF:"wadmkk", codeF:"kdbbps", parentF:"kdpbps", parentNameF:"wadmpr", minzoom:6 },
+  { key:"kecamatan", label:"Kecamatan/Distrik",  match:/kecamatan|distrik/i,
+    nameF:"wadmkc", codeF:"kdcbps", parentF:"kdbbps", parentNameF:"wadmkk", minzoom:8.5 },
+  { key:"desa",      label:"Desa/Kelurahan",     match:/desa|kelurahan/i,
+    nameF:"wadmkd", codeF:"kdebps", parentF:"kdcbps", parentNameF:"wadmkc", minzoom:10.5 }
+];
+
+const TIPADM = {1:"Kelurahan",2:"Desa",3:"Kecamatan/Distrik",4:"Kabupaten",5:"Kota",6:"Provinsi",999:"Lainnya"};
+
+/* ============================================================
+   State
+   ============================================================ */
+const S = {
+  service: DEFAULT_SERVICE,
+  proxy: "",
+  layers: {},        // levelKey -> {id, name}
+  level: null,       // active level key
+  filters: {kdpbps:"", kdbbps:"", kdcbps:""},
+  selected: null,    // {props, geojson}
+  busy: false
+};
+
+const $ = id => document.getElementById(id);
+
+/* ============================================================
+   Transport — fetch first, JSONP fallback for CORS-blocked hosts.
+   Everything speaks f=json so there is exactly one response shape
+   to handle, and JSONP stays available as a fallback.
+   ============================================================ */
+let cbSeq = 0;
+
+function buildUrl(path, params){
+  const u = new URL(S.service.replace(/\/+$/,"") + path);
+  Object.entries(params || {}).forEach(([k,v]) => {
+    if(v !== undefined && v !== null && v !== "") u.searchParams.set(k, v);
+  });
+  u.searchParams.set("f","json");
+  return u.toString();
+}
+
+function proxied(url){
+  return S.proxy ? S.proxy + encodeURIComponent(url) : url;
+}
+
+function jsonp(url){
+  return new Promise((resolve, reject) => {
+    const cb = "__bwcb" + (++cbSeq);
+    const s = document.createElement("script");
+    const timer = setTimeout(() => { cleanup(); reject(new Error("Layanan tidak menjawab (JSONP timeout).")); }, 45000);
+    function cleanup(){ clearTimeout(timer); delete window[cb]; s.remove(); }
+    window[cb] = d => { cleanup(); resolve(d); };
+    s.onerror = () => { cleanup(); reject(new Error("JSONP gagal dimuat.")); };
+    s.src = url + (url.includes("?") ? "&" : "?") + "callback=" + cb;
+    document.head.appendChild(s);
+  });
+}
+
+async function api(path, params){
+  const url = buildUrl(path, params);
+  let data;
+  try {
+    const r = await fetch(proxied(url), {mode:"cors"});
+    if(!r.ok) throw new Error("HTTP " + r.status);
+    data = await r.json();
+  } catch(e){
+    data = await jsonp(proxied(url));   // CORS or network — try JSONP
+  }
+  if(data && data.error) throw new Error(data.error.message || "Layanan menolak permintaan.");
+  return data;
+}
+
+const query = (layerId, params) => api("/" + layerId + "/query", params);
+
+/* ============================================================
+   Esri JSON -> GeoJSON (polygons only; rings are grouped by winding)
+   ============================================================ */
+function ringIsClockwise(ring){
+  let sum = 0;
+  for(let i=0;i<ring.length-1;i++){
+    sum += (ring[i+1][0]-ring[i][0]) * (ring[i+1][1]+ring[i][1]);
+  }
+  return sum > 0;   // Esri: clockwise = outer ring
+}
+function xy(p){ return [p[0], p[1]]; }   // drop Z/M if the server sent it
+
+function ringsToGeometry(rings){
+  const polys = [];
+  rings.forEach(r => {
+    const ring = r.map(xy);
+    if(ring.length < 4) return;
+    if(ringIsClockwise(ring) || polys.length === 0) polys.push([ring]);
+    else polys[polys.length-1].push(ring);
+  });
+  if(!polys.length) return null;
+  return polys.length === 1
+    ? {type:"Polygon", coordinates:polys[0]}
+    : {type:"MultiPolygon", coordinates:polys};
+}
+
+function esriToFeatures(res){
+  const out = [];
+  (res.features || []).forEach(f => {
+    const g = f.geometry && f.geometry.rings ? ringsToGeometry(f.geometry.rings) : null;
+    out.push({type:"Feature", properties: f.attributes || {}, geometry: g});
+  });
+  return out;
+}
+
+function countVertices(geom){
+  if(!geom) return 0;
+  const rings = geom.type === "Polygon" ? geom.coordinates : geom.coordinates.flat();
+  return rings.reduce((n,r) => n + r.length, 0);
+}
+
+/* ============================================================
+   Discovery — never hardcode layer IDs; this service mixes
+   polygon, line and annotation layers and the IDs move between editions.
+   ============================================================ */
+async function discover(){
+  $("discoverHint").textContent = "Membaca daftar layer dari layanan…";
+  $("discoverHint").className = "hint loading";
+  S.layers = {};
+
+  const root = await api("", {});
+  const candidates = (root.layers || []).filter(l =>
+    l.type === "Feature Layer" && !/anno/i.test(l.name || "")
+  );
+
+  // Confirm geometry type per candidate rather than trusting the name.
+  const checked = await Promise.all(candidates.map(async l => {
+    for(const lv of LEVELS){
+      if(lv.match.test(l.name)){
+        try {
+          const meta = await api("/" + l.id, {});
+          if(meta.geometryType === "esriGeometryPolygon") return {level:lv.key, id:l.id, name:l.name};
+        } catch(e){ /* skip unreadable layer */ }
+        break;
+      }
+    }
+    return null;
+  }));
+
+  checked.filter(Boolean).forEach(c => { if(!S.layers[c.level]) S.layers[c.level] = c; });
+
+  const found = LEVELS.filter(lv => S.layers[lv.key]);
+  if(!found.length) throw new Error("Tidak ada layer poligon batas administrasi yang dikenali di layanan ini.");
+
+  $("discoverHint").className = "hint";
+  $("discoverHint").innerHTML =
+    "Ditemukan <b>" + found.length + "</b> level poligon. Pilih satu untuk digambar sebagai lapisan rujukan — gambarnya dari server, bukan GeoJSON, jadi ringan.";
+  renderLevels(found);
+  setLevel(found[0].key);
+}
+
+function renderLevels(found){
+  const box = $("levels");
+  box.innerHTML = "";
+  LEVELS.forEach(lv => {
+    const b = document.createElement("button");
+    b.className = "pill";
+    b.textContent = lv.label;
+    b.setAttribute("aria-pressed","false");
+    b.dataset.level = lv.key;
+    if(!S.layers[lv.key]){ b.disabled = true; b.title = "Tidak tersedia di layanan ini"; }
+    b.onclick = () => setLevel(lv.key);
+    box.appendChild(b);
+  });
+}
+
+/* ============================================================
+   Map — reference layer is a server-rendered image, not vectors.
+   deck.gl only ever holds the one shape you asked for.
+   ============================================================ */
+let map, overlay, highlight = null;
+
+function initMap(){
+  map = new maplibregl.Map({
+    container:"map",
+    style:"https://basemaps.cartocdn.com/gl/dark-matter-gl-style/style.json",
+    center:[118, -2.2],
+    zoom:4.1,
+    attributionControl:{compact:true}
+  });
+  map.addControl(new maplibregl.NavigationControl({showCompass:false}), "top-right");
+  map.addControl(new maplibregl.ScaleControl({maxWidth:110, unit:"metric"}), "bottom-right");
+
+  overlay = new deck.MapboxOverlay({interleaved:false, layers:[]});
+  map.addControl(overlay);
+
+  map.on("load", () => { refreshRaster(); note("Klik satu wilayah untuk melihat rinciannya."); });
+  map.on("click", onMapClick);
+  map.on("move", updateScaleBadge);
+  map.on("error", e => {
+    if(e && e.sourceId === "big-ref"){
+      note("Lapisan rujukan gagal dimuat — kemungkinan besar CORS. Isi awalan proksi di panel <b>Layanan &amp; sambungan</b>.", true);
+    }
+  });
+  updateScaleBadge();
+}
+
+function updateScaleBadge(){
+  if(!map) return;
+  const lv = LEVELS.find(l => l.key === S.level);
+  $("scalebadge").textContent = "z" + map.getZoom().toFixed(1) + " · " + (lv ? lv.label : "—");
+}
+
+// ArcGIS export endpoint wired in as a bbox-driven raster source.
+function rasterUrl(){
+  const lyr = S.layers[S.level];
+  if(!lyr) return null;
+  const defs = {};
+  const w = whereClause();
+  if(w !== "1=1") defs[lyr.id] = w;
+
+  const base = S.service.replace(/\/+$/,"") + "/export";
+  const p = new URLSearchParams({
+    bbox:"{bbox-epsg-3857}", bboxSR:"3857", imageSR:"3857",
+    size:"512,512", dpi:"96", format:"png32", transparent:"true",
+    layers:"show:" + lyr.id, f:"image"
+  });
+  if(Object.keys(defs).length) p.set("layerDefs", JSON.stringify(defs));
+  // URLSearchParams escapes the braces; MapLibre needs them raw.
+  const url = base + "?" + p.toString().replace("%7Bbbox-epsg-3857%7D","{bbox-epsg-3857}");
+  return S.proxy ? S.proxy + encodeURIComponent(url) : url;
+}
+
+function refreshRaster(){
+  if(!map || !map.isStyleLoaded()){ map && map.once("idle", refreshRaster); return; }
+  if(map.getLayer("big-ref-lyr")) map.removeLayer("big-ref-lyr");
+  if(map.getSource("big-ref")) map.removeSource("big-ref");
+  const url = rasterUrl();
+  if(!url) return;
+  map.addSource("big-ref", {type:"raster", tiles:[url], tileSize:512, attribution:"Badan Informasi Geospasial"});
+  map.addLayer({id:"big-ref-lyr", type:"raster", source:"big-ref", paint:{"raster-opacity":0.95}});
+}
+
+function drawHighlight(fc){
+  highlight = fc;
+  overlay.setProps({layers:[
+    new deck.GeoJsonLayer({
+      id:"selection",
+      data: fc || {type:"FeatureCollection",features:[]},
+      filled:true, stroked:true,
+      getFillColor:[240,160,60,55],
+      getLineColor:[240,160,60,235],
+      lineWidthMinPixels:2,
+      pickable:false
+    })
+  ]});
+}
+
+/* ============================================================
+   Filtering
+   ============================================================ */
+function whereClause(extra){
+  const parts = [];
+  const f = S.filters;
+  if(f.kdcbps) parts.push("kdcbps='" + f.kdcbps + "'");
+  else if(f.kdbbps) parts.push("kdbbps='" + f.kdbbps + "'");
+  else if(f.kdpbps) parts.push("kdpbps='" + f.kdpbps + "'");
+  if(extra) parts.push(extra);
+  return parts.length ? parts.join(" AND ") : "1=1";
+}
+
+async function distinct(levelKey, codeF, nameF, where){
+  const lyr = S.layers[levelKey];
+  if(!lyr) return [];
+  const base = {where: where || "1=1", outFields: codeF + "," + nameF, returnGeometry:"false", orderByFields:nameF};
+  let res;
+  try {
+    res = await query(lyr.id, Object.assign({returnDistinctValues:"true"}, base));
+  } catch(e){
+    res = await query(lyr.id, base);   // fall back and dedupe here
+  }
+  const seen = new Map();
+  (res.features || []).forEach(f => {
+    const a = f.attributes || {};
+    if(a[codeF] && !seen.has(a[codeF])) seen.set(a[codeF], a[nameF] || a[codeF]);
+  });
+  return [...seen].map(([code,name]) => ({code,name})).sort((a,b)=>a.name.localeCompare(b.name,"id"));
+}
+
+function fillSelect(sel, items, placeholder){
+  sel.innerHTML = "";
+  const o0 = document.createElement("option");
+  o0.value = ""; o0.textContent = placeholder;
+  sel.appendChild(o0);
+  items.forEach(it => {
+    const o = document.createElement("option");
+    o.value = it.code; o.textContent = it.name;
+    sel.appendChild(o);
+  });
+  sel.disabled = !items.length;
+}
+
+async function loadProvinsi(){
+  if(!S.layers.provinsi) return;
+  $("selPr").disabled = true;
+  const items = await distinct("provinsi","kdpbps","wadmpr");
+  fillSelect($("selPr"), items, "— semua provinsi —");
+}
+
+async function onFilterChange(which){
+  const pr = $("selPr").value, kk = $("selKk").value, kc = $("selKc").value;
+  if(which === "pr"){
+    S.filters = {kdpbps:pr, kdbbps:"", kdcbps:""};
+    fillSelect($("selKk"), [], "— semua —"); $("selKk").disabled = true;
+    fillSelect($("selKc"), [], "— semua —"); $("selKc").disabled = true;
+    if(pr && S.layers.kabkota){
+      fillSelect($("selKk"), await distinct("kabkota","kdbbps","wadmkk","kdpbps='"+pr+"'"), "— semua kab/kota —");
+    }
+  } else if(which === "kk"){
+    S.filters = {kdpbps:pr, kdbbps:kk, kdcbps:""};
+    fillSelect($("selKc"), [], "— semua —"); $("selKc").disabled = true;
+    if(kk && S.layers.kecamatan){
+      fillSelect($("selKc"), await distinct("kecamatan","kdcbps","wadmkc","kdbbps='"+kk+"'"), "— semua kecamatan —");
+    }
+  } else {
+    S.filters = {kdpbps:pr, kdbbps:kk, kdcbps:kc};
+  }
+  $("stage2").dataset.idle = (pr||kk||kc) ? "0" : "1";
+  refreshRaster();
+  updateManyButton();
+  zoomToFilter();
+}
+
+// Cheap: ask the server for the extent only, no geometry comes back.
+async function zoomToFilter(){
+  const lyr = S.layers[S.level];
+  const w = whereClause();
+  if(!lyr || w === "1=1") return;
+  try {
+    const res = await query(lyr.id, {where:w, returnExtentOnly:"true", returnGeometry:"false", outSR:"4326"});
+    const e = res.extent;
+    if(e && isFinite(e.xmin)){
+      map.fitBounds([[e.xmin,e.ymin],[e.xmax,e.ymax]], {padding:60, duration:700});
+    }
+  } catch(err){ /* extent is a nicety, not a requirement */ }
+}
+
+/* ============================================================
+   Detail on demand
+   ============================================================ */
+function setLevel(key){
+  S.level = key;
+  document.querySelectorAll(".pill").forEach(b =>
+    b.setAttribute("aria-pressed", String(b.dataset.level === key)));
+  const lv = LEVELS.find(l => l.key === key);
+  if(lv && map && map.getZoom() < lv.minzoom - 1.5){
+    note("Level <b>" + lv.label + "</b> paling terbaca mulai zoom " + lv.minzoom + ". Perbesar peta atau saring dulu di langkah 02.");
+  }
+  refreshRaster();
+  updateScaleBadge();
+  updateManyButton();
+}
+
+// Simplify on the way in: display geometry does not need full fidelity.
+function offsetForZoom(){
+  const z = map ? map.getZoom() : 5;
+  return 360 / (256 * Math.pow(2, z)) * 1.5;   // ~1.5 px worth of degrees
+}
+
+async function onMapClick(e){
+  const lyr = S.layers[S.level];
+  if(!lyr || S.busy) return;
+  note("Mengambil rincian…");
+  try {
+    const res = await query(lyr.id, {
+      geometry: e.lngLat.lng + "," + e.lngLat.lat,
+      geometryType:"esriGeometryPoint",
+      inSR:"4326", outSR:"4326",
+      spatialRel:"esriSpatialRelIntersects",
+      where: whereClause(),
+      outFields:"*",
+      returnGeometry:"true",
+      returnZ:"false",
+      maxAllowableOffset: offsetForZoom(),
+      geometryPrecision: PRECISION,
+      resultRecordCount: 1
+    });
+    const feats = esriToFeatures(res);
+    if(!feats.length){ note("Tidak ada objek di titik itu pada level ini."); return; }
+    S.selected = feats[0];
+    drawHighlight({type:"FeatureCollection", features:[feats[0]]});
+    paintTitleBlock(feats[0]);
+    note("Klik wilayah lain, atau unduh dari langkah 03.");
+  } catch(err){
+    note("Gagal mengambil rincian: " + err.message, true);
+  }
+}
+
+function paintTitleBlock(f){
+  const a = f.properties || {};
+  const lv = LEVELS.find(l => l.key === S.level);
+  const tb = $("titleblock");
+  tb.classList.remove("tb-empty");
+  $("stage3").dataset.idle = "0";
+
+  $("tbName").textContent = a[lv.nameF] || a.namobj || "(tanpa nama)";
+  const chain = [a.wadmkc, a.wadmkk, a.wadmpr].filter(Boolean);
+  $("tbParent").textContent = chain.length ? chain.join(" · ") : "—";
+  $("tbGrid").hidden = false;
+  $("tbCode").textContent = a[lv.codeF] || "—";
+  $("tbType").textContent = TIPADM[a.tipadm] || lv.label;
+  $("tbArea").textContent = a.luaswh ? Number(a.luaswh).toLocaleString("id-ID",{maximumFractionDigits:1}) : "—";
+  $("tbVerts").textContent = countVertices(f.geometry).toLocaleString("id-ID") + " (disederhanakan)";
+
+  $("btnOne").disabled = false;
+}
+
+/* ============================================================
+   Download
+   ============================================================ */
+function progress(text, pct, cls){
+  const p = $("prog");
+  p.hidden = false;
+  $("progText").innerHTML = text;
+  $("progText").className = cls || "";
+  $("progBar").style.width = (pct == null ? 0 : Math.round(pct)) + "%";
+}
+
+function saveGeoJSON(features, filename){
+  const fc = {
+    type:"FeatureCollection",
+    name: filename,
+    crs:{type:"name",properties:{name:"urn:ogc:def:crs:OGC:1.3:CRS84"}},
+    features
+  };
+  const blob = new Blob([JSON.stringify(fc)], {type:"application/geo+json"});
+  const a = document.createElement("a");
+  a.href = URL.createObjectURL(blob);
+  a.download = filename + ".geojson";
+  a.click();
+  setTimeout(() => URL.revokeObjectURL(a.href), 4000);
+}
+
+const slug = s => (s||"data").toString().toLowerCase().replace(/[^a-z0-9]+/g,"-").replace(/^-|-$/g,"");
+
+async function downloadOne(){
+  if(!S.selected) return;
+  const lyr = S.layers[S.level];
+  const lv = LEVELS.find(l => l.key === S.level);
+  const a = S.selected.properties;
+  S.busy = true; $("btnOne").disabled = true;
+  progress("Mengambil geometri resolusi penuh…", 40);
+  try {
+    const res = await query(lyr.id, {
+      where: lv.codeF + "='" + a[lv.codeF] + "'",
+      outFields:"*", returnGeometry:"true", returnZ:"false",
+      outSR:"4326", geometryPrecision: PRECISION
+    });
+    const feats = esriToFeatures(res);
+    saveGeoJSON(feats, slug(a[lv.nameF] || a.namobj) + "-" + lv.key);
+    progress("Selesai — " + feats.length + " objek tersimpan.", 100);
+  } catch(err){
+    progress("Gagal: " + err.message, 0, "err");
+  } finally {
+    S.busy = false; $("btnOne").disabled = false;
+  }
+}
+
+async function updateManyButton(){
+  const lyr = S.layers[S.level];
+  const lv = LEVELS.find(l => l.key === S.level);
+  const btn = $("btnMany"), sub = $("btnManySub");
+  if(!lyr){ btn.disabled = true; sub.textContent = "pilih level dulu"; return; }
+  btn.disabled = true;
+  sub.textContent = "menghitung…";
+  try {
+    const res = await query(lyr.id, {where: whereClause(), returnCountOnly:"true"});
+    const n = res.count != null ? res.count : 0;
+    btn.dataset.count = n;
+    btn.disabled = n === 0;
+    sub.textContent = n.toLocaleString("id-ID") + " objek " + lv.label.toLowerCase() +
+      (n > BIG_WARN ? " — besar, sebaiknya saring dulu" : "");
+    sub.className = n > BIG_WARN ? "warn" : "";
+  } catch(err){
+    sub.textContent = "jumlah tidak terbaca";
+  }
+}
+
+async function downloadMany(){
+  const lyr = S.layers[S.level];
+  const lv = LEVELS.find(l => l.key === S.level);
+  const total = Number($("btnMany").dataset.count || 0);
+  if(!total) return;
+  if(total > BIG_WARN){
+    const ok = confirm(
+      total.toLocaleString("id-ID") + " objek akan diunduh lewat " + Math.ceil(total/PAGE) +
+      " permintaan. Ini berat untuk server BIG dan bisa memakan waktu lama.\n\n" +
+      "Untuk cakupan nasional, unduhan massal dari Ina-Geoportal jauh lebih tepat.\n\nTetap lanjutkan?");
+    if(!ok) return;
+  }
+
+  S.busy = true; $("btnMany").disabled = true;
+  const all = [];
+  const where = whereClause();
+  try {
+    for(let off = 0; off < total; off += PAGE){
+      progress("Mengambil " + Math.min(off+PAGE,total).toLocaleString("id-ID") + " / " +
+               total.toLocaleString("id-ID") + " objek…", (off/total)*100);
+      const res = await query(lyr.id, {
+        where, outFields:"*", returnGeometry:"true", returnZ:"false",
+        outSR:"4326", geometryPrecision: PRECISION,
+        resultOffset: off, resultRecordCount: PAGE,
+        orderByFields:"objectid"
+      });
+      const page = esriToFeatures(res);
+      if(!page.length) break;
+      all.push(...page);
+      await new Promise(r => setTimeout(r, 120));   // be a polite client
+    }
+    const name = [S.filters.kdcbps || S.filters.kdbbps || S.filters.kdpbps || "indonesia", lv.key]
+                   .filter(Boolean).join("-");
+    saveGeoJSON(all, name);
+    progress("Selesai — " + all.length.toLocaleString("id-ID") + " objek tersimpan.", 100);
+  } catch(err){
+    progress("Berhenti di " + all.length + " objek: " + err.message, null, "err");
+    if(all.length) saveGeoJSON(all, "sebagian-" + lv.key);
+  } finally {
+    S.busy = false; $("btnMany").disabled = false;
+  }
+}
+
+/* ============================================================
+   Wiring
+   ============================================================ */
+function note(html, isErr){
+  const n = $("mapNote");
+  n.innerHTML = html;
+  n.style.color = isErr ? "var(--danger)" : "";
+}
+
+async function boot(){
+  S.service = $("svcUrl").value.trim() || DEFAULT_SERVICE;
+  S.proxy = $("proxyUrl").value.trim();
+  try {
+    await discover();
+    await loadProvinsi();
+    $("selPr").disabled = false;
+    refreshRaster();
+    updateManyButton();
+  } catch(err){
+    $("discoverHint").className = "hint err";
+    $("discoverHint").textContent = "Gagal membaca layanan: " + err.message +
+      " — coba isi awalan proksi di panel Layanan & sambungan.";
+  }
+}
+
+$("svcUrl").value = DEFAULT_SERVICE;
+$("selPr").addEventListener("change", () => onFilterChange("pr"));
+$("selKk").addEventListener("change", () => onFilterChange("kk"));
+$("selKc").addEventListener("change", () => onFilterChange("kc"));
+$("btnOne").addEventListener("click", downloadOne);
+$("btnMany").addEventListener("click", downloadMany);
+$("btnReload").addEventListener("click", boot);
+
+initMap();
+boot();
+
+})();
+</script>
+</body>
+</html>

@@ -21,7 +21,7 @@ cp -f "$ROOT/index.html" "$DEPLOY_DIR/"
 
 # Determine which directories should be treated as "projects".
 # Exclude known meta / infra dirs.
-IGNORED=(".git" ".github" "deploy" "scripts" "archive")
+IGNORED=(".git" ".github" "deploy" "scripts")
 
 for dir in */; do
   # remove trailing slash
@@ -61,9 +61,11 @@ for dir in */; do
 
 done
 
-# Always include the archive folder (static copy)
-if [[ -d "$ROOT/archive" ]]; then
-  echo "[deploy] copying archive/ -> deploy/archive/"
-  rm -rf "$DEPLOY_DIR/archive"
-  cp -R "$ROOT/archive" "$DEPLOY_DIR/"
-fi
+# Copy any loose top-level files (one-off pages that are not projects)
+shopt -s nullglob
+for f in "$ROOT"/*.html; do
+  [[ "$(basename "$f")" == "index.html" ]] && continue
+  echo "[deploy] copying $(basename "$f") -> deploy/"
+  cp -f "$f" "$DEPLOY_DIR/"
+done
+shopt -u nullglob
