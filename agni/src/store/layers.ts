@@ -39,6 +39,8 @@ export interface LayersState {
    *  than a glyph-specific flag, so the next layer with two ways of showing
    *  itself needs no new state. */
   layerMode: Record<string, string>;
+  /** Numeric knobs per layer, seeded from each descriptor's `params`. */
+  layerParams: Record<string, Record<string, number>>;
   /** panels. On a phone these are mutually exclusive; see App. */
   railOpen: boolean;
   layersOpen: boolean;
@@ -57,6 +59,7 @@ export interface LayersState {
   setCamsIndex(i: number): void;
   setCamsPlaying(playing: boolean): void;
   setLayerMode(id: string, value: string): void;
+  setLayerParam(id: string, key: string, value: number): void;
   setRasterDayOffset(days: number): void;
   setRailOpen(open: boolean): void;
   setLayersOpen(open: boolean): void;
@@ -104,6 +107,12 @@ export const useLayersStore = create<LayersState>((set) => ({
   layerMode: Object.fromEntries(
     LAYERS.filter((l) => l.modes?.length).map((l) => [l.id, l.modes![0].value]),
   ),
+  layerParams: Object.fromEntries(
+    LAYERS.filter((l) => l.params?.length).map((l) => [
+      l.id,
+      Object.fromEntries(l.params!.map((p) => [p.key, p.value])),
+    ]),
+  ),
   rasterDayOffset: 0,
   railOpen: true,
   layersOpen: true,
@@ -136,6 +145,13 @@ export const useLayersStore = create<LayersState>((set) => ({
   setCamsPlaying: (playing) => set({ camsPlaying: playing }),
   setLayerMode: (id, value) =>
     set((s) => ({ layerMode: { ...s.layerMode, [id]: value } })),
+  setLayerParam: (id, key, value) =>
+    set((s) => ({
+      layerParams: {
+        ...s.layerParams,
+        [id]: { ...s.layerParams[id], [key]: value },
+      },
+    })),
   setRasterDayOffset: (days) => set({ rasterDayOffset: Math.max(0, days) }),
   setRailOpen: (open) => set({ railOpen: open }),
   setLayersOpen: (open) => set({ layersOpen: open }),

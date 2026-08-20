@@ -70,6 +70,8 @@ function pickState(s: ReturnType<typeof useLayersStore.getState>) {
     basemap: s.basemap,
     visibility: s.visibility,
     opacity: s.opacity,
+    layerMode: s.layerMode,
+    layerParams: s.layerParams,
     firesGeojson: s.firesGeojson,
     fireFilters: s.fireFilters,
   };

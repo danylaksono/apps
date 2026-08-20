@@ -2,7 +2,10 @@
  *  the Zustand store keys state by descriptor id, and MapView syncs
  *  sources/layers imperatively. Adding a layer = appending a descriptor. */
 
-import type { Map as MaplibreMap } from "maplibre-gl";
+import type {
+  ExpressionSpecification,
+  Map as MaplibreMap,
+} from "maplibre-gl";
 import type { FeatureCollection } from "geojson";
 import { rasterDayOffset } from "../lib/rasterDate";
 import {
@@ -59,6 +62,24 @@ export interface LayerDescriptor {
   remove(map: MaplibreMap): void;
   /** override for multi-layer descriptors; default uses layerType mapping */
   setOpacity?(map: MaplibreMap, slider: number): void;
+  /** called whenever the selected `modes` value changes, for layers that
+   *  switch appearance rather than data */
+  applyMode?(map: MaplibreMap, mode: string): void;
+  /** Numeric knobs shown as sliders under the layer. For anything where the
+   *  right value is a judgement call rather than a constant. */
+  params?: LayerParam[];
+  applyParams?(map: MaplibreMap, values: Record<string, number>): void;
+}
+
+export interface LayerParam {
+  key: string;
+  label: string;
+  min: number;
+  max: number;
+  step: number;
+  /** default */
+  value: number;
+  unit?: string;
 }
 
 /** Bottom-to-top draw order. Context polygons sit under the fire points they
@@ -117,6 +138,75 @@ export function burntAreaDate(daysBack: number): string {
   return d.toISOString().slice(0, 10);
 }
 
+/** Confidence colour, shared by the dot and by the glow beneath it. */
+const FIRE_COLOR = [
+  "match",
+  ["get", "confidence"],
+  "h",
+  "#f04438",
+  "n",
+  "#ff9e2c",
+  "l",
+  "#ffc24b",
+  "#ff9e2c",
+] as unknown as ExpressionSpecification;
+
+/** Detection radius from FRP, scaled. The glow passes reuse it so a fiercer
+ *  fire glows wider rather than every detection blooming the same amount —
+ *  which is what separates this from a decorative wash. */
+function fireRadius(scale: number): ExpressionSpecification {
+  return [
+    "interpolate",
+    ["linear"],
+    ["get", "frp"],
+    0,
+    2 * scale,
+    20,
+    4 * scale,
+    100,
+    7 * scale,
+    400,
+    11 * scale,
+  ] as unknown as ExpressionSpecification;
+}
+
+/** Heatmap kernel radius as a ground distance rather than a pixel count.
+ *
+ *  The old radius was 2 px at z3 and 10 px at z7 — narrower than the gaps
+ *  between detections, so at national zoom the "density surface" was just the
+ *  dots again with soft edges. A kernel measured in kilometres stays the same
+ *  real-world size as you zoom, which is what makes it read as a field.
+ *
+ *  Web Mercator metres-per-pixel halves with every zoom step, so pixels double:
+ *  an exponential-base-2 interpolation between the two ends is exact (at the
+ *  equator, and Indonesia straddles it). Clamped at the top because MapLibre
+ *  pays for a heatmap kernel in fill rate and a 1,000 px radius will not draw
+ *  at a usable frame rate. */
+function heatmapRadiusKm(km: number): ExpressionSpecification {
+  const MAX_PX = 90;
+  const pxAtZoom = (z: number) => (km * 1000 * 2 ** z) / 156543.03;
+  // Zoom at which the kernel would exceed MAX_PX. The cap has to be expressed
+  // as a stop rather than wrapped in ["min", …]: MapLibre only accepts ["zoom"]
+  // as the input to a *top-level* interpolate, so anything enclosing it is
+  // rejected outright at addLayer.
+  const capZoom = Math.min(22, Math.log2((MAX_PX * 156543.03) / (km * 1000)));
+  const stops: number[] = [0, pxAtZoom(0)];
+  if (capZoom > 0 && capZoom < 22) stops.push(capZoom, MAX_PX, 22, MAX_PX);
+  else stops.push(22, Math.min(MAX_PX, pxAtZoom(22)));
+  return [
+    "interpolate",
+    ["exponential", 2],
+    ["zoom"],
+    ...stops,
+  ] as unknown as ExpressionSpecification;
+}
+
+/** The two blurred passes under the core, outermost first. */
+const FIRE_GLOW = [
+  { id: "fires-glow-outer", scale: 4.5, opacity: 0.22 },
+  { id: "fires-glow-inner", scale: 2.2, opacity: 0.34 },
+];
+
 export const LAYERS: LayerDescriptor[] = [
   // -------------------------------------------------------------- fire ---
   {
@@ -128,50 +218,86 @@ export const LAYERS: LayerDescriptor[] = [
     layerType: "circle",
     defaultVisible: true,
     defaultOpacity: 0.9,
+    modes: [
+      { value: "dots", label: "Dots" },
+      { value: "firefly", label: "Firefly" },
+    ],
     legend: [
       { color: "#ffc24b", label: "low confidence" },
       { color: "#ff9e2c", label: "nominal" },
       { color: "#f04438", label: "high confidence" },
     ],
+    // bottom-first, so the two glow passes stay under the core
+    mapLayerIds: ["fires-glow-outer", "fires-glow-inner", "fires"],
     add(map) {
       addSourceSafe(map, "fires", { type: "geojson", data: EMPTY_FC });
+      // Two blurred passes beneath a hard core — the firefly stack. They are
+      // always present and switched by `visibility`, because adding and
+      // removing three layers on every mode change would re-trigger the whole
+      // filter and ordering pass for a purely visual switch.
+      for (const g of FIRE_GLOW) {
+        if (map.getLayer(g.id)) continue;
+        map.addLayer({
+          id: g.id,
+          type: "circle",
+          source: "fires",
+          layout: { visibility: "none" },
+          paint: {
+            "circle-color": FIRE_COLOR,
+            "circle-radius": fireRadius(g.scale),
+            "circle-blur": 3,
+            "circle-opacity": g.opacity,
+          },
+        });
+      }
       if (!map.getLayer("fires")) {
         map.addLayer({
           id: "fires",
           type: "circle",
           source: "fires",
           paint: {
-            "circle-color": [
-              "match",
-              ["get", "confidence"],
-              "h",
-              "#f04438",
-              "n",
-              "#ff9e2c",
-              "l",
-              "#ffc24b",
-              "#ff9e2c",
-            ],
-            "circle-radius": [
-              "interpolate",
-              ["linear"],
-              ["get", "frp"],
-              0,
-              2,
-              20,
-              4,
-              100,
-              7,
-              400,
-              11,
-            ],
+            "circle-color": FIRE_COLOR,
+            "circle-radius": fireRadius(1),
             "circle-stroke-color": "rgba(255,255,255,0.35)",
             "circle-stroke-width": 0.8,
           },
         });
       }
     },
+    applyMode(map, mode) {
+      const firefly = mode === "firefly";
+      for (const g of FIRE_GLOW) {
+        if (map.getLayer(g.id)) {
+          map.setLayoutProperty(
+            g.id,
+            "visibility",
+            firefly ? "visible" : "none",
+          );
+        }
+      }
+      if (!map.getLayer("fires")) return;
+      // In firefly the core is the white-hot centre of the glow; the halo
+      // beneath it carries the confidence colour, so the encoding survives.
+      map.setPaintProperty(
+        "fires",
+        "circle-color",
+        firefly ? "#ffffff" : FIRE_COLOR,
+      );
+      map.setPaintProperty("fires", "circle-radius", fireRadius(firefly ? 0.45 : 1));
+      map.setPaintProperty("fires", "circle-stroke-width", firefly ? 0 : 0.8);
+    },
+    setOpacity(map, slider) {
+      if (map.getLayer("fires")) {
+        map.setPaintProperty("fires", "circle-opacity", slider);
+      }
+      for (const g of FIRE_GLOW) {
+        if (map.getLayer(g.id)) {
+          map.setPaintProperty(g.id, "circle-opacity", g.opacity * slider);
+        }
+      }
+    },
     remove(map) {
+      for (const g of FIRE_GLOW) removeLayerSafe(map, g.id);
       removeLayerSafe(map, "fires");
       removeSourceIfUnused(map, "fires");
     },
@@ -181,14 +307,46 @@ export const LAYERS: LayerDescriptor[] = [
     group: "fire",
     label: "Fire heatmap",
     description:
-      "FRP-weighted density surface derived from FIRMS detection points.",
+      "FRP-weighted density surface derived from FIRMS detection points. The kernel is a ground distance, so it stays the same size on the ground as you zoom — widen it to read regional pressure, narrow it to pick out individual clusters.",
     layerType: "heatmap",
     defaultVisible: false,
     defaultOpacity: 0.85,
+    params: [
+      {
+        key: "radiusKm",
+        label: "Kernel",
+        min: 2,
+        max: 60,
+        step: 1,
+        value: 18,
+        unit: "km",
+      },
+      {
+        key: "intensity",
+        label: "Intensity",
+        min: 0.2,
+        max: 4,
+        step: 0.1,
+        value: 1.2,
+      },
+    ],
     gradientLegend: {
       css: "linear-gradient(90deg, rgba(255,194,75,0.3), #ff9e2c, #f04438)",
       min: "low",
       max: "high",
+    },
+    applyParams(map, values) {
+      if (!map.getLayer("fires-heat")) return;
+      map.setPaintProperty(
+        "fires-heat",
+        "heatmap-radius",
+        heatmapRadiusKm(values.radiusKm ?? 18),
+      );
+      map.setPaintProperty(
+        "fires-heat",
+        "heatmap-intensity",
+        values.intensity ?? 1.2,
+      );
     },
     add(map) {
       addSourceSafe(map, "fires", { type: "geojson", data: EMPTY_FC });
@@ -207,26 +365,8 @@ export const LAYERS: LayerDescriptor[] = [
               100,
               1,
             ],
-            "heatmap-intensity": [
-              "interpolate",
-              ["linear"],
-              ["zoom"],
-              3,
-              0.6,
-              9,
-              2.2,
-            ],
-            "heatmap-radius": [
-              "interpolate",
-              ["linear"],
-              ["zoom"],
-              3,
-              2,
-              7,
-              10,
-              10,
-              22,
-            ],
+            "heatmap-intensity": 1.2,
+            "heatmap-radius": heatmapRadiusKm(18),
             "heatmap-color": [
               "interpolate",
               ["linear"],
