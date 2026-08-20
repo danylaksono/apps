@@ -22,7 +22,7 @@ jobs:
             cekplot/package-lock.json
             dataqa/package-lock.json
             h3_visualiser/package-lock.json
-            hazer/package-lock.json
+            agni/package-lock.json
             joyplot/package-lock.json
 
       - name: Prepare deploy directory

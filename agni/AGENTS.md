@@ -1,10 +1,10 @@
-# AGENTS.md — Hazer
+# AGENTS.md — Agni
 
 Project context and knowledge base for AI agents working on this repository.
 
 ## Project Overview
 
-**Hazer** is a map-focused analysis web app (MapLibre GL) to visualize and overlay the immediate impact of forest/peatland fires in Indonesia, with a focus on **Kalimantan**. It layers active fire points, haze/aerosol data, Kontur population hexagons (choropleth), administrative boundaries, and peatland (KHG) boundaries. The interface is a dark, "situational room" style map with toggleable layers, multiple basemaps, and KPI cards (to be added).
+**Agni** is a map-focused analysis web app (MapLibre GL) to visualize and overlay the immediate impact of forest/peatland fires in Indonesia, with a focus on **Kalimantan**. It layers active fire points, haze/aerosol data, Kontur population hexagons (choropleth), administrative boundaries, and peatland (KHG) boundaries. The interface is a dark, "situational room" style map with toggleable layers, multiple basemaps, and KPI cards (to be added).
 
 ## Tech Stack (decided)
 
@@ -35,16 +35,16 @@ Project context and knowledge base for AI agents working on this repository.
 
 ### ✅ WORKING / VALIDATED
 
-| Source               | Endpoint / Path                                                                                              | Notes                                                                                                                                                                                                                                                                        |
-| -------------------- | ------------------------------------------------------------------------------------------------------------ | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| **Local boundaries** | `D:\personal\github\reach-ops\local-data\geo\*.geojson`                                                      | `provinsi`, `kab_kota`, `kecamatan`, `kel_desa`. EPSG:4326. Columns: `code`, `name`, `name_norm`, `provinsi_code/name/norm`, `kab_kota_code/name/norm`, `kecamatan_code/name/norm` (nested hierarchy).                                                                       |
-| **Local population** | `D:\personal\github\reach-ops\local-data\kontur_population_ID.gpkg`                                          | Layer `population`. Columns: `h3`, `population`, `geometry` (H3 hexagons, **EPSG:3857** — must reproject to 4326).                                                                                                                                                           |
-| **NASA FIRMS**       | `https://firms.modaps.eosdis.nasa.gov/api/area/csv/{KEY}/{SOURCE}/{bbox}/{days}`                             | **Key confirmed working.** Source IDs use **underscores**: `VIIRS_NOAA21_NRT`, `VIIRS_SNPP_NRT`, `VIIRS_NOAA20_NRT`, `MODIS_NRT`. CSV columns: `latitude,longitude,bright_ti4,scan,track,acq_date,acq_time,satellite,instrument,confidence,version,bright_ti5,frp,daynight`. |
-| **Copernicus CAMS**  | `https://apps.atmosphere.copernicus.eu/fire-emissions-watch/`                                                | Page loads (SPA). Underlying data via CDS API (key provided).                                                                                                                                                                                                                |
-| **BIG SatuPeta**     | `https://kspservices.big.go.id/satupeta/rest/services/PUBLIK/SUMBER_DAYA_ALAM_DAN_LINGKUNGAN/MapServer`      | **Keyless, CORS echoes Origin, verified Aug 2026.** The one `.go.id` host that works. 60+ official layers; dynamic MapServer (no tile cache) so query `f=geojson` with `maxAllowableOffset`. Used: 6 lahan gambut, 37 KHG, 47 rawan karhutla, 48 fungsi ekosistem gambut. **Peat coverage differs 5x between layers — see METHODOLOGY §4.3 before computing anything.** |
-| **CAMS / ECMWF WMS** | `https://eccharts.ecmwf.int/wms/?token=public`                                                              | **Keyless.** Powers the Fire Emissions Watch animation. `composition_bbaod550` (smoke), `composition_pm2p5`. 3-hourly time dimension, ~5 d analysis + ~4 d forecast. Renders on demand → use one `image` source, not tiles.                                                   |
-| **Global Forest Watch** | `https://data-api.globalforestwatch.org` + `https://tiles.globalforestwatch.org`                          | **Keyless, CORS `*`, verified Aug 2026.** The working substitute for every dead `.go.id` geoportal. Carries peat, oil palm / pulpwood / logging / mining concessions, PIPPIB moratorium, kawasan hutan, WDPA. Versions + zoom limits must be read from the API, not guessed — see METHODOLOGY §4.1. |
-| **source.coop**      | `https://data.source.coop/{account}/?list-type=2&prefix={repo}/`                                            | S3-style listing works and objects honour Range + CORS `*`. The `/api/v1/...` REST paths return the site's HTML shell — don't bother. Protomaps OSM basemap lives at `protomaps/openstreetmap/v4.pmtiles`; their README asks not to hotlink, so extract a subset instead.     |
+| Source                  | Endpoint / Path                                                                                         | Notes                                                                                                                                                                                                                                                                                                                                                                   |
+| ----------------------- | ------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Local boundaries**    | `D:\personal\github\reach-ops\local-data\geo\*.geojson`                                                 | `provinsi`, `kab_kota`, `kecamatan`, `kel_desa`. EPSG:4326. Columns: `code`, `name`, `name_norm`, `provinsi_code/name/norm`, `kab_kota_code/name/norm`, `kecamatan_code/name/norm` (nested hierarchy).                                                                                                                                                                  |
+| **Local population**    | `D:\personal\github\reach-ops\local-data\kontur_population_ID.gpkg`                                     | Layer `population`. Columns: `h3`, `population`, `geometry` (H3 hexagons, **EPSG:3857** — must reproject to 4326).                                                                                                                                                                                                                                                      |
+| **NASA FIRMS**          | `https://firms.modaps.eosdis.nasa.gov/api/area/csv/{KEY}/{SOURCE}/{bbox}/{days}`                        | **Key confirmed working.** Source IDs use **underscores**: `VIIRS_NOAA21_NRT`, `VIIRS_SNPP_NRT`, `VIIRS_NOAA20_NRT`, `MODIS_NRT`. CSV columns: `latitude,longitude,bright_ti4,scan,track,acq_date,acq_time,satellite,instrument,confidence,version,bright_ti5,frp,daynight`.                                                                                            |
+| **Copernicus CAMS**     | `https://apps.atmosphere.copernicus.eu/fire-emissions-watch/`                                           | Page loads (SPA). Underlying data via CDS API (key provided).                                                                                                                                                                                                                                                                                                           |
+| **BIG SatuPeta**        | `https://kspservices.big.go.id/satupeta/rest/services/PUBLIK/SUMBER_DAYA_ALAM_DAN_LINGKUNGAN/MapServer` | **Keyless, CORS echoes Origin, verified Aug 2026.** The one `.go.id` host that works. 60+ official layers; dynamic MapServer (no tile cache) so query `f=geojson` with `maxAllowableOffset`. Used: 6 lahan gambut, 37 KHG, 47 rawan karhutla, 48 fungsi ekosistem gambut. **Peat coverage differs 5x between layers — see METHODOLOGY §4.3 before computing anything.** |
+| **CAMS / ECMWF WMS**    | `https://eccharts.ecmwf.int/wms/?token=public`                                                          | **Keyless.** Powers the Fire Emissions Watch animation. `composition_bbaod550` (smoke), `composition_pm2p5`. 3-hourly time dimension, ~5 d analysis + ~4 d forecast. Renders on demand → use one `image` source, not tiles.                                                                                                                                             |
+| **Global Forest Watch** | `https://data-api.globalforestwatch.org` + `https://tiles.globalforestwatch.org`                        | **Keyless, CORS `*`, verified Aug 2026.** The working substitute for every dead `.go.id` geoportal. Carries peat, oil palm / pulpwood / logging / mining concessions, PIPPIB moratorium, kawasan hutan, WDPA. Versions + zoom limits must be read from the API, not guessed — see METHODOLOGY §4.1.                                                                     |
+| **source.coop**         | `https://data.source.coop/{account}/?list-type=2&prefix={repo}/`                                        | S3-style listing works and objects honour Range + CORS `*`. The `/api/v1/...` REST paths return the site's HTML shell — don't bother. Protomaps OSM basemap lives at `protomaps/openstreetmap/v4.pmtiles`; their README asks not to hotlink, so extract a subset instead.                                                                                               |
 
 ### ❌ FAILED / UNRELIABLE (do NOT retry without new info)
 
@@ -67,22 +67,22 @@ Project context and knowledge base for AI agents working on this repository.
 
 ## Layer Catalog (planned)
 
-| Group      | Layer                                  | Source                                                    |
-| ---------- | -------------------------------------- | --------------------------------------------------------- |
-| Basemap    | Satellite / Dark / Light               | Esri World Imagery, CARTO Dark Matter, CARTO Voyager      |
-| Fire       | Active fire points (NOAA21/SNPP/MODIS) | FIRMS `/api/area/csv` with Kalimantan bbox                |
-| Fire       | Fire heatmap + glow                    | derived from FIRMS points                                 |
-| Haze       | Aerosol Optical Depth                  | NASA GIBS (keyless WMTS) — needs endpoint re-verification |
-| Haze       | True-color smoke                       | NASA GIBS Corrected Reflectance                           |
-| Haze       | CAMS PM2.5 / fire emissions            | Copernicus CDS (key provided) — optional                  |
-| Population | Kontur H3 choropleth                   | PMTiles (from local gpkg)                                 |
-| Boundaries | Provinsi / Kabupaten / Kecamatan       | PMTiles (from local geojson)                              |
-| Peatland   | Lahan gambut (peat soil)               | BIG SatuPeta layer 6 — **on by default**, backs the KPI   |
-| Peatland   | KHG / fungsi ekosistem gambut          | BIG SatuPeta layers 37 / 48 — partial coverage, context   |
-| Fire       | Rawan karhutla (fire hazard)           | BIG SatuPeta layer 47                                     |
-| Haze       | CAMS smoke + surface PM2.5             | ECMWF public WMS, animated over 72 3-hourly steps         |
-| Concessions| Oil palm / RSPO / pulpwood / logging / mining | GFW vector tiles                                   |
-| Protection | PIPPIB moratorium / kawasan hutan / WDPA | GFW vector tiles                                        |
+| Group       | Layer                                         | Source                                                    |
+| ----------- | --------------------------------------------- | --------------------------------------------------------- |
+| Basemap     | Satellite / Dark / Light                      | Esri World Imagery, CARTO Dark Matter, CARTO Voyager      |
+| Fire        | Active fire points (NOAA21/SNPP/MODIS)        | FIRMS `/api/area/csv` with Kalimantan bbox                |
+| Fire        | Fire heatmap + glow                           | derived from FIRMS points                                 |
+| Haze        | Aerosol Optical Depth                         | NASA GIBS (keyless WMTS) — needs endpoint re-verification |
+| Haze        | True-color smoke                              | NASA GIBS Corrected Reflectance                           |
+| Haze        | CAMS PM2.5 / fire emissions                   | Copernicus CDS (key provided) — optional                  |
+| Population  | Kontur H3 choropleth                          | PMTiles (from local gpkg)                                 |
+| Boundaries  | Provinsi / Kabupaten / Kecamatan              | PMTiles (from local geojson)                              |
+| Peatland    | Lahan gambut (peat soil)                      | BIG SatuPeta layer 6 — **on by default**, backs the KPI   |
+| Peatland    | KHG / fungsi ekosistem gambut                 | BIG SatuPeta layers 37 / 48 — partial coverage, context   |
+| Fire        | Rawan karhutla (fire hazard)                  | BIG SatuPeta layer 47                                     |
+| Haze        | CAMS smoke + surface PM2.5                    | ECMWF public WMS, animated over 72 3-hourly steps         |
+| Concessions | Oil palm / RSPO / pulpwood / logging / mining | GFW vector tiles                                          |
+| Protection  | PIPPIB moratorium / kawasan hutan / WDPA      | GFW vector tiles                                          |
 
 ## Architecture Decisions
 

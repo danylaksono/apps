@@ -82,7 +82,7 @@ export default function MapView() {
 
     // dev-only handle for poking at sources/layers from the console
     if (import.meta.env.DEV) {
-      (globalThis as unknown as { hazerMap?: MaplibreMap }).hazerMap = map;
+      (globalThis as unknown as { agniMap?: MaplibreMap }).agniMap = map;
     }
 
     // The style can still be loading when a store change lands (e.g. the user
@@ -129,7 +129,7 @@ export default function MapView() {
       closeButton: true,
       closeOnClick: false,
       maxWidth: "280px",
-      className: "hazer-popup",
+      className: "agni-popup",
     });
     const onClick = (e: MapMouseEvent) => {
       const html = buildInspectHtml(map, map.queryRenderedFeatures(e.point));

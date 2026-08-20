@@ -4,10 +4,10 @@ import tailwindcss from "@tailwindcss/vite";
 
 // https://vite.dev/config/
 export default defineConfig({
-  // Served from https://danylaksono.github.io/apps/hazer/. Anything referencing
+  // Served from https://danylaksono.github.io/apps/agni/. Anything referencing
   // a static asset must go through import.meta.env.BASE_URL rather than a
   // leading "/", or it resolves against the domain root in production.
-  base: "/apps/hazer/",
+  base: "/apps/agni/",
   // Output stays the default `dist/`: scripts/prepare-deploy.sh builds each
   // project and copies its dist/ into deploy/<project>/, which CI publishes
   // to gh-pages. Nothing is committed pre-built.

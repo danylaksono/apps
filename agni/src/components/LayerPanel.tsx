@@ -80,7 +80,7 @@ function LayerRow({ d }: { d: LayerDescriptor }) {
             step={0.05}
             value={opacity}
             onChange={(e) => setOpacity(d.id, Number(e.target.value))}
-            className="hazer-slider w-full"
+            className="agni-slider w-full"
             aria-label={`${d.label} opacity`}
           />
           {d.legend && (
@@ -129,10 +129,10 @@ export default function LayerPanel() {
   }, []);
 
   return (
-    <aside className="hazer-scroll absolute left-3 top-3 max-h-[calc(100%-120px)] w-72 overflow-y-auto rounded-xl border border-ink-700/60 bg-ink-900/85 shadow-2xl backdrop-blur">
+    <aside className="agni-scroll absolute left-3 top-3 max-h-[calc(100%-120px)] w-72 overflow-y-auto rounded-xl border border-ink-700/60 bg-ink-900/85 shadow-2xl backdrop-blur">
       <div className="border-b border-ink-700/60 px-3 py-2.5">
         <h1 className="font-display text-sm font-bold tracking-wide text-ink-100">
-          HAZER
+          AGNI
         </h1>
         <p className="text-[10px] uppercase tracking-widest text-ink-400">
           Kalimantan fire & haze

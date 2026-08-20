@@ -24,7 +24,7 @@ export default function KpiBar() {
       .then((fc) => {
         if (!cancelled) setKec(fc);
       })
-      .catch((err) => console.warn("[hazer] kecamatan load failed", err));
+      .catch((err) => console.warn("[agni] kecamatan load failed", err));
     return () => {
       cancelled = true;
     };
@@ -63,7 +63,9 @@ export default function KpiBar() {
         kpi.peatFires === null
           ? "…"
           : `${value(kpi.peatFires)}${
-              kpi.fires ? ` · ${Math.round((kpi.peatFires / kpi.fires) * 100)}%` : ""
+              kpi.fires
+                ? ` · ${Math.round((kpi.peatFires / kpi.fires) * 100)}%`
+                : ""
             }`,
       hint: peatCount ? "on peat soil (BIG)" : "loading peat map…",
     },

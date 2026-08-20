@@ -43,7 +43,7 @@ export default function CamsTimeline() {
         const boundary = s.findIndex((t) => Date.parse(t) > now);
         setForecastFrom(boundary === -1 ? s.length : boundary);
       })
-      .catch((err) => console.warn("[hazer] CAMS time steps failed", err));
+      .catch((err) => console.warn("[agni] CAMS time steps failed", err));
     return () => {
       cancelled = true;
     };
@@ -114,7 +114,7 @@ export default function CamsTimeline() {
           value={index}
           disabled={!steps.length}
           onChange={(e) => setCamsIndex(Number(e.target.value))}
-          className="hazer-slider flex-1"
+          className="agni-slider flex-1"
           aria-label="CAMS forecast time"
         />
       </div>

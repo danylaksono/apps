@@ -1,4 +1,4 @@
-"""Hazer data pipeline — stage Kalimantan subsets for PMTiles tiling.
+"""Agni data pipeline — stage Kalimantan subsets for PMTiles tiling.
 
 Reads local source data (outside this repo), filters to Kalimantan,
 reprojects where needed, and writes staging files to pipeline/out/ plus

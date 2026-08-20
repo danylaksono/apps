@@ -63,7 +63,7 @@ export const BIG_LAYERS = {
 
 // Static data (pipeline output) served from public/.
 // Everything here must go through BASE_URL: the app is served from "/" in dev
-// but from "/apps/hazer/" on GitHub Pages, and hardcoding "/data/..." would
+// but from "/apps/agni/" on GitHub Pages, and hardcoding "/data/..." would
 // resolve against the domain root in production.
 const BASE = import.meta.env.BASE_URL; // always has a trailing slash
 

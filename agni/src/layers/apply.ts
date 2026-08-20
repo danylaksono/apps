@@ -49,10 +49,7 @@ let lastFires: FeatureCollection | null = null;
 /** Returns false if the style was not ready and nothing was applied — the
  *  caller must retry, or the store change is lost for good (the store only
  *  notifies on change, so there is no second chance otherwise). */
-export function applyMapState(
-  map: MaplibreMap,
-  state: MapSyncState,
-): boolean {
+export function applyMapState(map: MaplibreMap, state: MapSyncState): boolean {
   if (!map.isStyleLoaded()) return false;
 
   // basemaps: toggle visibility (all pre-registered in the base style)
@@ -75,7 +72,7 @@ export function applyMapState(
       if (visible && !present) d.add(map);
       else if (!visible && present) d.remove(map);
     } catch (err) {
-      console.warn(`[hazer] layer ${d.id} sync failed`, err);
+      console.warn(`[agni] layer ${d.id} sync failed`, err);
       continue;
     }
     if (map.getLayer(d.id)) {

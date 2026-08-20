@@ -64,7 +64,7 @@ export function useFirms(): void {
         if (!cancelled) setFires(fc, "ok");
       })
       .catch((err) => {
-        console.warn("[hazer] FIRMS fetch failed", err);
+        console.warn("[agni] FIRMS fetch failed", err);
         if (!cancelled) setFires(null, "error");
       });
     return () => {

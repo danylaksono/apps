@@ -1,10 +1,10 @@
-# Hazer
+# Agni
 
 A situational map of forest and peatland fire in **Kalimantan** — active fire
 detections, haze, peat, and the land-tenure context that explains where fires
 sit and who holds the permit.
 
-Live at **https://danylaksono.github.io/apps/hazer/**
+Live at **https://danylaksono.github.io/apps/agni/**
 
 ## Deployment
 
@@ -27,7 +27,7 @@ Two things must stay in step if you copy this setup for another app:
 
 ```sh
 npm install
-npm run dev            # serves at /apps/hazer/, not / — `base` applies in dev too
+npm run dev            # serves at /apps/agni/, not / — `base` applies in dev too
 npm run lint
 ```
 

@@ -74,7 +74,7 @@ export function ensureBigLayer(map: MaplibreMap, id: string): void {
       if (id === "peat-extent") setPeatLoaded(fc.features.length);
     })
     .catch((err) => {
-      console.warn(`[hazer] BIG layer ${id} failed`, err);
+      console.warn(`[agni] BIG layer ${id} failed`, err);
       setAvailability(id, "unavailable", "source unreachable");
       started.delete(id); // allow a retry on the next toggle
     });
