@@ -192,53 +192,142 @@ export function tally(
   };
 }
 
-/** Detection times as a small area sparkline.
+/** One mark per satellite overpass, on a real time axis.
  *
- *  The user asked when the detections in an aggregate actually happened, and a
- *  count alone cannot say whether 400 detections were one afternoon's clearing
- *  or five days of steady smouldering. Bins span the data's own range, so it
- *  reads the same whatever the filter window is set to. */
-export function sparklineSvg(
+ *  This was an area sparkline over 14 even bins, and that was misleading twice
+ *  over.
+ *
+ *  VIIRS SNPP is one satellite in a 13:30 sun-synchronous orbit, so it sees a
+ *  given place about **twice a day** — measured over Indonesia, roughly 03–07
+ *  and 15–19 UTC, with 8–9 hour voids between. A typical aggregate is built
+ *  from 6–10 observations across five days, not a continuous record. Filling
+ *  an area across those voids says "we looked and saw nothing" when the truth
+ *  is "nobody looked". Discrete observations get discrete marks.
+ *
+ *  The old bins also spanned the data's own min→max, which pins the first and
+ *  last bin non-empty *by construction* and manufactures a flat middle out of
+ *  any sparse interior. The domain here is whole days instead, so a gap is a
+ *  gap and the ends are honest.
+ *
+ *  Day and night passes are split because they answer different questions: a
+ *  night detection is a fire still burning after the day's work stopped. */
+export function overpassChartSvg(
   times: number[],
-  color: string,
+  night: boolean[],
   width = 220,
-  height = 34,
+  height = 40,
 ): string {
-  if (times.length < 2) return "";
-  const lo = Math.min(...times);
-  const hi = Math.max(...times);
-  if (!(hi > lo)) return "";
-  const BINS = 14;
-  const bins = new Array(BINS).fill(0);
-  for (const t of times) {
-    const i = Math.min(BINS - 1, Math.floor(((t - lo) / (hi - lo)) * BINS));
-    bins[i] += 1;
+  if (!times.length) return "";
+
+  // Overpasses, not clock hours: consecutive detections more than 90 minutes
+  // apart belong to different passes. Well inside the 8-hour void, and well
+  // outside the couple of minutes a single swath takes to cross a cluster.
+  const GAP_MS = 90 * 60 * 1000;
+  const order = times.map((_, i) => i).sort((a, b) => times[a] - times[b]);
+  const passes: { t: number; n: number; total: number }[] = [];
+  for (const i of order) {
+    const last = passes[passes.length - 1];
+    if (last && times[i] - last.t < GAP_MS) {
+      last.total += 1;
+      if (night[i]) last.n += 1;
+    } else {
+      passes.push({ t: times[i], n: night[i] ? 1 : 0, total: 1 });
+    }
   }
-  const max = Math.max(...bins);
-  const padY = 3;
-  const x = (i: number) => (i / (BINS - 1)) * width;
-  const y = (v: number) => height - padY - (v / max) * (height - padY * 2);
-  const pts = bins.map((v, i) => `${x(i).toFixed(1)},${y(v).toFixed(1)}`);
-  const area = `M0,${height} L${pts.join(" L")} L${width},${height} Z`;
+
+  // Snap the domain to whole days in the app's reference clock (WIB), so the
+  // axis is calendar days rather than wherever the data happens to begin.
+  const DAY = 86_400_000;
+  const WIB = 7 * 3_600_000;
+  const dayFloor = (t: number) => Math.floor((t + WIB) / DAY) * DAY - WIB;
+  const lo = dayFloor(Math.min(...times));
+  const hi = dayFloor(Math.max(...times)) + DAY;
+  const span = hi - lo;
+  if (!(span > 0)) return "";
+
+  const padY = 4;
+  const axisY = height - 4;
+  const max = Math.max(...passes.map((p) => p.total));
+  const x = (t: number) => ((t - lo) / span) * width;
+  const bar = (v: number) => Math.max(1.5, (v / max) * (axisY - padY));
+
+  // Day separators, so the twice-daily rhythm is countable.
+  let rules = "";
+  for (let d = lo + DAY; d < hi - 1; d += DAY) {
+    const dx = x(d).toFixed(1);
+    rules += `<line x1="${dx}" y1="0" x2="${dx}" y2="${axisY}" stroke="var(--color-ink-700)" stroke-width="1"/>`;
+  }
+
+  const W = 5;
+  const marks = passes
+    .map((p) => {
+      const bh = bar(p.total);
+      const cx = Math.min(width - W / 2, Math.max(W / 2, x(p.t)));
+      const left = (cx - W / 2).toFixed(1);
+      // The night share stacks on top in the glyph's night blue, with a 1px
+      // gap so the two segments read as separate marks.
+      const nh = p.total ? (p.n / p.total) * bh : 0;
+      const dh = bh - nh;
+      return (
+        `<rect x="${left}" y="${(axisY - dh).toFixed(1)}" width="${W}" height="${dh.toFixed(1)}" fill="${FRP_COLORS[3]}" rx="1"/>` +
+        (nh > 1.5
+          ? `<rect x="${left}" y="${(axisY - bh).toFixed(1)}" width="${W}" height="${(nh - 1).toFixed(1)}" fill="${NIGHT_ARC}" rx="1"/>`
+          : "")
+      );
+    })
+    .join("");
+
   return (
-    `<svg width="100%" viewBox="0 0 ${width} ${height}" preserveAspectRatio="none" style="display:block">` +
-    `<path d="${area}" fill="${color}" opacity="0.18"/>` +
-    `<path d="M${pts.join(" L")}" fill="none" stroke="${color}" stroke-width="1.5" ` +
-    `stroke-linejoin="round" stroke-linecap="round"/></svg>`
+    `<svg width="100%" viewBox="0 0 ${width} ${height}" style="display:block">` +
+    rules +
+    `<line x1="0" y1="${axisY}" x2="${width}" y2="${axisY}" stroke="var(--color-ink-700)" stroke-width="1"/>` +
+    marks +
+    `</svg>`
   );
 }
 
-const HOUR = new Intl.DateTimeFormat("en-GB", {
+/** Detections per pass, in time order. Same 90-minute rule the chart uses. */
+function passSizes(times: number[]): number[] {
+  if (!times.length) return [];
+  const GAP_MS = 90 * 60 * 1000;
+  const sorted = [...times].sort((a, b) => a - b);
+  const sizes = [1];
+  for (let i = 1; i < sorted.length; i++) {
+    if (sorted[i] - sorted[i - 1] >= GAP_MS) sizes.push(1);
+    else sizes[sizes.length - 1] += 1;
+  }
+  return sizes;
+}
+
+/** How many passes the chart drew — the caption that stops a gap being read as
+ *  "the fire stopped". */
+export function overpassCount(times: number[]): number {
+  return passSizes(times).length;
+}
+
+/** The tallest bar's value. The chart is a sparkline with no y-axis, so
+ *  without this the heights are shape only and carry no magnitude. */
+export function peakPerOverpass(times: number[]): number {
+  const sizes = passSizes(times);
+  return sizes.length ? Math.max(...sizes) : 0;
+}
+
+const DAY_LABEL = new Intl.DateTimeFormat("en-GB", {
   day: "2-digit",
   month: "short",
-  hour: "2-digit",
   timeZone: "Asia/Jakarta",
 });
 
-/** Endpoint labels for the sparkline, in the app's reference clock. */
-export function sparklineRange(times: number[]): [string, string] | null {
-  if (times.length < 2) return null;
-  const lo = Math.min(...times);
-  const hi = Math.max(...times);
-  return [HOUR.format(new Date(lo)), HOUR.format(new Date(hi))];
+/** Axis end labels, in the app's reference clock. These name the **days the
+ *  axis spans**, not the first and last detection — the chart's domain is
+ *  whole days, and labelling it with the data's extent is what made the old
+ *  sparkline look like it always started and ended on a peak. */
+export function overpassRange(times: number[]): [string, string] | null {
+  if (!times.length) return null;
+  const DAY = 86_400_000;
+  const WIB = 7 * 3_600_000;
+  const floor = (t: number) => Math.floor((t + WIB) / DAY) * DAY - WIB;
+  const lo = floor(Math.min(...times));
+  const hi = floor(Math.max(...times));
+  return [DAY_LABEL.format(new Date(lo)), DAY_LABEL.format(new Date(hi))];
 }

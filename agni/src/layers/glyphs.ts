@@ -24,8 +24,10 @@ import {
   FRP_LABELS,
   drawFireGlyph,
   frpClass,
-  sparklineRange,
-  sparklineSvg,
+  overpassChartSvg,
+  overpassCount,
+  peakPerOverpass,
+  overpassRange,
   tally,
   type GlyphData,
 } from "../lib/fireGlyph";
@@ -95,16 +97,27 @@ function detailHtml(
   features: Feature[],
   extra?: string,
 ): string {
-  const times = features
-    .map((f) => Number(f.properties?.ts) || 0)
-    .filter(Boolean);
-  const spark = sparklineSvg(times, FRP_COLORS[3]);
-  const range = sparklineRange(times);
-  const timing = spark
-    ? `<div class="hz-row"><p class="hz-label">Detections over time</p>${spark}` +
+  const times: number[] = [];
+  const night: boolean[] = [];
+  for (const f of features) {
+    const t = Number(f.properties?.ts) || 0;
+    if (!t) continue;
+    times.push(t);
+    night.push(String(f.properties?.daynight) === "N");
+  }
+  const chart = overpassChartSvg(times, night);
+  const range = overpassRange(times);
+  const passes = overpassCount(times);
+  const peak = peakPerOverpass(times);
+  // The caption is not decoration. VIIRS sees a given place about twice a day,
+  // so the gaps in this chart are gaps in *observation*, and a reader who is
+  // not told that will read a flat stretch as "the fire stopped".
+  const timing = chart
+    ? `<div class="hz-row"><p class="hz-label">Detections by overpass</p>${chart}` +
       (range
         ? `<div style="display:flex;justify-content:space-between"><span class="hz-sub">${range[0]}</span><span class="hz-sub">${range[1]}</span></div>`
         : "") +
+      `<p class="hz-sub" style="margin-top:3px">${passes} overpass${passes === 1 ? "" : "es"} · peak ${peak.toLocaleString()} · a gap is no satellite pass, not no fire</p>` +
       `</div>`
     : "";
   return (
@@ -216,7 +229,7 @@ function updateClusterGlyphs(map: MaplibreMap, visible: boolean): void {
         // Pull the cluster's actual member detections rather than reporting
         // only what clusterProperties happened to accumulate. That is what
         // lets a cluster popup carry the same figures — and the same
-        // sparkline — as a province one.
+        // overpass chart — as a province one.
         const src = map.getSource(GLYPH_SOURCE) as GeoJSONSource;
         showPopup(map, coords, headHtml("Cluster", data.total) + LOADING);
         void src

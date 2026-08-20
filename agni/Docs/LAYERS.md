@@ -82,6 +82,17 @@ Two sources ship data in pixels rather than colour, and MapLibre 6 has no `raste
 | `tree-cover-loss` | B = year − 2000, R = intensity, A = loss mask | `lib/gfwRaster.ts` |
 | `burnt-area` | pre-styled, but "no burn" is an **opaque** `#fcfdbf` over all land | `lib/clms.ts` |
 
+## Observation cadence
+
+VIIRS SNPP is **one** satellite in a 13:30 sun-synchronous orbit, so it sees a given place about **twice a day**. Measured over Indonesia, detections land in two windows — roughly 03–07 and 15–19 UTC — with **8–9 hour voids** between them. Over the full five-day load a cluster is built from 6–10 observations; at the default 24 h filter it is built from **two**.
+
+This is the single most important thing to know when reading anything time-shaped in this app, and it is why the glyph popup draws **one mark per overpass** (`overpassChartSvg` in `lib/fireGlyph.ts`) rather than a continuous line or area. A filled area across those voids asserts "we looked and saw nothing"; the truth is that nobody looked. Marks alternate day/night colour because a pass is almost always entirely one or the other, which makes the twice-daily rhythm countable.
+
+Two traps this replaced, worth not walking back into:
+
+- **Binning to the data's own min→max** pins the first and last bin non-empty *by construction*. With two overpasses in the default window that yields a spike, a long flat middle, and another spike — every single time, regardless of the fire. The domain is now whole days in WIB.
+- **More history is not available.** The FIRMS area API hard-caps `day_range` at 5 (`Invalid day range. Expects [1..5]`). Adding VIIRS NOAA-20/21 would triple the detection count but not fill the voids — they share the same 13:30 orbital plane and land in the same two windows. Only MODIS (Terra 10:30/22:30, Aqua 13:30/01:30) samples different hours, at 1 km instead of 375 m.
+
 ## Search
 
 The panel's search box is both a layer filter and a place search (`src/lib/geocode.ts`). It answers from two sources, in this order:
