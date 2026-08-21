@@ -42,6 +42,7 @@ Project context and knowledge base for AI agents working on this repository.
 | **NASA FIRMS**          | `https://firms.modaps.eosdis.nasa.gov/api/area/csv/{KEY}/{SOURCE}/{bbox}/{days}`                        | **Key confirmed working.** Source IDs use **underscores**: `VIIRS_NOAA21_NRT`, `VIIRS_SNPP_NRT`, `VIIRS_NOAA20_NRT`, `MODIS_NRT`. CSV columns: `latitude,longitude,bright_ti4,scan,track,acq_date,acq_time,satellite,instrument,confidence,version,bright_ti5,frp,daynight`.                                                                                            |
 | **Copernicus CAMS**     | `https://apps.atmosphere.copernicus.eu/fire-emissions-watch/`                                           | Page loads (SPA). Underlying data via CDS API (key provided).                                                                                                                                                                                                                                                                                                           |
 | **BIG SatuPeta**        | `https://kspservices.big.go.id/satupeta/rest/services/PUBLIK/SUMBER_DAYA_ALAM_DAN_LINGKUNGAN/MapServer` | **Keyless, CORS echoes Origin, verified Aug 2026.** The one `.go.id` host that works. 60+ official layers; dynamic MapServer (no tile cache) so query `f=geojson` with `maxAllowableOffset`. Used: 6 lahan gambut, 37 KHG, 47 rawan karhutla, 48 fungsi ekosistem gambut. **Peat coverage differs 5x between layers — see METHODOLOGY §4.3 before computing anything.** |
+| **BIG SatuPeta (KLHK)** | `https://kspservices.big.go.id/satupeta/rest/services/PUBLIK/KEHUTANAN/MapServer`                       | **Keyless, same host and grammar as above, verified Aug 2026.** KLHK's forestry maps, republished by BIG — the closest thing to a working ministry endpoint. Used: 0 penetapan kawasan hutan (4,487 features, 97.5 M ha, **national**), 7 pelepasan, 13 hutan desa, 2 HTR. Dead or too heavy: 3 (empty), 5 and 12 (HTTP 400), 6 and 14 (too large), 11 (25 MB). `fungsitap` is an undecoded KUGI code — the mapping lives in `src/lib/forest.ts`, see METHODOLOGY §4.4.                                    |
 | **CAMS / ECMWF WMS**    | `https://eccharts.ecmwf.int/wms/?token=public`                                                          | **Keyless.** Powers the Fire Emissions Watch animation. `composition_bbaod550` (smoke), `composition_pm2p5`. 3-hourly time dimension, ~5 d analysis + ~4 d forecast. Renders on demand → use one `image` source, not tiles.                                                                                                                                             |
 | **Global Forest Watch** | `https://data-api.globalforestwatch.org` + `https://tiles.globalforestwatch.org`                        | **Keyless, CORS `*`, verified Aug 2026.** The working substitute for every dead `.go.id` geoportal. Carries peat, oil palm / pulpwood / logging / mining concessions, PIPPIB moratorium, kawasan hutan, WDPA. Versions + zoom limits must be read from the API, not guessed — see METHODOLOGY §4.1.                                                                     |
 | **source.coop**         | `https://data.source.coop/{account}/?list-type=2&prefix={repo}/`                                        | S3-style listing works and objects honour Range + CORS `*`. The `/api/v1/...` REST paths return the site's HTML shell — don't bother. Protomaps OSM basemap lives at `protomaps/openstreetmap/v4.pmtiles`; their README asks not to hotlink, so extract a subset instead.                                                                                               |
@@ -55,7 +56,7 @@ Project context and knowledge base for AI agents working on this repository.
 | **BIG**                | `https://tanahair.indonesia.go.id/arcgis/rest/services`                     | 404                                                    |
 | **BNPB InaRISK**       | `https://inarisk.bnpb.go.id/arcgis/rest/services`                           | 404                                                    |
 | **BNPB**               | `https://gis.bnpb.go.id/arcgis/rest/services`                               | 500                                                    |
-| **Kemenhut**           | `https://geoportal.menlhk.go.id/arcgis/rest/services`                       | DNS fail (getaddrinfo)                                 |
+| **Kemenhut**           | `https://geoportal.menlhk.go.id/arcgis/rest/services`                       | DNS fail — use BIG's `PUBLIK/KEHUTANAN` folder instead |
 | **Kemenhut**           | `https://sipongi.menlhk.go.id`                                              | DNS fail (getaddrinfo)                                 |
 | **BRGM**               | `https://webgis.brgm.go.id/arcgis/rest/services`                            | DNS fail                                               |
 | **BRGM**               | `https://brgm.go.id/arcgis/rest/services`                                   | 404                                                    |
@@ -82,7 +83,9 @@ Project context and knowledge base for AI agents working on this repository.
 | Fire        | Rawan karhutla (fire hazard)                  | BIG SatuPeta layer 47                                     |
 | Haze        | CAMS smoke + surface PM2.5                    | ECMWF public WMS, animated over 72 3-hourly steps         |
 | Concessions | Oil palm / RSPO / pulpwood / logging / mining | GFW vector tiles                                          |
-| Protection  | PIPPIB moratorium / kawasan hutan / WDPA      | GFW vector tiles                                          |
+| Protection  | PIPPIB moratorium / WDPA                      | GFW vector tiles                                          |
+| Forest      | Kawasan hutan (penetapan)                     | BIG KEHUTANAN layer 0 — national polygons, backs the charts |
+| Forest      | Pelepasan / hutan desa / HTR                  | BIG KEHUTANAN layers 7 / 13 / 2                           |
 
 ## Architecture Decisions
 
@@ -113,6 +116,13 @@ Everything below is built and verified running in a browser (18 overlay layers,
 - ✅ **CAMS haze animation** — biomass-burning AOD + surface PM2.5, 72 three-hourly steps with forecast, play/scrub timeline
 - ✅ OSM added as a plain raster basemap (the source.coop vector basemap was dropped — nothing here needed vector)
 - ⬜ "Population exposed" KPI — needs the Kontur hexes as data, not vector tiles; belongs in the pipeline
+- ✅ **KLHK forestry layers (BIG `PUBLIK/KEHUTANAN`)** — gazetted kawasan hutan
+  classed by `fungsitap`, pelepasan kawasan hutan, hutan desa, HTR
+- ✅ **"Fires by forest status" chart + "inside the forest estate" tile** — the
+  first *national* land-status statistic in the app, because layer 0 is polygons
+  rather than tiles. Clicking a class scopes map, KPIs and every other chart
+- ✅ **Parallel BIG paging** (four pages at a time) — the forest estate went from
+  >2 min to ~14 s, and fire hazard's 20 pages benefit the same way
 - ⬜ Fires ∩ concessions KPI — blocked: GFW concessions arrive as vector tiles, so a count would only reflect the viewport
 
 ## Bugs fixed while resuming (don't reintroduce)
@@ -148,8 +158,15 @@ Everything below is built and verified running in a browser (18 overlay layers,
 2. Fires ∩ concessions — needs the GFW concession polygons as data. Either bake
    a Kalimantan subset into the pipeline, or accept a viewport-scoped number
    and label it as such.
-3. More BIG layers worth a look: 0 penutup lahan, 7 DAS, 17 curah hujan,
-   49 lahan kritis, 58 rawan banjir.
+3. More BIG layers worth a look in `SUMBER_DAYA_ALAM_DAN_LINGKUNGAN`:
+   0 penutup lahan, 7 DAS, 17 curah hujan, 49 lahan kritis, 58 rawan banjir.
+4. The KLHK folder is largely exhausted — layers 3/5/6/11/12/14 are empty,
+   broken or too large (see METHODOLOGY §4.4). If BIG ever fixes 6 (NSDH
+   penutup lahan), "fires by land cover" is the obvious next chart.
+5. `Pelepasan kawasan hutan` and `hutan desa` are loaded but not analysed:
+   both are small enough to tag detections against the way the forest estate is,
+   which would give "fires on released forest" and "fires in social forestry"
+   for the cost of two more grid joins.
 
 ## On DuckDB (asked, answered)
 

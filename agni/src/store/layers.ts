@@ -23,6 +23,9 @@ export interface LayersState {
   firesStatus: FiresStatus;
   /** set when the peat-extent polygons load, so the KPI recomputes */
   peatFeatureCount: number;
+  /** set when the KLHK forest-estate polygons load, so the fires can be tagged
+   *  with their forest status and the forest chart can appear */
+  forestFeatureCount: number;
   /** CAMS 3-hourly time steps (ISO), and the index currently displayed */
   camsSteps: string[];
   camsIndex: number;
@@ -53,6 +56,7 @@ export interface LayersState {
   setAvailability(id: string, status: Availability, reason?: string): void;
   setFires(fc: FeatureCollection | null, status: FiresStatus): void;
   setPeatLoaded(count: number): void;
+  setForestLoaded(count: number): void;
   setCamsSteps(steps: string[]): void;
   setCamsIndex(i: number): void;
   setCamsPlaying(playing: boolean): void;
@@ -97,6 +101,7 @@ export const useLayersStore = create<LayersState>((set) => ({
   firesGeojson: null,
   firesStatus: "idle",
   peatFeatureCount: 0,
+  forestFeatureCount: 0,
   camsSteps: [],
   camsIndex: 0,
   camsPlaying: false,
@@ -121,6 +126,7 @@ export const useLayersStore = create<LayersState>((set) => ({
     })),
   setFires: (fc, status) => set({ firesGeojson: fc, firesStatus: status }),
   setPeatLoaded: (count) => set({ peatFeatureCount: count }),
+  setForestLoaded: (count) => set({ forestFeatureCount: count }),
   setCamsSteps: (steps) =>
     set((s) => {
       const now = Date.now();

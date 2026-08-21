@@ -45,4 +45,11 @@ export interface BarRow {
   /** disambiguates same-named kabupaten in different provinces */
   province?: string;
   sub?: string;
+  /** stable id, when the row name is not one — e.g. "" for "outside the
+   *  forest estate", which is a real category and not a missing value */
+  key?: string;
+  /** Overrides the chart colour for this bar. Only for rows whose category
+   *  already owns a colour on the map, so the bar and the polygon it counts
+   *  read as the same thing. Not a value ramp — see BarChart. */
+  color?: string;
 }

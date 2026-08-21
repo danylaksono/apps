@@ -103,6 +103,23 @@ export const GIBS_LAYERS = {
 export const BIG_MAPSERVER =
   "https://kspservices.big.go.id/satupeta/rest/services/PUBLIK/SUMBER_DAYA_ALAM_DAN_LINGKUNGAN/MapServer";
 
+/** The forestry folder of the same service, carrying KLHK's own datasets.
+ *
+ *  This is the closest thing to a working KLHK/Kemenhut endpoint: every
+ *  `menlhk.go.id` host in AGENTS.md fails to resolve, but BIG republishes the
+ *  ministry's maps here under the same keyless, CORS-open service that already
+ *  serves the peat layers. Service metadata says "KEHUTANAN 08-08-2024".
+ *
+ *  Not everything in the folder is usable — measured Aug 2026:
+ *    - 5 (NSDH fungsi kawasan) and 12 (HKm) return HTTP 400 on any query
+ *    - 3 (hutan adat) is published but empty
+ *    - 6 (NSDH penutup lahan) and 14 (rawan erosi, 306,265 features) are too
+ *      large to page from a browser; 14 takes 50 s just to count
+ *    - 11 (PPTPKH) is only 2,725 features but 9 MB per 1,000 — 25 MB in all
+ *  The four layers below are the ones that both work and fit. */
+export const BIG_KEHUTANAN_MAPSERVER =
+  "https://kspservices.big.go.id/satupeta/rest/services/PUBLIK/KEHUTANAN/MapServer";
+
 /** Layer ids within BIG_MAPSERVER, with the fields worth keeping.
  *
  *  Coverage is the thing to watch here. BIG's peat layers stop at Kalimantan:
@@ -133,6 +150,54 @@ export const BIG_LAYERS = {
     layerId: 47,
     outFields: ["kelas", "provinsi", "namobj"],
     maxFeatures: 25000,
+  },
+} as const;
+
+/** Layer ids within BIG_KEHUTANAN_MAPSERVER — KLHK's forestry maps.
+ *
+ *  Unlike the peat layers these are national: `forestEstate` covers 34
+ *  provinces and 97.5 M ha, which is the right order for Indonesia's gazetted
+ *  forest estate (the designated estate is ~125 M ha; the difference is land
+ *  designated but not yet gazetted). That makes it the first context layer here
+ *  that can carry a national statistic rather than a Kalimantan-only one.
+ *
+ *  Measured Aug 2026, over the national envelope at maxAllowableOffset 0.002:
+ *    - `forestEstate` (0):   4,487 features, 12.9 MB, ~31 s over five pages
+ *    - `forestRelease` (7):  2,396 features, ~1.2 MB
+ *    - `villageForest` (13): 1,351 features, ~0.8 MB
+ *    - `communityForest` (2):  471 features, ~0.3 MB
+ *  The service does not gzip, so those are wire bytes. Only `forestEstate` is
+ *  slow enough to notice, and it is the one the charts need — see lib/forest.ts. */
+export const KLHK_LAYERS = {
+  /** Penetapan Kawasan Hutan — the gazetted forest estate, classed by
+   *  `fungsitap` (a KUGI code, decoded in lib/forest.ts). */
+  forestEstate: {
+    service: BIG_KEHUTANAN_MAPSERVER,
+    layerId: 0,
+    outFields: ["fungsitap", "nkws", "nosktap"],
+    maxFeatures: 6000,
+  },
+  /** Peta Pelepasan Kawasan Hutan — forest estate legally released, in
+   *  practice mostly to oil palm. Published with no attributes but kode_prov. */
+  forestRelease: {
+    service: BIG_KEHUTANAN_MAPSERVER,
+    layerId: 7,
+    outFields: ["kode_prov"],
+    maxFeatures: 4000,
+  },
+  /** Persetujuan Pengelolaan Hutan Desa — social forestry held by a village. */
+  villageForest: {
+    service: BIG_KEHUTANAN_MAPSERVER,
+    layerId: 13,
+    outFields: ["nama_ld", "nama_prov", "nama_kab", "luas_pphd", "skema"],
+    maxFeatures: 3000,
+  },
+  /** Hutan Tanaman Rakyat — smallholder timber plantation permits. */
+  communityForest: {
+    service: BIG_KEHUTANAN_MAPSERVER,
+    layerId: 2,
+    outFields: ["nama_kelompok", "nama_kec", "nama_desa"],
+    maxFeatures: 2000,
   },
 } as const;
 

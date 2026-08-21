@@ -103,6 +103,10 @@ export interface FireFilters {
   area: { level: "provinsi" | "kabkota"; name: string } | null;
   /** clicking a column in the trend pins that UTC day, replacing `hours` */
   day: string | null;
+  /** clicking a forest-status bar scopes to that class. "" is a real value —
+   *  outside the gazetted estate — so null, not "", means "no scope".
+   *  Only settable once the fires carry a `kawasan` tag; see lib/forest.ts. */
+  forest: string | null;
   /** FIRMS confidence classes to keep: l | n | h */
   confidence: string[];
   /** D, N, or both */
@@ -115,7 +119,8 @@ export const DEFAULT_FILTERS: FireFilters = {
   hours: 24,
   area: null,
   day: null,
-  confidence: ["l", "n", "h"],
+  forest: null,
+  confidence: ["n", "h"],
   daynight: ["D", "N"],
   minFrp: 0,
 };
@@ -150,6 +155,11 @@ export function fireFilterExpression(
   if (f.day) expr.push(["==", ["get", "acq_date"], f.day]);
   else expr.push([">=", ["get", "ts"], latest - f.hours * 3600_000]);
   if (f.area) expr.push(["==", ["get", f.area.level], f.area.name]);
+  // `["get"]` on an untagged feature yields null, not "", so an unmatched
+  // detection is excluded rather than counted as outside the estate.
+  if (f.forest !== null) {
+    expr.push(["==", ["coalesce", ["get", "kawasan"], "?"], f.forest]);
+  }
   return expr;
 }
 
@@ -171,7 +181,8 @@ export function applyFireFilters(
         (Number(p.frp) || 0) >= f.minFrp &&
         f.confidence.includes(String(p.confidence)) &&
         f.daynight.includes(String(p.daynight)) &&
-        (!f.area || String(p[f.area.level] ?? "") === f.area.name)
+        (!f.area || String(p[f.area.level] ?? "") === f.area.name) &&
+        (f.forest === null || String(p.kawasan ?? "?") === f.forest)
       );
     }),
   };

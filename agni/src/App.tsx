@@ -8,6 +8,7 @@ import CamsTimeline from "./components/CamsTimeline";
 import RasterTimeline from "./components/RasterTimeline";
 import DashboardRail from "./components/DashboardRail";
 import { useFirms } from "./lib/firms";
+import { useForestTagging } from "./lib/forestTag";
 import { useIsCompact } from "./lib/useMedia";
 import { useLayersStore } from "./store/layers";
 
@@ -76,6 +77,7 @@ function MobileBar() {
 
 export default function App() {
   useFirms();
+  useForestTagging();
   const compact = useIsCompact();
   const setLayersOpen = useLayersStore((s) => s.setLayersOpen);
   const setRailOpen = useLayersStore((s) => s.setRailOpen);

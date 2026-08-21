@@ -53,6 +53,8 @@ Patterns worth copying when a source is less cooperative:
 | The server dates its imagery and `default` 404s | `lib/gibs.ts` — probe backwards over the area of interest            |
 | Render-on-demand WMS, too slow to animate       | `lib/cams.ts` — prefetch frames, gate playback on readiness          |
 | Rows too numerous to tile                       | `lib/population.ts` — Parquet + DuckDB-WASM, aggregated per viewport |
+| A category code the service will not decode     | `lib/forest.ts` — derive the mapping, then check it against published totals |
+| A chart that must scope the map without lying   | `lib/forestTag.ts` — tag once, count tags, exclude the facet from itself |
 | A canvas glyph the style spec cannot draw       | `layers/glyphs.ts` — DOM markers keyed to source features            |
 
 ### Adapting it for another dashboard
@@ -97,4 +99,6 @@ Two things must stay in step if you copy this setup:
   how it is processed, and the caveats that matter.
 
 **Caveats worth knowing up front**: The Peat data is available for Kalimantan only at the moment (at least what I can find so far), so the peat KPI is scoped and labelled as such; FIRMS' near-real-time endpoint caps at five days; and population exposure is meaningless without its radius and
-window, which is why the tile prints both.
+window, which is why the tile prints both. The forest-status breakdown comes
+from KLHK's *penetapan* (gazettement) map, so land that is designated forest but
+not yet gazetted counts as "outside" — read that share as an upper bound.

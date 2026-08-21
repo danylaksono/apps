@@ -7,6 +7,7 @@
 import type { MapGeoJSONFeature, Map as MaplibreMap } from "maplibre-gl";
 import { LAYERS } from "../layers/registry";
 import { GFW_POPUP_FIELDS } from "../layers/gfw";
+import { forestClassMeta, forestClassOf } from "./forest";
 
 const NUM = new Intl.NumberFormat("en-US");
 
@@ -123,15 +124,40 @@ export function buildInspectHtml(
       continue;
     }
 
+    // The gazetted estate carries its class as a bare KUGI code and "-" in
+    // namobj, so the generic name lookup below would render it as "yes".
+    if (layerId === "forest-estate") {
+      const meta = forestClassMeta(forestClassOf(f.properties?.fungsitap));
+      const sk = firstProp(f, ["nosktap"]);
+      parts.push(
+        row(
+          "Kawasan hutan",
+          meta?.label ?? "kawasan hutan",
+          [firstProp(f, ["nkws"]), sk].filter(Boolean).join(" · "),
+        ),
+      );
+      continue;
+    }
+
     const fields = GFW_POPUP_FIELDS[layerId];
     const name = firstProp(f, [
       fields?.name,
       "conc_name",
       "name",
       "company",
+      // KLHK social forestry: the permit holder is the village institution or
+      // the farmer group, not a `name` column.
+      "nama_ld",
+      "nama_kelompok",
       "namobj",
     ]);
-    const sub = firstProp(f, [fields?.sub, "company", "comp_group"]);
+    const sub = firstProp(f, [
+      fields?.sub,
+      "company",
+      "comp_group",
+      "nama_kab",
+      "nama_desa",
+    ]);
     const areaRaw = Number(f.properties?.[fields?.area ?? "gfw_area__ha"]);
     const area = Number.isFinite(areaRaw)
       ? `${NUM.format(Math.round(areaRaw))} ha`

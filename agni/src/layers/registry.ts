@@ -15,6 +15,7 @@ import {
   GFW_TREE_COVER_LOSS_VERSION,
   GIBS_LAYERS,
 } from "../lib/config";
+import { FOREST_CLASSES, forestFillColor } from "../lib/forest";
 import { gfwLossTileUrl } from "../lib/gfwRaster";
 import { gibsDateAt, gibsTiles } from "../lib/gibs";
 import { clmsBurntAreaTiles } from "../lib/clms";
@@ -34,6 +35,7 @@ export type LayerGroup =
   | "population"
   | "boundaries"
   | "peatland"
+  | "forest"
   | "concessions"
   | "protection";
 
@@ -79,6 +81,7 @@ export interface LayerDescriptor {
  *  explain; fires always stay readable on top. */
 export const GROUP_RANK: Record<LayerGroup, number> = {
   peatland: 10,
+  forest: 15,
   concessions: 20,
   protection: 30,
   population: 40,
@@ -628,7 +631,7 @@ export const LAYERS: LayerDescriptor[] = [
     label: "Kabupaten/Kota",
     description: "Regency/city boundaries (514 nationally).",
     layerType: "line",
-    defaultVisible: true,
+    defaultVisible: false,
     defaultOpacity: 0.65,
     add(map) {
       addSourceSafe(map, "boundaries", {
@@ -850,6 +853,240 @@ export const LAYERS: LayerDescriptor[] = [
     },
   },
 
+  // ------------------------------------------------------------ forest ---
+  {
+    id: "forest-estate",
+    group: "forest",
+    mapLayerIds: ["forest-estate", "forest-estate-line"],
+    label: "Kawasan hutan (penetapan, KLHK)",
+    description:
+      "The gazetted forest estate as KLHK publishes it through BIG: 4,487 polygons, 97.5 M ha, classed lindung / konservasi / produksi / konversi. This is the layer that decides whether a fire is KLHK's problem or the regency's, and it is data rather than tiles, so the forest-status chart counts against it nationally. Penetapan is the final gazettement step, so land designated but not yet gazetted reads here as outside the estate. 12.9 MB on first switch-on.",
+    layerType: "fill",
+    defaultVisible: false,
+    defaultOpacity: 0.9,
+    legend: FOREST_CLASSES.map((c) => ({ color: c.color, label: c.short })),
+    add(map) {
+      addSourceSafe(map, "forest-estate", { type: "geojson", data: EMPTY_FC });
+      if (!map.getLayer("forest-estate")) {
+        map.addLayer({
+          id: "forest-estate",
+          type: "fill",
+          source: "forest-estate",
+          paint: {
+            "fill-color": forestFillColor() as unknown as ExpressionSpecification,
+            "fill-opacity": 0.18,
+          },
+        });
+      }
+      if (!map.getLayer("forest-estate-line")) {
+        map.addLayer({
+          id: "forest-estate-line",
+          type: "line",
+          source: "forest-estate",
+          minzoom: 7,
+          paint: {
+            "line-color": forestFillColor() as unknown as ExpressionSpecification,
+            "line-width": 0.5,
+          },
+        });
+      }
+    },
+    remove(map) {
+      removeLayerSafe(map, "forest-estate-line");
+      removeLayerSafe(map, "forest-estate");
+      removeSourceIfUnused(map, "forest-estate");
+    },
+    setOpacity(map, slider) {
+      if (map.getLayer("forest-estate")) {
+        map.setPaintProperty("forest-estate", "fill-opacity", 0.18 * slider);
+      }
+      if (map.getLayer("forest-estate-line")) {
+        map.setPaintProperty(
+          "forest-estate-line",
+          "line-opacity",
+          Math.min(1, 0.7 * slider),
+        );
+      }
+    },
+  },
+  {
+    id: "forest-release",
+    group: "forest",
+    mapLayerIds: ["forest-release", "forest-release-line"],
+    label: "Pelepasan kawasan hutan",
+    description:
+      "Forest estate legally released out of KLHK's hands, in practice mostly for oil palm and transmigration. Fires here are on land cleared with a permit — the converse of the concession layers, which sit inside the estate. 2,396 polygons; BIG publishes no attributes beyond the province.",
+    layerType: "fill",
+    defaultVisible: false,
+    defaultOpacity: 0.9,
+    legend: [{ color: "#fb923c", label: "released" }],
+    add(map) {
+      addSourceSafe(map, "forest-release", { type: "geojson", data: EMPTY_FC });
+      if (!map.getLayer("forest-release")) {
+        map.addLayer({
+          id: "forest-release",
+          type: "fill",
+          source: "forest-release",
+          paint: { "fill-color": "#fb923c", "fill-opacity": 0.22 },
+        });
+      }
+      if (!map.getLayer("forest-release-line")) {
+        map.addLayer({
+          id: "forest-release-line",
+          type: "line",
+          source: "forest-release",
+          paint: { "line-color": "#fdba74", "line-width": 0.6 },
+        });
+      }
+    },
+    remove(map) {
+      removeLayerSafe(map, "forest-release-line");
+      removeLayerSafe(map, "forest-release");
+      removeSourceIfUnused(map, "forest-release");
+    },
+    setOpacity(map, slider) {
+      if (map.getLayer("forest-release")) {
+        map.setPaintProperty("forest-release", "fill-opacity", 0.22 * slider);
+      }
+      if (map.getLayer("forest-release-line")) {
+        map.setPaintProperty(
+          "forest-release-line",
+          "line-opacity",
+          Math.min(1, 0.7 * slider),
+        );
+      }
+    },
+  },
+  {
+    id: "forest-village",
+    group: "forest",
+    mapLayerIds: ["forest-village", "forest-village-line"],
+    label: "Hutan desa (PPHD)",
+    description:
+      "Social forestry granted to village institutions — 1,351 approvals. Community-managed forest burns for different reasons than concession land, and the permit holder is named, so a detection inside one has an address.",
+    layerType: "fill",
+    defaultVisible: false,
+    defaultOpacity: 0.9,
+    legend: [{ color: "#22d3ee", label: "hutan desa" }],
+    add(map) {
+      addSourceSafe(map, "forest-village", { type: "geojson", data: EMPTY_FC });
+      if (!map.getLayer("forest-village")) {
+        map.addLayer({
+          id: "forest-village",
+          type: "fill",
+          source: "forest-village",
+          paint: { "fill-color": "#22d3ee", "fill-opacity": 0.22 },
+        });
+      }
+      if (!map.getLayer("forest-village-line")) {
+        map.addLayer({
+          id: "forest-village-line",
+          type: "line",
+          source: "forest-village",
+          paint: { "line-color": "#67e8f9", "line-width": 0.7 },
+        });
+      }
+    },
+    remove(map) {
+      removeLayerSafe(map, "forest-village-line");
+      removeLayerSafe(map, "forest-village");
+      removeSourceIfUnused(map, "forest-village");
+    },
+    setOpacity(map, slider) {
+      if (map.getLayer("forest-village")) {
+        map.setPaintProperty("forest-village", "fill-opacity", 0.22 * slider);
+      }
+      if (map.getLayer("forest-village-line")) {
+        map.setPaintProperty(
+          "forest-village-line",
+          "line-opacity",
+          Math.min(1, 0.8 * slider),
+        );
+      }
+    },
+  },
+  {
+    id: "forest-htr",
+    group: "forest",
+    mapLayerIds: ["forest-htr", "forest-htr-line"],
+    label: "Hutan tanaman rakyat (HTR)",
+    description:
+      "Smallholder timber plantation permits inside production forest — 471 areas. The small-scale counterpart to the pulpwood concessions, and often the tenure behind a cluster of small fires.",
+    layerType: "fill",
+    defaultVisible: false,
+    defaultOpacity: 0.9,
+    legend: [{ color: "#c084fc", label: "HTR" }],
+    add(map) {
+      addSourceSafe(map, "forest-htr", { type: "geojson", data: EMPTY_FC });
+      if (!map.getLayer("forest-htr")) {
+        map.addLayer({
+          id: "forest-htr",
+          type: "fill",
+          source: "forest-htr",
+          paint: { "fill-color": "#c084fc", "fill-opacity": 0.22 },
+        });
+      }
+      if (!map.getLayer("forest-htr-line")) {
+        map.addLayer({
+          id: "forest-htr-line",
+          type: "line",
+          source: "forest-htr",
+          paint: { "line-color": "#d8b4fe", "line-width": 0.7 },
+        });
+      }
+    },
+    remove(map) {
+      removeLayerSafe(map, "forest-htr-line");
+      removeLayerSafe(map, "forest-htr");
+      removeSourceIfUnused(map, "forest-htr");
+    },
+    setOpacity(map, slider) {
+      if (map.getLayer("forest-htr")) {
+        map.setPaintProperty("forest-htr", "fill-opacity", 0.22 * slider);
+      }
+      if (map.getLayer("forest-htr-line")) {
+        map.setPaintProperty(
+          "forest-htr-line",
+          "line-opacity",
+          Math.min(1, 0.8 * slider),
+        );
+      }
+    },
+  },
+
+  gfwPolygonLayer({
+    id: "prot-forest-area",
+    group: "forest",
+    label: "Kawasan hutan (GFW tiles)",
+    description:
+      "The same forest estate classes as vector tiles, drawn instantly and at any zoom. GFW's copy is a 2017 vintage and arrives tiled, so it cannot be counted against — use it to read the map, and the KLHK penetapan layer above for the numbers.",
+    entry: GFW_DATASETS.forestArea,
+    color: "#34d399",
+    fillAlpha: 0.14,
+    fillColor: [
+      "match",
+      ["get", "class"],
+      "Protected Forest",
+      "#2dd4bf",
+      "Limited Production Forest",
+      "#84cc16",
+      "Permanent Production Forest",
+      "#a3e635",
+      "Convertible Production Forest",
+      "#facc15",
+      "Nature Reserve and Nature Conservation Area",
+      "#34d399",
+      "#64748b",
+    ],
+    legend: [
+      { color: "#2dd4bf", label: "lindung" },
+      { color: "#34d399", label: "konservasi" },
+      { color: "#a3e635", label: "produksi" },
+      { color: "#facc15", label: "konversi" },
+    ],
+    nameField: "namobj",
+    subField: "desc_en",
+  }),
   // ------------------------------------------------------- concessions ---
   gfwPolygonLayer({
     id: "conc-oil-palm",
@@ -916,39 +1153,6 @@ export const LAYERS: LayerDescriptor[] = [
     entry: GFW_DATASETS.moratorium,
     color: "#22d3ee",
     nameField: "pippib_en",
-  }),
-  gfwPolygonLayer({
-    id: "prot-forest-area",
-    group: "protection",
-    label: "Kawasan hutan",
-    description:
-      "Official forest estate classes (produksi, lindung, konservasi), giving the legal land status underlying each fire.",
-    entry: GFW_DATASETS.forestArea,
-    color: "#34d399",
-    fillAlpha: 0.14,
-    fillColor: [
-      "match",
-      ["get", "class"],
-      "Protected Forest",
-      "#2dd4bf",
-      "Limited Production Forest",
-      "#84cc16",
-      "Permanent Production Forest",
-      "#a3e635",
-      "Convertible Production Forest",
-      "#facc15",
-      "Nature Reserve and Nature Conservation Area",
-      "#34d399",
-      "#64748b",
-    ],
-    legend: [
-      { color: "#2dd4bf", label: "lindung" },
-      { color: "#34d399", label: "konservasi" },
-      { color: "#a3e635", label: "produksi" },
-      { color: "#facc15", label: "konversi" },
-    ],
-    nameField: "namobj",
-    subField: "desc_en",
   }),
   gfwPolygonLayer({
     id: "prot-wdpa",

@@ -442,8 +442,10 @@ export function LineChart({
 
 // ------------------------------------------------------------- bar chart ---
 
-/** Ranked horizontal bars. One colour for every bar: the categories are
- *  nominal, so shading by value would double-encode length as hue. */
+/** Ranked horizontal bars. One colour for every bar by default: the categories
+ *  are nominal, so shading by value would double-encode length as hue. A row
+ *  may override it (`BarRow.color`) when its category is already coloured on
+ *  the map — there the hue carries the category, not the number. */
 export function BarChart({
   title,
   subtitle,
@@ -473,7 +475,7 @@ export function BarChart({
             <tbody>
               {rows.map((r) => (
                 <tr
-                  key={`${r.province ?? ""}-${r.name}`}
+                  key={r.key ?? `${r.province ?? ""}-${r.name}`}
                   className="border-b border-ink-700/40"
                 >
                   <td className="py-0.5 pr-2 text-ink-300">{r.name}</td>
@@ -489,19 +491,21 @@ export function BarChart({
     >
       <ul className="space-y-1">
         {rows.map((r) => (
-          <li key={`${r.province ?? ""}-${r.name}`}>
+          <li key={r.key ?? `${r.province ?? ""}-${r.name}`}>
             <button
               type="button"
               disabled={!onSelect}
               onClick={() => onSelect?.(r)}
               title={r.sub ? `${r.name} · ${r.sub}` : r.name}
               className={`group flex w-full items-center gap-2 rounded px-1 py-[3px] text-left enabled:hover:bg-ink-700/40 ${
-                r.name === activeName ? "bg-fire-400/15" : ""
+                (r.key ?? r.name) === activeName ? "bg-fire-400/15" : ""
               }`}
             >
               <span
                 className={`w-[92px] shrink-0 truncate text-[10px] group-enabled:group-hover:text-ink-100 ${
-                  r.name === activeName ? "text-fire-300" : "text-ink-300"
+                  (r.key ?? r.name) === activeName
+                    ? "text-fire-300"
+                    : "text-ink-300"
                 }`}
               >
                 {r.name}
@@ -511,7 +515,7 @@ export function BarChart({
                   className="absolute inset-y-0 left-0 rounded-r-[4px]"
                   style={{
                     width: `${Math.max(2, (r.value / max) * 100)}%`,
-                    background: color,
+                    background: r.color ?? color,
                   }}
                 />
               </span>

@@ -6,7 +6,13 @@
  *  pixels it is already drawing. */
 
 import { useEffect, useMemo, useState } from "react";
-import { CaretRight, ChartLine, Crosshair, Funnel } from "@phosphor-icons/react";
+import {
+  CaretRight,
+  ChartLine,
+  Crosshair,
+  Funnel,
+  TreeEvergreen,
+} from "@phosphor-icons/react";
 import type { FeatureCollection, MultiPolygon, Polygon } from "geojson";
 import { CAMS_LAYERS } from "../lib/config";
 import { boundsOf, loadKabKota } from "../lib/geo";
@@ -16,6 +22,7 @@ import {
   latestTimestamp,
   rollupByArea,
 } from "../lib/analytics";
+import { firesAreTagged, forestClassMeta, rollupByForest } from "../lib/forest";
 import { probeCamsSeries, type ProbePoint as Series } from "../lib/camsProbe";
 import { camsTimeSteps } from "../lib/cams";
 import { exposedPopulation } from "../lib/population";
@@ -70,6 +77,32 @@ export default function DashboardRail() {
   );
 
   const areas = useMemo(() => (scoped ? rollupByArea(scoped) : null), [scoped]);
+
+  // --- forest status --------------------------------------------------------
+  // Only meaningful once the KLHK estate has been fetched and the detections
+  // carry a `kawasan` tag; until then there is nothing honest to draw, so the
+  // section offers to load it instead of showing an empty chart.
+  const forestReady = useLayersStore((st) => st.forestFeatureCount) > 0;
+  const forestOn = useLayersStore((st) => Boolean(st.visibility["forest-estate"]));
+  const forestStatus = useLayersStore((st) => st.availability["forest-estate"]);
+  const toggleLayer = useLayersStore((st) => st.toggleLayer);
+  // Tagging is checked on the store's set, not on `scoped`: applyFireFilters
+  // hands back a fresh array of the same feature objects, and the guard is
+  // keyed on the array.
+  const tagged = firesAreTagged(fires) && forestReady;
+  // Scoped by everything *except* the forest filter, the way the trend chart
+  // ignores the time window: a facet that filtered itself would collapse to the
+  // one bar you just clicked, leaving no way to move to another class and no
+  // denominator for the percentage above it.
+  const forest = useMemo(
+    () =>
+      fires && tagged
+        ? rollupByForest(
+            applyFireFilters(fires, { ...filters, forest: null }, latest),
+          )
+        : null,
+    [fires, tagged, filters, latest],
+  );
 
   // --- exposure -----------------------------------------------------------
   // Results carry the scope they were computed for, so a stale answer is
@@ -225,10 +258,10 @@ export default function DashboardRail() {
         </button>
       </header>
 
-      {(filters.area || filters.day) && (
+      {(filters.area || filters.day || filters.forest !== null) && (
         <button
           type="button"
-          onClick={() => setFilters({ area: null, day: null })}
+          onClick={() => setFilters({ area: null, day: null, forest: null })}
           className="flex w-full items-center gap-1.5 rounded-lg bg-fire-400/15 px-2.5 py-1.5 text-left text-[10px] text-fire-300 hover:bg-fire-400/25"
         >
           <Funnel size={12} weight="fill" className="shrink-0" />
@@ -238,6 +271,10 @@ export default function DashboardRail() {
               filters.day
                 ? dayLabel.format(new Date(`${filters.day}T00:00:00Z`))
                 : null,
+              filters.forest === null
+                ? null
+                : (forestClassMeta(filters.forest)?.label ??
+                  "Di luar kawasan hutan"),
             ]
               .filter(Boolean)
               .join(" · ")}
@@ -324,6 +361,61 @@ export default function DashboardRail() {
           onSelect={(row) => selectArea("kabkota", row.name)}
           activeName={filters.area?.level === "kabkota" ? filters.area.name : undefined}
         />
+      )}
+
+      {forest && forest.rows.length > 0 ? (
+        <>
+          <StatTile
+            label="Inside the forest estate"
+            value={`${Math.round(
+              (forest.inside / Math.max(1, forest.inside + forest.outside)) * 100,
+            )} %`}
+            definition={`${forest.inside.toLocaleString()} of ${(
+              forest.inside + forest.outside
+            ).toLocaleString()} detections fall inside gazetted kawasan hutan (KLHK penetapan). Land designated but not yet gazetted counts as outside.`}
+            tone={SERIES.fire}
+          />
+          <BarChart
+            title="Fires by forest status"
+            subtitle={`${scopeLabel} · click a class to scope`}
+            rows={forest.rows.map((r) => ({
+              key: r.key,
+              name: r.label,
+              value: r.detections,
+              sub: `${r.frpMw.toLocaleString()} MW`,
+              color: r.color,
+            }))}
+            color={SERIES.fire}
+            unit="detections"
+            onSelect={(row) =>
+              setFilters({
+                forest:
+                  filters.forest === (row.key ?? null) ? null : (row.key ?? null),
+              })
+            }
+            activeName={filters.forest ?? undefined}
+          />
+        </>
+      ) : (
+        <div className="rounded-lg bg-ink-850/70 p-2.5">
+          <p className="flex items-start gap-1.5 text-[10px] leading-snug text-ink-400">
+            <TreeEvergreen size={13} className="mt-px shrink-0 text-fire-400" />
+            Break the fires down by forest status — lindung, konservasi,
+            produksi, or outside kawasan hutan altogether.
+          </p>
+          <button
+            type="button"
+            disabled={forestOn}
+            onClick={() => toggleLayer("forest-estate")}
+            className="mt-2 w-full rounded-md bg-fire-400/15 px-2 py-1.5 text-[10px] font-semibold text-fire-300 hover:bg-fire-400/25 disabled:cursor-progress disabled:text-ink-400"
+          >
+            {forestStatus === "unavailable"
+              ? "KLHK service unreachable"
+              : forestOn
+                ? "Loading KLHK forest estate…"
+                : "Load KLHK forest estate (12.9 MB)"}
+          </button>
+        </div>
       )}
 
       {probe ? (

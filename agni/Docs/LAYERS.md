@@ -34,18 +34,22 @@ Scope is **national** (Indonesia). FIRMS is requested over the national bbox and
 | `peat-extent` | Peatland | Lahan gambut (peat soil) | BIG SatuPeta layer 6 — **Kalimantan only** | fill + line | **on** |
 | `peat-khg` | Peatland | KHG | BIG SatuPeta layer 37 — partial coverage | fill + line | off |
 | `peat-function` | Peatland | Fungsi ekosistem gambut | BIG SatuPeta layer 48 — partial coverage | fill + line | off |
+| `forest-estate` | Forest estate (KLHK) | Kawasan hutan (penetapan, KLHK) | BIG SatuPeta **KEHUTANAN** layer 0 — 4,487 polygons, 97.5 M ha | fill (by class) + line | off |
+| `forest-release` | Forest estate (KLHK) | Pelepasan kawasan hutan | BIG SatuPeta KEHUTANAN layer 7 — 2,396 polygons | fill + line | off |
+| `forest-village` | Forest estate (KLHK) | Hutan desa (PPHD) | BIG SatuPeta KEHUTANAN layer 13 — 1,351 approvals | fill + line | off |
+| `forest-htr` | Forest estate (KLHK) | Hutan tanaman rakyat (HTR) | BIG SatuPeta KEHUTANAN layer 2 — 471 areas | fill + line | off |
+| `prot-forest-area` | Forest estate (KLHK) | Kawasan hutan (GFW tiles) | GFW `idn_forest_area` (2017 vintage) | fill (by class) + line | off |
 | `conc-oil-palm` | Concessions | Oil palm concessions | GFW `gfw_oil_palm` | fill + line | off |
 | `conc-rspo` | Concessions | RSPO oil palm mills | GFW `rspo_oil_palm` | fill + line | off |
 | `conc-wood-fiber` | Concessions | Pulpwood (HTI) | GFW `gfw_wood_fiber` | fill + line | off |
 | `conc-logging` | Concessions | Logging (HPH) | GFW `gfw_logging` | fill + line | off |
 | `conc-mining` | Concessions | Mining concessions | GFW `gfw_mining_concessions` | fill + line | off |
 | `prot-moratorium` | Protection | Moratorium (PIPPIB) | GFW `idn_forest_moratorium` | fill + line | off |
-| `prot-forest-area` | Protection | Kawasan hutan | GFW `idn_forest_area` | fill (by class) + line | off |
 | `prot-wdpa` | Protection | Protected areas (WDPA) | GFW `wdpa_protected_areas` | fill + line | off |
 
 ## The filter row
 
-`FireFilters` writes one `FireFilters` object to the store — time window (or a pinned day), confidence classes, day/night, minimum FRP, and an optional area scope set by clicking a chart bar. It scopes **the map layers, the KPI cards and every chart at once**, so the three cannot disagree.
+`FireFilters` writes one `FireFilters` object to the store — time window (or a pinned day), confidence classes, day/night, minimum FRP, an optional area scope set by clicking a chart bar, and an optional **forest-status** scope set the same way. It scopes **the map layers, the KPI cards and every chart at once**, so the three cannot disagree.
 
 The map applies it as a MapLibre `filter` expression (`fireFilterExpression`) rather than re-slicing the source: the whole five-day set stays loaded and a filter change is a repaint, not a refetch. `applyFireFilters` is the same predicate in JS, used where an expression cannot reach.
 
@@ -57,6 +61,7 @@ The map applies it as a MapLibre `filter` expression (`fireFilterExpression`) ra
 - **Fire glyphs:** canvas donuts as DOM markers. Ring splits by **FRP class** (YlOrRd, semantic heat, with a scale legend); inner arc is the night-overpass share in a blue deliberately outside the FRP ramp; radius and centre number are the count. Two modes — `cluster` and `province` — one at a time, drawn by the same function so they read against each other. The layer's slider is **size**, not opacity (`sliderLabel`): these are DOM markers, so paint properties never reach them, and a size that reads at street zoom is a speck across the archipelago.
 - **Population:** single-hue teal ramp, dark→light, coloured by **density (people/km²)** not headcount — an aggregated res-5 cell holds ~343× the people of a res-8 one, so a ramp on the raw sum would change meaning at every zoom.
 - **Peat:** violet `#8b5cf6` fill + lighter outline; KHG `#3ddc97`; fungsi ekosistem blue.
+- **Forest estate:** one colour per legal class, greenest for strictest — konservasi `#34d399`, lindung `#2dd4bf`, HPT `#84cc16`, HP `#a3e635`, HPK `#facc15`. The table lives in `src/lib/forest.ts` and feeds the map paint expression, the panel legend *and* the forest-status chart, so the three cannot drift. Pelepasan is orange `#fb923c` because it is the one class in this group that means land has left the estate.
 - **CAMS haze:** sequential, alpha-ramped WMS styles — smoke `sh_Oranges_aod` spun to magenta, PM2.5 `sh_OrangesTransparent240` spun to violet, both via `raster-hue-rotate`. The defaults are rainbows and were replaced; see METHODOLOGY.md.
 - **Tree cover loss:** lime ordinal ramp, brightest for recent years.
 - **Context polygons:** faint fill + brighter outline, cool hues so nothing competes with the fire palette.
@@ -65,7 +70,7 @@ Chart colours live in `src/lib/chartTokens.ts` and are **not** the map tokens re
 
 ## Render order
 
-`GROUP_RANK` fixes bottom-to-top order (peatland → concessions → protection → population → haze → boundaries → fire) and `apply.ts` re-asserts it whenever the set of present layers changes. A descriptor creating more than one map layer must list them all in `mapLayerIds` or they will not be reordered.
+`GROUP_RANK` fixes bottom-to-top order (peatland → forest → concessions → protection → population → haze → boundaries → fire) and `apply.ts` re-asserts it whenever the set of present layers changes. A descriptor creating more than one map layer must list them all in `mapLayerIds` or they will not be reordered.
 
 ## Dated rasters
 
@@ -103,6 +108,16 @@ The panel's search box is both a layer filter and a place search (`src/lib/geoco
 Results are deduped **positionally, not by name** — a remote hit is a duplicate only if it falls inside the admin polygon of the same name. Indonesia reuses place names heavily (there is a Ketapang in West Kalimantan and three more elsewhere), so name-matching would hide the very places the geocoder exists to find.
 
 Picking a result fits its bounds, or flies to `zoom: 11` when it has none. A filled pin marks a local boundary, an outline pin a geocoder hit.
+
+## The forest-status facet
+
+`forest-estate` is the only context layer whose polygons are *data* nationally, so it is the only one that can carry a national statistic. When it loads, `lib/forestTag.ts` writes the class of the containing polygon onto every detection as `kawasan` (empty string = outside the gazetted estate), then republishes the fire set under a fresh wrapper so the map re-pushes its source and every chart memo recomputes. After that, "fires by forest status" is a counting pass, exactly like the province ranking — no geometry is touched on a filter change.
+
+Three details are load-bearing:
+
+- **The tag guard is keyed on `fires.features`, not the FeatureCollection.** Republishing swaps the wrapper and keeps the array; a guard on the wrapper would re-run the join forever.
+- **The join uses a grid index** (`gridIndexPolygons` in `lib/geo.ts`), not the linear `polygonAt` the peat KPI uses. 27,000 detections against 4,487 polygons is a second of blocked main thread linearly; bucketed by 1°, it is a handful of candidates per point.
+- **The chart is a self-excluding facet.** It is computed from the slice scoped by everything *except* `filters.forest` — the same reason the trend chart ignores the time window. A facet that filtered itself would collapse to the one bar just clicked, leaving no way to move to another class and no denominator for the percentage above it.
 
 ## Click-to-inspect
 

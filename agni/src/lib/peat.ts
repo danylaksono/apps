@@ -1,12 +1,15 @@
-/** Lazy loading for the BIG-backed vector layers.
+/** Lazy loading for the BIG-backed vector layers (peat, fire hazard, and the
+ *  KLHK forestry set).
  *
  *  These are fetched on first toggle rather than at startup: KHG is quick
- *  (101 features, ~115 kB) but Fungsi Ekosistem Gambut pages through ~4,400
- *  and fire hazard through ~20,000. Each reports `checking -> ok | unavailable`
- *  so the panel can show progress and degrade without breaking the map. */
+ *  (101 features, ~115 kB) but Fungsi Ekosistem Gambut pages through ~4,400,
+ *  fire hazard through ~20,000, and the gazetted forest estate is 12.9 MB over
+ *  five pages because the service does not gzip. Each reports
+ *  `checking -> ok | unavailable` so the panel can show progress and degrade
+ *  without breaking the map. */
 
 import type { GeoJSONSource, Map as MaplibreMap } from "maplibre-gl";
-import { BIG_LAYERS } from "./config";
+import { BIG_LAYERS, KLHK_LAYERS } from "./config";
 import { loadBigLayer, type BigLayerSpec, type PeatFC } from "./big";
 import { useLayersStore } from "../store/layers";
 
@@ -27,6 +30,26 @@ export const BIG_BACKED: BigBackedLayer[] = [
     spec: BIG_LAYERS.peatFunction,
   },
   { id: "fire-hazard", sourceId: "fire-hazard", spec: BIG_LAYERS.fireHazard },
+  {
+    id: "forest-estate",
+    sourceId: "forest-estate",
+    spec: KLHK_LAYERS.forestEstate,
+  },
+  {
+    id: "forest-release",
+    sourceId: "forest-release",
+    spec: KLHK_LAYERS.forestRelease,
+  },
+  {
+    id: "forest-village",
+    sourceId: "forest-village",
+    spec: KLHK_LAYERS.villageForest,
+  },
+  {
+    id: "forest-htr",
+    sourceId: "forest-htr",
+    spec: KLHK_LAYERS.communityForest,
+  },
 ];
 
 const started = new Set<string>();
@@ -48,6 +71,12 @@ export function getPeatExtent(): PeatFC | null {
   return loaded.get("peat-extent") ?? null;
 }
 
+/** Gazetted forest estate (KEHUTANAN layer 0) once loaded — backs the forest
+ *  status chart and the fires-inside-the-estate tile. See lib/forest.ts. */
+export function getForestEstate(): PeatFC | null {
+  return loaded.get("forest-estate") ?? null;
+}
+
 /** Push any loaded BIG data into sources that don't have it yet. Idempotent
  *  and cheap: it only calls setData when the source exists and is stale. */
 export function applyBigData(map: MaplibreMap): void {
@@ -67,7 +96,8 @@ export function ensureBigLayer(map: MaplibreMap, id: string): void {
   if (!entry || started.has(id)) return;
   started.add(id);
 
-  const { setAvailability, setPeatLoaded } = useLayersStore.getState();
+  const { setAvailability, setPeatLoaded, setForestLoaded } =
+    useLayersStore.getState();
   setAvailability(id, "checking", "loading…");
 
   loadBigLayer(entry.spec)
@@ -78,6 +108,7 @@ export function ensureBigLayer(map: MaplibreMap, id: string): void {
       // coverage is partial rather than implying the whole country is drawn.
       setAvailability(id, "ok", truncated ? "partial coverage" : undefined);
       if (id === "peat-extent") setPeatLoaded(fc.features.length);
+      if (id === "forest-estate") setForestLoaded(fc.features.length);
     })
     .catch((err) => {
       console.warn(`[agni] BIG layer ${id} failed`, err);

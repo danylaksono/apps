@@ -10,6 +10,7 @@ import {
   Plant,
   ShieldCheck,
   Tree,
+  TreeEvergreen,
   UsersThree,
   WarningCircle,
 } from "@phosphor-icons/react";
@@ -28,6 +29,7 @@ const GROUP_META: Record<LayerGroup, { label: string; icon: typeof Fire }> = {
   population: { label: "Population", icon: UsersThree },
   boundaries: { label: "Boundaries", icon: MapTrifold },
   peatland: { label: "Peatland", icon: Tree },
+  forest: { label: "Forest estate (KLHK)", icon: TreeEvergreen },
   concessions: { label: "Concessions", icon: Plant },
   protection: { label: "Protection status", icon: ShieldCheck },
 };
@@ -277,8 +279,17 @@ export default function LayerPanel() {
       <div className="flex items-start justify-between border-b border-ink-700/60 px-3 py-2.5">
         <div>
           <div className="flex items-center gap-1.5">
-            <h1 className="font-display text-sm font-bold tracking-wide text-ink-100">
-              AGNI
+            <h1 className="flex">
+              {/* BASE_URL, not "/agni.svg": the app is served from /apps/agni/
+                  in production. The file pads the wordmark symmetrically
+                  inside a 3000x2000 canvas, so the box is set to the
+                  artwork's own aspect and object-cover crops the dead
+                  space — otherwise the mark floats at half height. */}
+              <img
+                src={`${import.meta.env.BASE_URL}agni.svg`}
+                alt="AGNI"
+                className="aspect-[2883/1138] h-[18px] object-cover"
+              />
             </h1>
             <AboutButton />
           </div>

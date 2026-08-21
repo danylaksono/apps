@@ -19,7 +19,9 @@ import { KABKOTA_GEOJSON_URL } from "./config";
 export type PolyFC = FeatureCollection<Polygon | MultiPolygon>;
 export type PolyFeature = Feature<
   Polygon | MultiPolygon,
-  { code?: string; provinsi_code?: string }
+  // Open-ended: the same helpers index kab/kota, peat and the KLHK forest
+  // estate, and each names its attributes differently.
+  { code?: string; provinsi_code?: string; [key: string]: unknown }
 >;
 
 interface Indexed {
@@ -41,6 +43,57 @@ export function indexPolygons(polys: PolyFC): PolyIndex {
 export function polygonAt(pt: Feature<Point>, index: PolyIndex): PolyFeature | null {
   const [lon, lat] = pt.geometry.coordinates;
   for (const { f, b } of index) {
+    if (lon < b[0] || lat < b[1] || lon > b[2] || lat > b[3]) continue;
+    if (booleanPointInPolygon(pt, f)) return f;
+  }
+  return null;
+}
+
+/** Grid-bucketed variant of `PolyIndex`, for the sets where a linear bbox scan
+ *  is no longer free.
+ *
+ *  `polygonAt` walks every polygon, which is fine at 146 peat polygons but not
+ *  at the 4,487 of the gazetted forest estate: tagging the full 5-day FIRMS set
+ *  against it is 27,000 x 4,487 bbox rejects, over a second of blocked main
+ *  thread. Bucketing by a 1-degree cell turns that into a handful of candidates
+ *  per point. Polygons spanning several cells are filed in each, so a lookup is
+ *  still exact — the grid only decides what is worth testing. */
+export interface PolyGrid {
+  cellDeg: number;
+  buckets: Map<string, Indexed[]>;
+}
+
+function cellKey(cx: number, cy: number): string {
+  return `${cx}/${cy}`;
+}
+
+export function gridIndexPolygons(polys: PolyFC, cellDeg = 1): PolyGrid {
+  const buckets = new Map<string, Indexed[]>();
+  for (const entry of indexPolygons(polys)) {
+    const [w, s, e, n] = entry.b;
+    for (let cx = Math.floor(w / cellDeg); cx <= Math.floor(e / cellDeg); cx++) {
+      for (let cy = Math.floor(s / cellDeg); cy <= Math.floor(n / cellDeg); cy++) {
+        const key = cellKey(cx, cy);
+        const list = buckets.get(key);
+        if (list) list.push(entry);
+        else buckets.set(key, [entry]);
+      }
+    }
+  }
+  return { cellDeg, buckets };
+}
+
+/** The first polygon in the grid containing the point, or null. */
+export function polygonAtGrid(
+  pt: Feature<Point>,
+  grid: PolyGrid,
+): PolyFeature | null {
+  const [lon, lat] = pt.geometry.coordinates;
+  const bucket = grid.buckets.get(
+    cellKey(Math.floor(lon / grid.cellDeg), Math.floor(lat / grid.cellDeg)),
+  );
+  if (!bucket) return null;
+  for (const { f, b } of bucket) {
     if (lon < b[0] || lat < b[1] || lon > b[2] || lat > b[3]) continue;
     if (booleanPointInPolygon(pt, f)) return f;
   }
