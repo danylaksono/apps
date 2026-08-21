@@ -8,7 +8,9 @@ import {
   MapPin,
   MapTrifold,
   Plant,
+  PlugsConnected,
   ShieldCheck,
+  Trash,
   Tree,
   TreeEvergreen,
   UsersThree,
@@ -16,11 +18,17 @@ import {
 } from "@phosphor-icons/react";
 import FireFilters from "./FireFilters";
 import AboutButton from "./AboutButton";
+import AddLayerButton from "./AddLayerButton";
 import { getMapRef } from "../lib/mapRef";
 import { loadKabKota, type PolyFC } from "../lib/geo";
 import { searchAdmin, searchGeocoder, type PlaceHit } from "../lib/geocode";
-import type { LayerDescriptor, LayerGroup } from "../layers/registry";
+import type {
+  LayerDescriptor,
+  LayerGroup,
+  LegendItem,
+} from "../layers/registry";
 import { LAYERS } from "../layers/registry";
+import { buildCustomLayer } from "../layers/custom";
 import { useLayersStore } from "../store/layers";
 
 const GROUP_META: Record<LayerGroup, { label: string; icon: typeof Fire }> = {
@@ -32,6 +40,7 @@ const GROUP_META: Record<LayerGroup, { label: string; icon: typeof Fire }> = {
   forest: { label: "Forest estate (KLHK)", icon: TreeEvergreen },
   concessions: { label: "Concessions", icon: Plant },
   protection: { label: "Protection status", icon: ShieldCheck },
+  custom: { label: "Your layers", icon: PlugsConnected },
 };
 
 function LayerRow({ d }: { d: LayerDescriptor }) {
@@ -44,6 +53,23 @@ function LayerRow({ d }: { d: LayerDescriptor }) {
   const mode = useLayersStore((s) => s.layerMode[d.id]);
   const setMode = useLayersStore((s) => s.setLayerMode);
   const unavailable = availability === "unavailable";
+
+  // A server-rendered layer carries its symbology in the tiles, so its legend
+  // has to be fetched. Done here rather than at add time so it costs nothing
+  // until the layer is actually switched on, and is never persisted — the
+  // swatches are base64 PNGs and would bloat localStorage.
+  const [fetched, setFetched] = useState<LegendItem[] | null>(null);
+  useEffect(() => {
+    if (!visible || !d.asyncLegend || fetched) return;
+    let cancelled = false;
+    d.asyncLegend()
+      .then((items) => !cancelled && setFetched(items))
+      .catch(() => undefined);
+    return () => {
+      cancelled = true;
+    };
+  }, [visible, d, fetched]);
+  const legend = d.legend ?? fetched ?? undefined;
 
   return (
     <div className="group px-3 py-2">
@@ -66,15 +92,26 @@ function LayerRow({ d }: { d: LayerDescriptor }) {
           />
         </button>
         <span
-          className={`text-sm font-medium ${
+          className={`min-w-0 flex-1 truncate text-sm font-medium ${
             unavailable ? "text-ink-400 line-through" : "text-ink-100"
           }`}
         >
           {d.label}
         </span>
+        {d.group === "custom" && (
+          <button
+            type="button"
+            onClick={() => useLayersStore.getState().removeCustomLayer(d.id)}
+            aria-label={`Remove ${d.label}`}
+            title="Remove this layer"
+            className="shrink-0 rounded p-0.5 text-ink-500 hover:bg-ink-700/50 hover:text-fire-300"
+          >
+            <Trash size={12} weight="bold" />
+          </button>
+        )}
         {(unavailable || (visible && reason)) && (
           <span
-            className={`ml-auto flex items-center gap-1 text-[10px] uppercase tracking-wide ${
+            className={`flex shrink-0 items-center gap-1 text-[10px] uppercase tracking-wide ${
               unavailable ? "text-fire-300" : "text-ink-400"
             }`}
             title={reason}
@@ -131,17 +168,25 @@ function LayerRow({ d }: { d: LayerDescriptor }) {
               aria-label={`${d.label} ${d.sliderLabel ?? "opacity"}`}
             />
           </div>
-          {d.legend && (
+          {legend && legend.length > 0 && (
             <div className="mt-1.5 flex flex-wrap gap-x-3 gap-y-1">
-              {d.legend.map((l) => (
+              {legend.map((l) => (
                 <span
                   key={l.label}
                   className="flex items-center gap-1 text-[10px] text-ink-300"
                 >
-                  <span
-                    className="inline-block h-2 w-2 rounded-full"
-                    style={{ background: l.color }}
-                  />
+                  {l.swatch ? (
+                    <img
+                      src={l.swatch}
+                      alt=""
+                      className="inline-block h-2.5 w-2.5 shrink-0 rounded-[2px] object-cover"
+                    />
+                  ) : (
+                    <span
+                      className="inline-block h-2 w-2 rounded-full"
+                      style={{ background: l.color }}
+                    />
+                  )}
                   {l.label}
                 </span>
               ))}
@@ -165,9 +210,10 @@ function LayerRow({ d }: { d: LayerDescriptor }) {
   );
 }
 
-/** Groups open on load. The rest collapse: 22 layers in one flat scroll buries
- *  the fire and haze layers people actually came for. */
-const OPEN_BY_DEFAULT: LayerGroup[] = ["fire", "haze"];
+/** Groups open on load. The rest collapse: 27 layers in one flat scroll buries
+ *  the fire and haze layers people actually came for. "Your layers" is open
+ *  because someone who added one wants to see it, not find it. */
+const OPEN_BY_DEFAULT: LayerGroup[] = ["fire", "haze", "custom"];
 
 export default function LayerPanel() {
   const open = useLayersStore((s) => s.layersOpen);
@@ -243,9 +289,14 @@ export default function LayerPanel() {
     else map.flyTo({ center: hit.center, zoom: 11, duration: 800 });
     setQuery("");
   };
+  // Built from the store's copy of the custom specs rather than from
+  // `allLayers()`, which reads a module-level array the panel cannot subscribe
+  // to — a layer added at runtime would not appear until something else forced
+  // a re-render.
+  const custom = useLayersStore((s) => s.customLayers);
   const groups = useMemo(() => {
     const out: { group: LayerGroup; layers: LayerDescriptor[] }[] = [];
-    for (const d of LAYERS) {
+    for (const d of [...LAYERS, ...custom.map(buildCustomLayer)]) {
       if (
         q &&
         !d.label.toLowerCase().includes(q) &&
@@ -259,7 +310,7 @@ export default function LayerPanel() {
       else out.push({ group: d.group, layers: [d] });
     }
     return out;
-  }, [q]);
+  }, [q, custom]);
 
   const toggleGroup = (g: LayerGroup) =>
     setCollapsed((prev) => {
@@ -403,6 +454,12 @@ export default function LayerPanel() {
           </section>
         );
       })}
+
+      {!q && (
+        <div className="px-3 py-2.5">
+          <AddLayerButton />
+        </div>
+      )}
 
       {groups.length === 0 && places.length === 0 && (
         <p className="px-3 py-4 text-center text-[11px] text-ink-400">

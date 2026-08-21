@@ -70,7 +70,7 @@ Chart colours live in `src/lib/chartTokens.ts` and are **not** the map tokens re
 
 ## Render order
 
-`GROUP_RANK` fixes bottom-to-top order (peatland → forest → concessions → protection → population → haze → boundaries → fire) and `apply.ts` re-asserts it whenever the set of present layers changes. A descriptor creating more than one map layer must list them all in `mapLayerIds` or they will not be reordered.
+`GROUP_RANK` fixes bottom-to-top order (peatland → forest → concessions → protection → population → haze → boundaries → custom → fire; user-added layers sit high, just under the fires, because someone who just pasted a URL wants to see what they added) and `apply.ts` re-asserts it whenever the set of present layers changes. A descriptor creating more than one map layer must list them all in `mapLayerIds` or they will not be reordered.
 
 ## Dated rasters
 
@@ -109,6 +109,72 @@ Results are deduped **positionally, not by name** — a remote hit is a duplicat
 
 Picking a result fits its bounds, or flies to `zoom: 11` when it has none. A filled pin marks a local boundary, an outline pin a geocoder hit.
 
+## User-added layers
+
+The registry is a compile-time list, which is right for the layers the app is
+*about* — they need bespoke styling, decode protocols, legends and caveats. It is
+wrong for the long tail. **"Add a remote layer"** at the foot of the panel takes
+a URL and builds a descriptor at runtime, with the same toggle, opacity, legend,
+render order and click-to-inspect as everything else.
+
+| Paste | What happens |
+| --- | --- |
+| An ArcGIS **folder** (`…/rest/services/PUBLIK`) | Lists its services and sub-folders; drill down |
+| An ArcGIS **service** (`…/MapServer`) | Lists its layers with geometry type; pick one |
+| An ArcGIS **layer** (`…/MapServer/6`) | Same, with that layer floated to the top |
+| An **XYZ template** (`…/{z}/{x}/{y}.png`) | Added as a raster layer |
+| A **GeoJSON URL** | Fetched and drawn as polygons |
+
+BIG's other public MapServers are offered as one-click suggestions: the app
+hard-codes layers from two of the seven, and `PERIZINAN_DAN_PERTANAHAN` alone
+carries IUPHHK-HA/HTI/RE, mining WIUP, oil and gas working areas and IPHPS.
+
+### Image or data
+
+An ArcGIS layer can be added either way, and the distinction is the whole point
+of the dialog:
+
+- **Image** builds a raster source pointed at MapServer's `export`, using
+  MapLibre's `{bbox-epsg-3857}` token — the same WMS-shaped request. The server
+  draws it on demand, so **size does not matter**: BIG's rawan erosi is 306,265
+  features and can only be seen this way. The cost is that it is pixels, so the
+  popup cannot read it and nothing can be counted from it. This is the default.
+- **Data** pages the layer as GeoJSON through the same loader the built-ins use,
+  clipped to the Indonesia envelope and capped at 20,000 features. Slower, but
+  the features are real and clickable.
+
+Two details keep the data path honest. The service's advertised
+`maxRecordCount` is passed as the page size — assuming 1000 against a service
+that caps lower makes a short page look like the end of the data — and hitting
+the cap reports "partial coverage" rather than implying the layer is complete.
+
+### Legends for server-rendered layers
+
+An `export` layer arrives already symbolised, so its colours would otherwise
+mean nothing. `asyncLegend` on the descriptor fetches ArcGIS's `/legend`, which
+returns each class as a base64 PNG plus its label; the panel resolves it the
+first time the layer is switched on. Deliberately not persisted — the swatches
+are images and would bloat localStorage.
+
+### Where the state lives
+
+`CustomLayerSpec` is plain data and lives in `localStorage` under
+`agni.customLayers`; `LayerDescriptor` closes over map calls and cannot be
+serialised. `layers/custom.ts` is the one place they are joined, and it is what
+non-React modules read through `allLayers()`. **Every consumer that walks the
+layer set — the applier, the panel, the popup — must use `allLayers()` rather
+than `LAYERS`**, or a custom layer is added to the map and then never synced,
+ordered or queried.
+
+The import arrow is one-way: `custom.ts` imports the registry, the registry
+never imports `custom.ts`, and the store imports both. That is why `allLayers()`
+lives in `custom.ts` — `LAYERS` is evaluated at module scope and must not be
+read out of a half-built module.
+
+Ids carry a timestamp suffix rather than a `-2` counter. Removing a layer and
+adding a different one that slugs the same way would otherwise inherit the old
+id, and with it the session-cached FeatureCollection still held against it.
+
 ## The forest-status facet
 
 `forest-estate` is the only context layer whose polygons are *data* nationally, so it is the only one that can carry a national statistic. When it loads, `lib/forestTag.ts` writes the class of the containing polygon onto every detection as `kawasan` (empty string = outside the gazetted estate), then republishes the fire set under a fresh wrapper so the map re-pushes its source and every chart memo recomputes. After that, "fires by forest status" is a counting pass, exactly like the province ranking — no geometry is touched on a filter change.
@@ -132,3 +198,6 @@ Layers depending on live sources report `checking → ok | unavailable` to the s
 1. Append a `LayerDescriptor` to `src/layers/registry.ts`. For a GFW polygon dataset use the `gfwPolygonLayer()` factory in `src/layers/gfw.ts`; for a CAMS WMS layer use `camsImageLayer()` in `src/layers/cams.ts`.
 2. If it needs fetched data, add a module in `src/lib/` and wire the sync in `MapView`. Note that the store imports the registry, so **the registry must not import the store** — pass values in through a small module the way `lib/rasterDate.ts` does.
 3. Update this file and `METHODOLOGY.md`.
+
+If the layer is a one-off you want on the map rather than something the app is
+about, do not add a descriptor at all — paste its URL into "Add a remote layer".

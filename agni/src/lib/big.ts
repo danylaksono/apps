@@ -41,13 +41,21 @@ export interface BigLayerSpec {
   outFields: readonly string[];
   /** stop after this many features (guards against a runaway fetch) */
   maxFeatures?: number;
+  /** The service's own paging cap. Defaults to 1000, which is what BIG uses —
+   *  but a service that caps lower returns a short page that this would read as
+   *  the end of the data, silently truncating it. User-added layers therefore
+   *  pass the `maxRecordCount` their service advertises. */
+  pageSize?: number;
+  /** Request envelope. Defaults to Indonesia, which is the area of interest for
+   *  every built-in layer. */
+  bbox?: string;
 }
 
-function queryUrl(spec: BigLayerSpec, offset: number): string {
+function queryUrl(spec: BigLayerSpec, offset: number, page: number): string {
   const params = new URLSearchParams({
     where: "1=1",
     outFields: spec.outFields.join(","),
-    geometry: INDONESIA_BBOX,
+    geometry: spec.bbox ?? INDONESIA_BBOX,
     geometryType: "esriGeometryEnvelope",
     inSR: "4326",
     outSR: "4326",
@@ -56,14 +64,18 @@ function queryUrl(spec: BigLayerSpec, offset: number): string {
     maxAllowableOffset: String(SIMPLIFY_DEG),
     geometryPrecision: "5",
     resultOffset: String(offset),
-    resultRecordCount: String(PAGE),
+    resultRecordCount: String(page),
     f: "geojson",
   });
   return `${spec.service ?? BIG_MAPSERVER}/${spec.layerId}/query?${params}`;
 }
 
-async function fetchPage(spec: BigLayerSpec, offset: number): Promise<PeatFC> {
-  const res = await fetch(queryUrl(spec, offset));
+async function fetchPage(
+  spec: BigLayerSpec,
+  offset: number,
+  page: number,
+): Promise<PeatFC> {
+  const res = await fetch(queryUrl(spec, offset, page));
   if (!res.ok) throw new Error(`BIG layer ${spec.layerId}: HTTP ${res.status}`);
   const json = (await res.json()) as PeatFC & { error?: { message?: string } };
   if (json.error) {
@@ -102,6 +114,7 @@ export function loadBigLayer(spec: BigLayerSpec): Promise<BigLayerResult> {
 
   const task = (async () => {
     const features: PeatFC["features"] = [];
+    const page = Math.max(1, Math.min(PAGE, spec.pageSize ?? PAGE));
     const cap = spec.maxFeatures ?? 20000;
     let truncated = true;
     for (let offset = 0; offset < cap; ) {
@@ -113,14 +126,14 @@ export function loadBigLayer(spec: BigLayerSpec): Promise<BigLayerResult> {
       // minutes. A wave of four cuts that to two round trips. Promise.all
       // preserves order, so the features still arrive in paging order.
       const wave: Promise<PeatFC>[] = [];
-      for (let k = 0; k < CONCURRENCY && offset < cap; k++, offset += PAGE) {
-        wave.push(fetchPage(spec, offset));
+      for (let k = 0; k < CONCURRENCY && offset < cap; k++, offset += page) {
+        wave.push(fetchPage(spec, offset, page));
       }
       const pages = await Promise.all(wave);
       for (const page of pages) features.push(...page.features);
       // A short page means we've reached the end. Pages after it in the same
       // wave come back empty, which costs a request and no correctness.
-      if (pages.some((page) => page.features.length < PAGE)) {
+      if (pages.some((p) => p.features.length < page)) {
         truncated = false;
         break;
       }

@@ -55,7 +55,24 @@ Patterns worth copying when a source is less cooperative:
 | Rows too numerous to tile                       | `lib/population.ts` — Parquet + DuckDB-WASM, aggregated per viewport |
 | A category code the service will not decode     | `lib/forest.ts` — derive the mapping, then check it against published totals |
 | A chart that must scope the map without lying   | `lib/forestTag.ts` — tag once, count tags, exclude the facet from itself |
+| A layer set that must grow at runtime           | `layers/custom.ts` — serialisable specs, descriptors built on demand |
+| A vector layer too large to download at all     | `lib/arcgis.ts` — server-rendered `export` tiles via `{bbox-epsg-3857}` |
 | A canvas glyph the style spec cannot draw       | `layers/glyphs.ts` — DOM markers keyed to source features            |
+
+### Adding a layer without touching the code
+
+Layers you just want *on the map*, rather than layers the app is about, do not
+need a descriptor at all. **"Add a remote layer"** at the foot of the panel
+takes an ArcGIS service (folder, service or layer URL — it browses), an XYZ tile
+template, or a GeoJSON URL, and builds the descriptor at runtime. They persist
+in `localStorage`, nowhere else.
+
+An ArcGIS layer can be added two ways, and the choice matters: **image** points a
+raster source at MapServer's `export`, so the server draws it on demand and size
+stops mattering — BIG's rawan erosi is 306,265 features and is unusable any
+other way — while **data** pages it as GeoJSON, which is slower and capped but
+clickable. Image layers pull their legend from ArcGIS's `/legend`, so a
+server-symbolised layer still says what its colours mean.
 
 ### Adapting it for another dashboard
 

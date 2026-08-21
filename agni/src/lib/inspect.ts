@@ -5,7 +5,7 @@
  *  fire detection, peat, concession holder, protection status, admin unit. */
 
 import type { MapGeoJSONFeature, Map as MaplibreMap } from "maplibre-gl";
-import { LAYERS } from "../layers/registry";
+import { allLayers } from "../layers/custom";
 import { GFW_POPUP_FIELDS } from "../layers/gfw";
 import { forestClassMeta, forestClassOf } from "./forest";
 
@@ -22,7 +22,7 @@ function esc(v: unknown): string {
 /** Layer ids to query, in the order they should appear in the popup. */
 function queryableLayerIds(map: MaplibreMap): string[] {
   const ids: string[] = [];
-  for (const d of LAYERS) {
+  for (const d of allLayers()) {
     // fill layers carry the attributes; the -line twin would just duplicate
     const candidate = d.id;
     if (map.getLayer(candidate)) ids.push(candidate);
@@ -102,7 +102,7 @@ export function buildInspectHtml(
   for (const layerId of order) {
     const f = byLayer.get(layerId);
     if (!f) continue;
-    const d = LAYERS.find((l) => l.id === layerId);
+    const d = allLayers().find((l) => l.id === layerId);
     if (!d) continue;
 
     if (d.group === "fire") {
@@ -136,6 +136,22 @@ export function buildInspectHtml(
           [firstProp(f, ["nkws"]), sk].filter(Boolean).join(" · "),
         ),
       );
+      continue;
+    }
+
+    // A user-added layer has no curated field list — it was fetched with
+    // `outFields=*` — so fall back to the first attribute that reads like a
+    // name rather than printing "yes" for every one of them.
+    if (d.group === "custom") {
+      const props = f.properties ?? {};
+      const key = Object.keys(props).find(
+        (k) =>
+          !/^(objectid|fid|shape|globalid|se_anno)/i.test(k) &&
+          typeof props[k] === "string" &&
+          String(props[k]).trim() !== "" &&
+          String(props[k]).trim() !== "-",
+      );
+      parts.push(row(d.label, key ? String(props[key]) : "yes", key ?? null));
       continue;
     }
 

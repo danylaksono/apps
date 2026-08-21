@@ -37,10 +37,14 @@ export type LayerGroup =
   | "peatland"
   | "forest"
   | "concessions"
-  | "protection";
+  | "protection"
+  | "custom";
 
 export interface LegendItem {
-  color: string;
+  /** solid colour swatch; omitted when `swatch` carries an image instead */
+  color?: string;
+  /** data: URI for a server-supplied swatch — see lib/arcgis.ts */
+  swatch?: string;
   label: string;
 }
 
@@ -59,6 +63,10 @@ export interface LayerDescriptor {
    *  set it where the slider drives something else, so the panel can say so. */
   sliderLabel?: string;
   legend?: LegendItem[];
+  /** Legend that has to be fetched. Used by server-rendered layers, which
+   *  arrive already symbolised and would otherwise be colours with no stated
+   *  meaning. Resolved by the panel the first time the layer is expanded. */
+  asyncLegend?(): Promise<LegendItem[]>;
   gradientLegend?: { css: string; min: string; max: string };
   /** Alternative ways of drawing the same layer, offered as a small segmented
    *  control in the panel. The first is the default. */
@@ -88,6 +96,9 @@ export const GROUP_RANK: Record<LayerGroup, number> = {
   haze: 50,
   boundaries: 60,
   fire: 70,
+  // Above the built-in context stack: someone who just pasted a URL wants to
+  // see what they added, not hunt for it under nine other polygon layers.
+  custom: 65,
 };
 
 export const OPACITY_PROPS = {
@@ -102,7 +113,7 @@ export const EMPTY_FC: FeatureCollection = {
   features: [],
 };
 
-function addSourceSafe(
+export function addSourceSafe(
   map: MaplibreMap,
   id: string,
   spec: Parameters<MaplibreMap["addSource"]>[1],
@@ -110,12 +121,12 @@ function addSourceSafe(
   if (!map.getSource(id)) map.addSource(id, spec);
 }
 
-function removeLayerSafe(map: MaplibreMap, id: string): void {
+export function removeLayerSafe(map: MaplibreMap, id: string): void {
   if (map.getLayer(id)) map.removeLayer(id);
 }
 
 /** Remove a source only if no remaining layer references it (shared sources). */
-function removeSourceIfUnused(map: MaplibreMap, id: string): void {
+export function removeSourceIfUnused(map: MaplibreMap, id: string): void {
   if (!map.getSource(id)) return;
   const layers = map.getStyle()?.layers ?? [];
   const stillUsed = layers.some(

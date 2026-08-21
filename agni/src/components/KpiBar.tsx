@@ -3,7 +3,7 @@ import type { FeatureCollection, MultiPolygon, Polygon } from "geojson";
 import { computeKpi } from "../lib/kpi";
 import { loadKabKota } from "../lib/geo";
 import { applyFireFilters, latestTimestamp } from "../lib/analytics";
-import { getPeatExtent } from "../lib/peat";
+import { getPeatExtent } from "../lib/remoteLayers";
 import { useLayersStore } from "../store/layers";
 
 const fmt = new Intl.NumberFormat("en-US");

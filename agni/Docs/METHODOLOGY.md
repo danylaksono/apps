@@ -46,7 +46,7 @@ PMTiles are consumed via the `pmtiles` JS protocol. Fully static deploy.
 | **NASA FIRMS**          | API key (in `src/lib/config.ts`) | `GET /api/area/csv/{KEY}/{SOURCE}/{bbox}/{days}` → CSV parsed to GeoJSON in-browser. Default source `VIIRS_SNPP_NRT`, **5 days** (the NRT endpoint rejects more — "Invalid day range. Expects [1..5]"), national bbox, then clipped to the kab/kota outline. Note: source IDs use **underscores**; the `/api/country` path is invalid — always use `/api/area`. `days=1` means "today so far (UTC)" and returns a header-only CSV for the first hours of each UTC day, which reads as "no fires" rather than "no data yet" — hence 2. |
 | **NASA GIBS**           | keyless                          | RESTful WMTS tiles: `https://gibs.earthdata.nasa.gov/wmts/epsg3857/best/{LAYER}/default/{TIME}/{TILEMATRIXSET}/{z}/{y}/{x}.png`. Used as MapLibre raster sources. AOD: `MODIS_Aqua_Aerosol` (max z6). Smoke: `MODIS_Terra_CorrectedReflectance_TrueColor` (max z9). Time dimension `default` = latest available.                                                                                                                                                                                                                      |
 | **BIG SatuPeta**        | keyless, CORS-open               | Official Indonesian layers as GeoJSON: peat, KHG and fire hazard (§4.3), plus KLHK's forest estate, pelepasan and social forestry (§4.4). Replaces the token-gated `services8.arcgis.com` KHG service, which is gone from the app.                                                                                                                                                                                                                                                                                                                                                                   |
-| **CAMS (ECMWF WMS)**    | keyless (`token=public`)         | Animated haze — biomass-burning AOD and surface PM2.5, 3-hourly with forecast. See §4.5.                                                                                                                                                                                                                                                                                                                                                                                                                                              |
+| **CAMS (ECMWF WMS)**    | keyless (`token=public`)         | Animated haze — biomass-burning AOD and surface PM2.5, 3-hourly with forecast. See §4.6.                                                                                                                                                                                                                                                                                                                                                                                                                                              |
 | **Global Forest Watch** | keyless, CORS-open               | Peat, concession and protection context. Static vector tiles `https://tiles.globalforestwatch.org/{dataset}/{version}/default/{z}/{x}/{y}.pbf` (the MVT `source-layer` equals the dataset name); peat is a raster cache at the same path with `.png`. Versions are pinned in `GFW_DATASETS` — see §4.1.                                                                                                                                                                                                                               |
 | **Basemaps**            | keyless                          | CARTO Dark Matter, Esri World Imagery, OpenStreetMap standard, CARTO Voyager — all raster. Pre-registered as raster layers; switching toggles visibility (no `setStyle` churn). OSM is capped at z19 per the OSMF tile policy.                                                                                                                                                                                                                                                                                                        |
 
@@ -189,7 +189,29 @@ provinces**, against ~125 M ha designated.
 land that is designated but not yet gazetted falls in the "di luar kawasan"
 bucket when legally it is inside. Read that bar as an upper bound.
 
-### 4.5 CAMS haze animation (ECMWF public WMS)
+### 4.5 Anything else the user pastes
+
+Everything above is hard-coded because the app has an opinion about it. Layers
+the app has no opinion about are added at runtime instead — see
+[LAYERS.md](LAYERS.md#user-added-layers). Two things about that are
+methodological rather than cosmetic:
+
+**BIG's public folder holds seven MapServers and this app wires up two.** The
+rest are listed as one-click suggestions in the add dialog, and
+`PERIZINAN_DAN_PERTANAHAN` is the one worth knowing about: IUPHHK-HA, -HTI and
+-RE, mining WIUP, oil and gas working areas, PIPPIB and IPHPS — the same
+concession classes GFW publishes, from the Indonesian licensing authority rather
+than a third party, and as queryable features rather than tiles.
+
+**`export` is the escape hatch for layers too large to page.** MapServer will
+render any layer to an image for a bbox, which is the request MapLibre's
+`{bbox-epsg-3857}` token exists for. Verified against BIG Aug 2026: 200,
+`image/png`, CORS echoing the Origin, ~1.5 s for a 256 px tile. That is how a
+306,265-feature layer like rawan erosi becomes visible at all. It is pixels, so
+nothing can be counted from it and the popup cannot read it — which is exactly
+why the built-in layers that back statistics are fetched as features instead.
+
+### 4.6 CAMS haze animation (ECMWF public WMS)
 
 `https://eccharts.ecmwf.int/wms/?token=public` — the service behind
 [Fire Emissions Watch](https://apps.atmosphere.copernicus.eu/fire-emissions-watch/).
@@ -282,4 +304,5 @@ Cards are removed rather than left as a permanent "—": an empty card reads as
 - `idn_forest_area` (2017) and `idn_forest_moratorium` (2020) are the newest versions GFW publishes; both are older than the fire data they are shown against. The KLHK penetapan layer (2024) is the one to count against; the GFW copy is kept only because it is tiled and therefore instant.
 - **A fire inside kawasan hutan is a jurisdiction, not a verdict.** The forest-status breakdown says which agency owns the land, not who lit it — HPK in particular is *meant* to be converted, so fires there are frequently permitted clearing rather than wildfire.
 - `Pelepasan kawasan hutan` is published by BIG with no attributes at all beyond the province code, so the layer can be seen but its permits cannot be named.
+- A layer added through "Add a remote layer" carries **no caveat of ours**. The built-in layers are described with their coverage, vintage and known gaps because someone checked; a pasted URL has been checked by nobody. Treat what it draws with the same suspicion you would treat the service it came from.
 - Indonesian government (`.go.id`) endpoints are unreliable from most networks; BIG SatuPeta in particular goes down for stretches, and layers that hit their `maxFeatures` cap report "partial coverage" rather than implying they drew everything.

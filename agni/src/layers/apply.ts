@@ -4,7 +4,8 @@
 import type { Map as MaplibreMap } from "maplibre-gl";
 import type { GeoJSONSource } from "maplibre-gl";
 import type { FeatureCollection } from "geojson";
-import { GROUP_RANK, LAYERS, OPACITY_PROPS } from "./registry";
+import { GROUP_RANK, OPACITY_PROPS } from "./registry";
+import { allLayers } from "./custom";
 import type { LayerDescriptor } from "./registry";
 import { BASEMAPS, basemapSourceId } from "./basemaps";
 import {
@@ -28,7 +29,7 @@ let lastPresentKey = "";
 
 function enforceOrder(map: MaplibreMap): void {
   const present: { id: string; rank: number }[] = [];
-  for (const d of LAYERS) {
+  for (const d of allLayers()) {
     const ids = d.mapLayerIds ?? [d.id];
     for (const id of ids) {
       if (map.getLayer(id)) present.push({ id, rank: rankOf(d) });
@@ -109,7 +110,7 @@ export function applyMapState(map: MaplibreMap, state: MapSyncState): boolean {
   }
 
   // overlay layers
-  for (const d of LAYERS) {
+  for (const d of allLayers()) {
     const visible = Boolean(state.visibility[d.id]);
     const present = Boolean(map.getLayer(d.id));
     try {

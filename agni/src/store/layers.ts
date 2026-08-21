@@ -1,6 +1,13 @@
 import { create } from "zustand";
 import type { FeatureCollection } from "geojson";
 import { LAYERS } from "../layers/registry";
+import {
+  buildCustomLayer,
+  customSpecs,
+  setCustomSpecs,
+  type CustomLayerSpec,
+} from "../layers/custom";
+import { getMapRef } from "../lib/mapRef";
 import { DEFAULT_BASEMAP } from "../layers/basemaps";
 import { DEFAULT_FILTERS, type FireFilters } from "../lib/analytics";
 
@@ -50,6 +57,9 @@ export interface LayersState {
   fireFilters: FireFilters;
   /** map point being probed for the CAMS forecast chart */
   probePoint: ProbePoint | null;
+  /** layers the user added at runtime; mirrors layers/custom.ts, which is what
+   *  the non-React modules read */
+  customLayers: CustomLayerSpec[];
   setBasemap(id: string): void;
   toggleLayer(id: string): void;
   setOpacity(id: string, value: number): void;
@@ -66,6 +76,8 @@ export interface LayersState {
   setLayersOpen(open: boolean): void;
   setFireFilters(patch: Partial<FireFilters>): void;
   setProbePoint(p: ProbePoint | null): void;
+  addCustomLayer(spec: CustomLayerSpec): void;
+  removeCustomLayer(id: string): void;
 }
 
 /** Index of the step closest to now — the boundary between analysis and
@@ -85,11 +97,16 @@ function nowIndex(steps: string[]): number {
   return best;
 }
 
+// Persisted custom layers are rebuilt before the store's initial state, so a
+// layer added on a previous visit comes back switched on rather than as a row
+// with no visibility entry.
+const restored = customSpecs().map(buildCustomLayer);
+
 const initialVisibility = Object.fromEntries(
-  LAYERS.map((l) => [l.id, l.defaultVisible]),
+  [...LAYERS, ...restored].map((l) => [l.id, l.defaultVisible]),
 );
 const initialOpacity = Object.fromEntries(
-  LAYERS.map((l) => [l.id, l.defaultOpacity]),
+  [...LAYERS, ...restored].map((l) => [l.id, l.defaultOpacity]),
 );
 
 export const useLayersStore = create<LayersState>((set) => ({
@@ -114,6 +131,7 @@ export const useLayersStore = create<LayersState>((set) => ({
   layersOpen: true,
   fireFilters: DEFAULT_FILTERS,
   probePoint: null,
+  customLayers: customSpecs(),
   setBasemap: (id) => set({ basemap: id }),
   toggleLayer: (id) =>
     set((s) => ({ visibility: { ...s.visibility, [id]: !s.visibility[id] } })),
@@ -148,4 +166,37 @@ export const useLayersStore = create<LayersState>((set) => ({
   setFireFilters: (patch) =>
     set((s) => ({ fireFilters: { ...s.fireFilters, ...patch } })),
   setProbePoint: (p) => set({ probePoint: p }),
+  addCustomLayer: (spec) =>
+    set((s) => {
+      const next = [...s.customLayers, spec];
+      setCustomSpecs(next);
+      const d = buildCustomLayer(spec);
+      return {
+        customLayers: next,
+        visibility: { ...s.visibility, [spec.id]: d.defaultVisible },
+        opacity: { ...s.opacity, [spec.id]: d.defaultOpacity },
+      };
+    }),
+  removeCustomLayer: (id) =>
+    set((s) => {
+      // Take the layer off the map first. The applier only removes a layer it
+      // can still see in the registry, so dropping the spec on its own would
+      // leave the source and its layers orphaned on the map forever.
+      const map = getMapRef();
+      const spec = s.customLayers.find((c) => c.id === id);
+      if (map && spec) {
+        try {
+          buildCustomLayer(spec).remove(map);
+        } catch (err) {
+          console.warn(`[agni] removing ${id} from the map failed`, err);
+        }
+      }
+      const next = s.customLayers.filter((c) => c.id !== id);
+      setCustomSpecs(next);
+      const visibility = { ...s.visibility };
+      const opacity = { ...s.opacity };
+      delete visibility[id];
+      delete opacity[id];
+      return { customLayers: next, visibility, opacity };
+    }),
 }));

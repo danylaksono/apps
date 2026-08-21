@@ -21,7 +21,11 @@ import { BASEMAPS, DEFAULT_BASEMAP, basemapSourceId } from "../layers/basemaps";
 import { buildInspectHtml } from "../lib/inspect";
 import { applyMapState, currentFilteredFires } from "../layers/apply";
 import { GLYPH_SOURCE, updateGlyphs, type GlyphMode } from "../layers/glyphs";
-import { BIG_BACKED, applyBigData, ensureBigLayer } from "../lib/peat";
+import {
+  applyRemoteData,
+  ensureLayerData,
+  lazyLayers,
+} from "../lib/remoteLayers";
 import { GIBS_BACKED, ensureGibsDate } from "../lib/gibs";
 import { refreshPopulation } from "../lib/population";
 import { setMapRef } from "../lib/mapRef";
@@ -112,7 +116,7 @@ export default function MapView() {
     let retryQueued = false;
     const applyAll = () => {
       const applied = applyMapState(map, pickState(useLayersStore.getState()));
-      if (applied) applyBigData(map);
+      if (applied) applyRemoteData(map);
       if (applied || retryQueued) return;
       retryQueued = true;
       map.once("idle", () => {
@@ -128,8 +132,8 @@ export default function MapView() {
     // setAvailability, which re-triggers applyAll once they settle.
     const syncBigLayers = () => {
       const { visibility, setAvailability } = useLayersStore.getState();
-      for (const b of BIG_BACKED) {
-        if (visibility[b.id]) ensureBigLayer(map, b.id);
+      for (const b of lazyLayers()) {
+        if (visibility[b.id]) ensureLayerData(map, b.id);
       }
       for (const g of GIBS_BACKED) {
         if (!visibility[g.id]) continue;

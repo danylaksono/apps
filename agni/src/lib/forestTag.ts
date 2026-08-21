@@ -8,7 +8,7 @@
 
 import { useEffect } from "react";
 import { useLayersStore } from "../store/layers";
-import { getForestEstate } from "./peat";
+import { getForestEstate } from "./remoteLayers";
 import { tagFiresWithForest } from "./forest";
 
 /** Tag every detection with the forest class it falls in, once the estate

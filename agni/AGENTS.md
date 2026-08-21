@@ -42,6 +42,7 @@ Project context and knowledge base for AI agents working on this repository.
 | **NASA FIRMS**          | `https://firms.modaps.eosdis.nasa.gov/api/area/csv/{KEY}/{SOURCE}/{bbox}/{days}`                        | **Key confirmed working.** Source IDs use **underscores**: `VIIRS_NOAA21_NRT`, `VIIRS_SNPP_NRT`, `VIIRS_NOAA20_NRT`, `MODIS_NRT`. CSV columns: `latitude,longitude,bright_ti4,scan,track,acq_date,acq_time,satellite,instrument,confidence,version,bright_ti5,frp,daynight`.                                                                                            |
 | **Copernicus CAMS**     | `https://apps.atmosphere.copernicus.eu/fire-emissions-watch/`                                           | Page loads (SPA). Underlying data via CDS API (key provided).                                                                                                                                                                                                                                                                                                           |
 | **BIG SatuPeta**        | `https://kspservices.big.go.id/satupeta/rest/services/PUBLIK/SUMBER_DAYA_ALAM_DAN_LINGKUNGAN/MapServer` | **Keyless, CORS echoes Origin, verified Aug 2026.** The one `.go.id` host that works. 60+ official layers; dynamic MapServer (no tile cache) so query `f=geojson` with `maxAllowableOffset`. Used: 6 lahan gambut, 37 KHG, 47 rawan karhutla, 48 fungsi ekosistem gambut. **Peat coverage differs 5x between layers — see METHODOLOGY §4.3 before computing anything.** |
+| **BIG SatuPeta (folders)** | `https://kspservices.big.go.id/satupeta/rest/services/PUBLIK`                                          | Seven public MapServers, of which this app hard-codes layers from two. `PERIZINAN_DAN_PERTANAHAN` is the pick of the rest: IUPHHK-HA/HTI/RE, mining WIUP, migas working areas, PIPPIB, IPHPS. Reachable from the app's "Add a remote layer" dialog rather than hard-coded. `/export?bbox={bbox-epsg-3857}&f=image` also works (200, CORS, ~1.5 s/tile) and is the only way to see layers too large to page.                                    |
 | **BIG SatuPeta (KLHK)** | `https://kspservices.big.go.id/satupeta/rest/services/PUBLIK/KEHUTANAN/MapServer`                       | **Keyless, same host and grammar as above, verified Aug 2026.** KLHK's forestry maps, republished by BIG — the closest thing to a working ministry endpoint. Used: 0 penetapan kawasan hutan (4,487 features, 97.5 M ha, **national**), 7 pelepasan, 13 hutan desa, 2 HTR. Dead or too heavy: 3 (empty), 5 and 12 (HTTP 400), 6 and 14 (too large), 11 (25 MB). `fungsitap` is an undecoded KUGI code — the mapping lives in `src/lib/forest.ts`, see METHODOLOGY §4.4.                                    |
 | **CAMS / ECMWF WMS**    | `https://eccharts.ecmwf.int/wms/?token=public`                                                          | **Keyless.** Powers the Fire Emissions Watch animation. `composition_bbaod550` (smoke), `composition_pm2p5`. 3-hourly time dimension, ~5 d analysis + ~4 d forecast. Renders on demand → use one `image` source, not tiles.                                                                                                                                             |
 | **Global Forest Watch** | `https://data-api.globalforestwatch.org` + `https://tiles.globalforestwatch.org`                        | **Keyless, CORS `*`, verified Aug 2026.** The working substitute for every dead `.go.id` geoportal. Carries peat, oil palm / pulpwood / logging / mining concessions, PIPPIB moratorium, kawasan hutan, WDPA. Versions + zoom limits must be read from the API, not guessed — see METHODOLOGY §4.1.                                                                     |
@@ -123,6 +124,12 @@ Everything below is built and verified running in a browser (18 overlay layers,
   rather than tiles. Clicking a class scopes map, KPIs and every other chart
 - ✅ **Parallel BIG paging** (four pages at a time) — the forest estate went from
   >2 min to ~14 s, and fire hazard's 20 pages benefit the same way
+- ✅ **User-added remote layers** — paste an ArcGIS service (it browses folders
+  and services), an XYZ template or a GeoJSON URL; persisted in localStorage.
+  ArcGIS layers can be added as server-rendered `export` tiles (any size, not
+  clickable, legend pulled from `/legend`) or paged as GeoJSON (clickable,
+  capped). `layers/custom.ts` + `lib/arcgis.ts`; `allLayers()` replaces `LAYERS`
+  in the applier, the panel and the popup
 - ⬜ Fires ∩ concessions KPI — blocked: GFW concessions arrive as vector tiles, so a count would only reflect the viewport
 
 ## Bugs fixed while resuming (don't reintroduce)
@@ -163,7 +170,10 @@ Everything below is built and verified running in a browser (18 overlay layers,
 4. The KLHK folder is largely exhausted — layers 3/5/6/11/12/14 are empty,
    broken or too large (see METHODOLOGY §4.4). If BIG ever fixes 6 (NSDH
    penutup lahan), "fires by land cover" is the obvious next chart.
-5. `Pelepasan kawasan hutan` and `hutan desa` are loaded but not analysed:
+5. Anything from BIG's other five public MapServers can now be added at runtime
+   rather than hard-coded — only promote one into `registry.ts` if it earns
+   bespoke styling, a legend or a caveat.
+6. `Pelepasan kawasan hutan` and `hutan desa` are loaded but not analysed:
    both are small enough to tag detections against the way the forest estate is,
    which would give "fires on released forest" and "fires in social forestry"
    for the cost of two more grid joins.
