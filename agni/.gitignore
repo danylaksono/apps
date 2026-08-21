@@ -30,3 +30,5 @@ pipeline/bin/
 
 # no longer needed, but keep for a while in case we want to restore
 AGENTS.md
+# Docs/scripts analysis cache (FIRMS CSVs, Hansen tiles, permit JSON)
+Docs/scripts/.cache*/
