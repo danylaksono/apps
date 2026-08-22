@@ -19,7 +19,7 @@ genuinely wild:
   4. BURSTS     Many simultaneous ignitions on one day, or a spreading front?
   5. OVERLAP    Could another permit holder be responsible for the clearing?
 
-None of these identify who lit anything. See INVESTIGATION.md section 1.8.
+None of these identify who lit anything. See INVESTIGATION.md section 2.8.
 """
 
 from __future__ import annotations
@@ -94,20 +94,29 @@ def load_permits(cache: str) -> list[dict]:
     return out
 
 
-def load_firms(cache: str, season: tuple[str, str]) -> list[tuple]:
+def load_firms(cache: str, season: tuple[str, str], bbox=None) -> list[tuple]:
     """Every cached detection, de-duplicated, filtered to the fire season.
 
     De-duplication matters: consecutive five-day windows overlap at the seams,
     and SP/NRT both cover the changeover period, so the raw file union
     double-counts. The key is (lat, lon, date, time) exactly as FIRMS prints it.
+
+    `bbox` discards rows outside the area of interest before anything else. The
+    cache is shared with `screen_region.py`, so it may hold an entire island —
+    over a million rows — when this script needs only the few thousand near one
+    concession. Filtering here keeps the de-duplication set small too.
     """
     seen: set[tuple] = set()
     rows: list[tuple] = []
+    west, south, east, north = bbox if bbox else (-180.0, -90.0, 180.0, 90.0)
     for path in sorted(glob.glob(os.path.join(cache, "firms", "*.csv"))):
         if os.path.getsize(path) == 0:
             continue
         with open(path, newline="") as fh:
             for r in csv.DictReader(fh):
+                lon, lat = float(r["longitude"]), float(r["latitude"])
+                if not (west <= lon <= east and south <= lat <= north):
+                    continue
                 key = (r["latitude"], r["longitude"], r["acq_date"], r["acq_time"])
                 if key in seen:
                     continue
@@ -117,8 +126,8 @@ def load_firms(cache: str, season: tuple[str, str]) -> list[tuple]:
                     continue
                 rows.append(
                     (
-                        float(r["longitude"]),
-                        float(r["latitude"]),
+                        lon,
+                        lat,
                         date,
                         float(r.get("frp") or 0),
                         r.get("confidence", ""),
@@ -143,8 +152,6 @@ def test_peers(target, permits, firms, grid, to_m, peer_box, min_coverage=0.60):
         if p["geom"].intersects(peer_box)
         and p["geom"].intersection(peer_box).area / p["geom"].area >= min_coverage
     ]
-    tree = STRtree([p["geom"] for p in inside])
-
     for p in inside:
         clipped = p["geom"].intersection(peer_box).buffer(0)
         p["clipped"] = clipped
@@ -152,10 +159,15 @@ def test_peers(target, permits, firms, grid, to_m, peer_box, min_coverage=0.60):
         p["ha"] = area_ha(clipped, to_m)
         p["det"] = Counter()
 
+    # Count against the CLIPPED polygon, matching the area and loss figures.
+    # Using the full polygon here would credit a partly-outside concession with
+    # detections from land that is not in its denominator, inflating its density
+    # by however much of it falls outside the box.
+    tree = STRtree([p["clipped"] for p in inside])
     for lon, lat, date, frp, _conf in firms:
         pt = Point(lon, lat)
         for i in tree.query(pt):
-            if inside[int(i)]["geom"].contains(pt):
+            if inside[int(i)]["clipped"].contains(pt):
                 inside[int(i)]["det"][int(date[:4])] += 1
                 break
 
@@ -476,7 +488,7 @@ def report_recent(target, cache, days=5):
 
 def main() -> int:
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
-    ap.add_argument("--cache", default=".cache")
+    ap.add_argument("--cache", default="../data")
     ap.add_argument("--name", default="KIANI LESTARI", help="substring of namobj")
     ap.add_argument("--season", default="06-01,11-30")
     # Two extents, deliberately different sizes:
@@ -527,7 +539,9 @@ def main() -> int:
     peer_box = box(pw, ps, pe, pn)
     ring_geom = ring_box.difference(target["geom"])
 
-    firms = load_firms(args.cache, season)
+    load_box = (min(rw, pw) - 0.1, min(rs, ps) - 0.1,
+                max(re_, pe) + 0.1, max(rn, pn) + 0.1)
+    firms = load_firms(args.cache, season, load_box)
     # The grid must cover the *peer* extent — the wider of the two — or peer
     # concessions would be scored against Hansen tiles that were never fetched.
     grid = LossGrid(args.cache, pw, ps, pe, pn)

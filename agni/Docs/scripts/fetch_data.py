@@ -25,6 +25,7 @@ import datetime as dt
 import json
 import os
 import sys
+import time
 import urllib.parse
 import urllib.request
 from concurrent.futures import ThreadPoolExecutor
@@ -55,48 +56,95 @@ FIRMS_WINDOW_DAYS = 5
 FIRMS_NRT_HORIZON_DAYS = 200
 
 
-def _get(url: str, timeout: int = 300) -> bytes:
-    with urllib.request.urlopen(url, timeout=timeout) as res:
-        return res.read()
+def _get(url: str, timeout: int = 300, retries: int = 4) -> bytes:
+    """GET with retries.
+
+    BIG's MapServer drops the connection outright (`RemoteDisconnected`) when a
+    query is too expensive for it, rather than returning an error document, and
+    it does so intermittently — the same request often succeeds on a second
+    attempt. Backing off and retrying is the difference between a whole-island
+    fetch completing and failing three quarters of the way through.
+    """
+    delay = 3.0
+    for attempt in range(retries):
+        try:
+            with urllib.request.urlopen(url, timeout=timeout) as res:
+                return res.read()
+        except Exception:
+            if attempt == retries - 1:
+                raise
+            time.sleep(delay)
+            delay *= 2
+    raise RuntimeError("unreachable")
 
 
 # ----------------------------------------------------------------- permits ---
 
 
-def fetch_permits(cache: str, province: str | None, simplify: float) -> None:
+def province_where(provinces: str | None) -> str:
+    """SQL for one or more `kdprv` codes. `--province 61,62,63,64,65` = Kalimantan."""
+    if not provinces:
+        return "1=1"
+    codes = [c.strip() for c in provinces.split(",") if c.strip()]
+    if len(codes) == 1:
+        return f"kdprv='{codes[0]}'"
+    return "kdprv IN (" + ",".join(f"'{c}'" for c in codes) + ")"
+
+
+def fetch_permits(cache: str, provinces: str | None, simplify: float, page: int = 50) -> None:
     """Pull permit polygons, one JSON file per layer.
 
     `maxAllowableOffset` simplifies geometry server-side — essential, because
     these polygons are unusably large at full precision. 0.0005 deg is ~55 m,
     fine enough that measured area lands within 0.1% of the decree area.
+
+    Paged in small batches, because a whole-island request is both slow and
+    liable to make BIG hang up: 161 IUPHHK-HA polygons for Kalimantan at 55 m
+    resolution is tens of megabytes, and the service closes the connection
+    rather than serving it. Pages are concatenated into one feature list on
+    disk, so the on-disk format is identical whether or not paging kicked in.
     """
     out_dir = os.path.join(cache, "permits")
     os.makedirs(out_dir, exist_ok=True)
 
-    where = f"kdprv='{province}'" if province else "1=1"
+    where = province_where(provinces)
     for name, (layer_id, label) in PERMIT_LAYERS.items():
         path = os.path.join(out_dir, f"{name}.json")
         if os.path.exists(path):
             print(f"  {name}: cached")
             continue
-        query = urllib.parse.urlencode(
-            {
-                "where": where,
-                "outFields": PERMIT_FIELDS,
-                "returnGeometry": "true",
-                "outSR": "4326",
-                "maxAllowableOffset": str(simplify),
-                "geometryPrecision": "6",
-                "f": "json",
-            }
-        )
         print(f"  {name}: {label} ...", end="", flush=True)
-        body = _get(f"{PERIZINAN}/{layer_id}/query?{query}")
-        data = json.loads(body)
-        n = len(data.get("features", []))
-        with open(path, "wb") as fh:
-            fh.write(body)
-        print(f" {n} features")
+
+        merged: dict | None = None
+        offset = 0
+        while True:
+            query = urllib.parse.urlencode(
+                {
+                    "where": where,
+                    "outFields": PERMIT_FIELDS,
+                    "returnGeometry": "true",
+                    "outSR": "4326",
+                    "maxAllowableOffset": str(simplify),
+                    "geometryPrecision": "6",
+                    "resultOffset": str(offset),
+                    "resultRecordCount": str(page),
+                    "f": "json",
+                }
+            )
+            data = json.loads(_get(f"{PERIZINAN}/{layer_id}/query?{query}"))
+            feats = data.get("features", [])
+            if merged is None:
+                merged = data
+            else:
+                merged["features"].extend(feats)
+            print(".", end="", flush=True)
+            if len(feats) < page:
+                break
+            offset += page
+
+        with open(path, "w", encoding="utf-8") as fh:
+            json.dump(merged, fh)
+        print(f" {len(merged.get('features', []))} features")
 
 
 def fetch_forest_estate(cache: str, bbox: str, simplify: float) -> None:
@@ -233,13 +281,18 @@ def fetch_firms(cache: str, bbox: str, year_from: int, year_to: int, season, wor
 def main() -> int:
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     ap.add_argument("step", choices=["permits", "firms", "hansen", "search", "all"])
-    ap.add_argument("--cache", default=".cache", help="cache directory")
+    ap.add_argument("--cache", default="../data", help="cache directory")
     ap.add_argument(
         "--bbox",
-        default="116.20,0.20,117.80,1.60",
-        help="west,south,east,north — default is the Kutai Timur study area",
+        default="108.60,-4.94,119.04,4.41",
+        help="west,south,east,north — default is the whole of Kalimantan",
     )
-    ap.add_argument("--province", default="64", help="kdprv code; 64 = Kalimantan Timur")
+    ap.add_argument(
+        "--province",
+        default="61,62,63,64,65",
+        help="kdprv code(s), comma-separated. Default is all five Kalimantan "
+             "provinces: 61 Kalbar, 62 Kalteng, 63 Kalsel, 64 Kaltim, 65 Kaltara",
+    )
     ap.add_argument("--from", dest="year_from", type=int, default=2013)
     ap.add_argument("--to", dest="year_to", type=int, default=dt.date.today().year)
     ap.add_argument("--season", default="06-01,11-30", help="MM-DD,MM-DD")

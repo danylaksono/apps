@@ -32,3 +32,10 @@ pipeline/bin/
 AGENTS.md
 # Docs/scripts analysis cache (FIRMS CSVs, Hansen tiles, permit JSON)
 Docs/scripts/.cache*/
+
+# Docs analysis data cache (FIRMS CSVs, Hansen tiles, permit JSON)
+Docs/data/
+
+# Python bytecode
+__pycache__/
+*.pyc

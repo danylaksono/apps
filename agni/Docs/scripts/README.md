@@ -11,7 +11,13 @@ the numbers in that document can be re-derived from scratch by anyone.
 | --- | --- |
 | `agni_spatial.py` | Shared helpers: Esri JSON → shapely, equal-area measurement, and the Hansen loss-year tile decoder (`LossGrid`) — the Python twin of `src/lib/gfwRaster.ts` |
 | `fetch_data.py` | Downloads permits, FIRMS detections and Hansen tiles into a local cache. Resumable |
-| `analyze_concession.py` | Runs the five tests and prints every table in INVESTIGATION.md §1 |
+| `screen_region.py` | Ranks every concession in a region by fire intensity and by how fast it is getting worse (INVESTIGATION.md §1) |
+| `analyze_concession.py` | The five deep-dive tests for one concession (INVESTIGATION.md §2) |
+
+The two analysis scripts answer different questions and are meant to be used in
+that order. `screen_region.py` sweeps hundreds of permits cheaply and tells you
+which ones are worth attention; `analyze_concession.py` is slow, thorough, and
+worth pointing at one permit at a time.
 
 ## Setup
 
@@ -28,26 +34,38 @@ export FIRMS_MAP_KEY=your_key      # falls back to the key in src/lib/config.ts
 
 Everything else — BIG SatuPeta and the GFW tile server — is keyless.
 
-## Reproducing section 1
+Data lands in `Docs/data/`, which is gitignored. A full Kalimantan cache is
+~90 MB of FIRMS CSVs plus a few hundred Hansen tiles.
+
+## Reproducing section 1 — the Kalimantan screen
 
 ```sh
 cd Docs/scripts
 
-python fetch_data.py all --cache .cache --bbox 116.20,0.20,117.80,1.60
+python fetch_data.py permits --cache ../data
+python fetch_data.py firms   --cache ../data --bbox 108.60,-4.94,119.04,4.41
 
-python analyze_concession.py --cache .cache --name "KIANI LESTARI" \
-    --ring-bbox 116.60,0.45,117.45,1.32 \
-    --peer-bbox 116.20,0.20,117.80,1.60
+python screen_region.py --cache ../data --top 25 --loss \
+    --csv ../data/kalimantan_concessions.csv
 ```
 
-The first command takes roughly 15–30 minutes on a cold cache — 518 FIRMS
-windows and ~320 Hansen tiles — and lands about 60 MB on disk. It is resumable,
-so an interrupted run costs nothing. The second takes a couple of minutes and is
-pure local computation.
+The FIRMS pull is 498 five-day windows and takes 20–40 minutes cold. It is
+resumable, so an interrupted run costs nothing to restart. The screen itself is
+a couple of minutes; `--loss` adds a few more while it fetches Hansen tiles for
+the leaders. The CSV carries every permit, not just the printed top rows.
+
+## Reproducing section 2 — one concession in depth
+
+```sh
+python analyze_concession.py --cache ../data --name "KIANI LESTARI" \
+    --ring-bbox 116.60,0.45,117.45,1.32 --peer-bbox 116.20,0.20,117.80,1.60
+```
+
+Reuses the same cache, so no extra download.
 
 **Pass both bboxes explicitly to reproduce the published tables.** Without them
 the extents are derived from the target polygon plus a margin, which selects a
-slightly different peer set. The two extents are deliberately different sizes:
+slightly different peer set. The two are deliberately different sizes:
 `--ring-bbox` is a tight collar used as the control in test 3, `--peer-bbox` is
 wide enough to capture comparable concessions for test 1.
 
@@ -57,38 +75,46 @@ Search the permit registry by company name, no download:
 
 ```sh
 python fetch_data.py search --term "KIANI"
-python fetch_data.py search --term "NUSANTARA"
 ```
 
-Analyse a different concession — any `namobj` substring that matches exactly one
-permit:
+Screen a different region — `--province` takes `kdprv` codes (61 Kalbar,
+62 Kalteng, 63 Kalsel, 64 Kaltim, 65 Kaltara, 14 Riau, 15 Jambi, 94 Papua …).
+Sumatra, for instance:
 
 ```sh
-python fetch_data.py all --cache .cache-berau --bbox 116.80,1.30,118.20,2.60
-python analyze_concession.py --cache .cache-berau --name "TANJUNG REDEB"
+python fetch_data.py permits --cache ../data-sumatra --province 11,12,13,14,15,16,17,18,19,21
+python fetch_data.py firms   --cache ../data-sumatra --bbox 95.0,-6.1,106.5,6.1
+python screen_region.py --cache ../data-sumatra --provinces 11,12,13,14,15,16,17,18,19,21 \
+    --kabkota ../../public/data/kabkota_indonesia.geojson
 ```
 
-A different province: `--province` takes a `kdprv` code (64 = Kalimantan Timur,
-62 = Kalimantan Tengah, 14 = Riau, 15 = Jambi …). A different fire season:
-`--season 01-01,12-31`.
+Analyse any concession whose `namobj` substring matches exactly one permit —
+take a name from the screen's top rows:
+
+```sh
+python analyze_concession.py --cache ../data --name "DWIMA INTIGA"
+```
+
+A different fire season: `--season 01-01,12-31`.
 
 ## Numbers that will drift
 
 - **FIRMS NRT is reprocessed into SP** several months later, with corrected
-  geolocation. Recent seasons will shift slightly as that happens. Delete the
-  affected `.cache/firms/*.csv` to re-pull.
+  geolocation. Recent seasons shift slightly as that happens. Delete the
+  affected `Docs/data/firms/*.csv` to re-pull. Re-running on a later date also
+  extends the current season, which is why every table carries a run date.
 - **Hansen publishes a new loss year annually.** Bump `LOSS_VERSION` in
   `agni_spatial.py` and raise `--max-loss-year` when v1.14 lands. Clear
-  `.cache/hansen/` after a version change — tiles are cached by z/x/y only.
+  `Docs/data/hansen/` after a version change — tiles are cached by z/x/y only.
 - **BIG republishes permit layers** without notice and carries no permit-status
   field, so a polygon here is not evidence of a valid permit. See
-  INVESTIGATION.md §1.3.
+  INVESTIGATION.md §2.3.
 - Rasterisation at z12 (~19 m/px) puts measured areas within ~1% of the vector
   area. `analyze_concession.py` prints both so the gap stays visible.
 
 ## Reading the output
 
-Read INVESTIGATION.md §1.8 first. In short: these scripts measure where fire and
-canopy loss occurred relative to a permit boundary. They do not identify who lit
-a fire, do not establish illegality, and carry no ownership information —
-no public spatial dataset does.
+Read INVESTIGATION.md §1.9 and §2.8 first. In short: these scripts measure where
+fire and canopy loss occurred relative to a permit boundary. They do not
+identify who lit a fire, do not establish illegality, and carry no ownership
+information — no public spatial dataset does.
