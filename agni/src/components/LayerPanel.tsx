@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import {
   CaretDown,
   CaretLeft,
@@ -17,6 +17,7 @@ import {
   WarningCircle,
 } from "@phosphor-icons/react";
 import FireFilters from "./FireFilters";
+import LayerInfoPopup from "./LayerInfoPopup";
 import AboutButton from "./AboutButton";
 import AddLayerButton from "./AddLayerButton";
 import { getMapRef } from "../lib/mapRef";
@@ -28,6 +29,7 @@ import type {
   LegendItem,
 } from "../layers/registry";
 import { LAYERS } from "../layers/registry";
+import { layerInfo } from "../layers/datasetInfo";
 import { buildCustomLayer } from "../layers/custom";
 import { useLayersStore } from "../store/layers";
 
@@ -43,7 +45,17 @@ const GROUP_META: Record<LayerGroup, { label: string; icon: typeof Fire }> = {
   custom: { label: "Your layers", icon: PlugsConnected },
 };
 
-function LayerRow({ d }: { d: LayerDescriptor }) {
+function LayerRow({
+  d,
+  infoOpen,
+  onOpenInfo,
+  onCloseInfo,
+}: {
+  d: LayerDescriptor;
+  infoOpen: boolean;
+  onOpenInfo: () => void;
+  onCloseInfo: () => void;
+}) {
   const visible = useLayersStore((s) => Boolean(s.visibility[d.id]));
   const opacity = useLayersStore((s) => s.opacity[d.id] ?? d.defaultOpacity);
   const availability = useLayersStore((s) => s.availability[d.id]);
@@ -53,6 +65,11 @@ function LayerRow({ d }: { d: LayerDescriptor }) {
   const mode = useLayersStore((s) => s.layerMode[d.id]);
   const setMode = useLayersStore((s) => s.setLayerMode);
   const unavailable = availability === "unavailable";
+
+  // Provenance is independent of whether the layer is drawn: the reason to
+  // open it is often to decide whether to switch the layer on at all, so the
+  // (i) stays available even when the source is down.
+  const info = layerInfo(d);
 
   // A server-rendered layer carries its symbology in the tiles, so its legend
   // has to be fetched. Done here rather than at add time so it costs nothing
@@ -98,6 +115,15 @@ function LayerRow({ d }: { d: LayerDescriptor }) {
         >
           {d.label}
         </span>
+        {info && (
+          <LayerInfoPopup
+            info={info}
+            label={d.label}
+            open={infoOpen}
+            onOpen={onOpenInfo}
+            onClose={onCloseInfo}
+          />
+        )}
         {d.group === "custom" && (
           <button
             type="button"
@@ -228,6 +254,14 @@ export default function LayerPanel() {
   );
 
   const q = query.trim().toLowerCase();
+
+  // Which row's provenance popup is showing. Held here rather than per row so
+  // opening one closes the last: they float over the panel, and two at once
+  // would overlap into nonsense.
+  const [openInfo, setOpenInfo] = useState<string | null>(null);
+  // Stable, so the popup's reposition listeners are not torn down and rebuilt
+  // on every render of the panel.
+  const closeInfo = useCallback(() => setOpenInfo(null), []);
 
   // The kab/kota polygons are already fetched to clip the fire layer, so this
   // is a cache read rather than a second download.
@@ -447,7 +481,13 @@ export default function LayerPanel() {
               <>
                 {group === "fire" && <FireFilters />}
                 {layers.map((d) => (
-                  <LayerRow key={d.id} d={d} />
+                  <LayerRow
+                    key={d.id}
+                    d={d}
+                    infoOpen={openInfo === d.id}
+                    onOpenInfo={() => setOpenInfo(d.id)}
+                    onCloseInfo={closeInfo}
+                  />
                 ))}
               </>
             )}

@@ -148,6 +148,62 @@ Two details keep the data path honest. The service's advertised
 that caps lower makes a short page look like the end of the data — and hitting
 the cap reports "partial coverage" rather than implying the layer is complete.
 
+### Dataset provenance (the (i) in each row)
+
+Every layer row carries a small (i) that opens a popup naming the source, native
+resolution, refresh cadence, coverage, how the data is fetched, the wire format,
+and a caveat — what the layer cannot be used to conclude.
+
+Under the Access prose sits `endpoint`: the request the app actually makes, with
+the parts that vary left as `{placeholders}`, monospaced and `select-all` so it
+can be copied and run. It is never a link — several are tile templates, one
+would download a 3.9 MB Parquet, and the FIRMS key is redacted out of it. Use
+`link` for the page a human should open instead; for the BIG layers that is the
+specific `MapServer/{layerId}`, which ArcGIS renders as a browsable page of
+fields, extent and record count.
+
+All of these strings are written in Simplified Technical English: short
+sentences, one idea each, active voice, plain words, no rhetorical flourish.
+Plenty of people reading an Indonesian fire map do not read English first, and a
+caveat that has to be parsed twice is worse than no caveat. The strings also say
+nothing about this codebase — no file paths, no internal protocol names, no
+library names. The reader is looking at a map, not at the source. Both rules
+cover the strings only, not the code comments around them.
+
+Endpoints are generated from `config.ts` wherever the app builds its real URL
+from the same values — GIBS from `GIBS_LAYERS`, CAMS from `CAMS_LAYERS`, GFW
+from `GFW_DATASETS` via `gfwVectorTiles()`, boundaries and population from the
+`BASE_URL`-aware constants. Retyping them would let the card drift from the
+fetch.
+
+`LayerInfoPopup.tsx` portals the card to `document.body` and positions it
+`fixed`, because the panel is `overflow-y-auto` and would otherwise clip
+anything absolutely positioned inside a row. Escaping the panel means placing it
+by hand: horizontally it clears the whole `aside` rather than the (i) itself, or
+it would sit on the panel's border; vertically it tracks its row. It re-places
+on scroll (capture phase, since a scroll inside the panel does not bubble) and
+on resize, and closes once its row scrolls out of the viewport, since by then it
+points at nothing. `LayerPanel` holds the id of the open row, so opening one
+closes the last — two floating over each other would be unreadable. Escape, an
+outside click and the (i) itself all dismiss it.
+
+The content lives in `src/layers/datasetInfo.ts`, keyed by descriptor id, rather
+than inline in the registry: provenance is worth reading end to end, with the
+resolutions and coverage gaps next to each other, which is impossible when it is
+spread through 1,200 lines of `addLayer` calls. Two exceptions carry their own
+`info` on the descriptor instead:
+
+- **GFW layers** — `gfwPolygonLayer()` generates source, maxzoom, tile URL and
+  the data-api link from the same pinned `GFW_DATASETS` entry that builds the
+  tiles, so a version bump cannot leave the card describing the previous one.
+  Its `info` option supplies only what the catalogue does not say.
+- **User-added layers** — `customInfo()` in `custom.ts` reports what the app
+  knows about a pasted URL and nothing more, since nobody has checked it.
+
+Only `source` and `api` are required; an omitted field simply does not render,
+which beats a row reading "unknown". Anything stated must be checkable — from
+this repo's own measurements, from `config.ts`, or from the publisher.
+
 ### Legends for server-rendered layers
 
 An `export` layer arrives already symbolised, so its colours would otherwise
@@ -196,8 +252,9 @@ Layers depending on live sources report `checking → ok | unavailable` to the s
 ## Adding a layer
 
 1. Append a `LayerDescriptor` to `src/layers/registry.ts`. For a GFW polygon dataset use the `gfwPolygonLayer()` factory in `src/layers/gfw.ts`; for a CAMS WMS layer use `camsImageLayer()` in `src/layers/cams.ts`.
-2. If it needs fetched data, add a module in `src/lib/` and wire the sync in `MapView`. Note that the store imports the registry, so **the registry must not import the store** — pass values in through a small module the way `lib/rasterDate.ts` does.
-3. Update this file and `METHODOLOGY.md`.
+2. Add a `LayerInfo` entry for it in `src/layers/datasetInfo.ts` (the `gfwPolygonLayer()` factory generates most of one for you). The panel hides the (i) when there is no entry, so a layer without one silently ships with no provenance.
+3. If it needs fetched data, add a module in `src/lib/` and wire the sync in `MapView`. Note that the store imports the registry, so **the registry must not import the store** — pass values in through a small module the way `lib/rasterDate.ts` does.
+4. Update this file and `METHODOLOGY.md`.
 
 If the layer is a one-off you want on the map rather than something the app is
 about, do not add a descriptor at all — paste its URL into "Add a remote layer".

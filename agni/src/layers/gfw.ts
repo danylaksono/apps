@@ -9,7 +9,12 @@
  *  overzooms the last level instead, which keeps vector edges sharp). */
 
 import type { Map as MaplibreMap } from "maplibre-gl";
-import type { LayerDescriptor, LayerGroup, LegendItem } from "./registry";
+import type {
+  LayerDescriptor,
+  LayerGroup,
+  LayerInfo,
+  LegendItem,
+} from "./registry";
 import { gfwVectorTiles } from "../lib/config";
 
 type GfwEntry = { dataset: string; version: string; maxzoom: number };
@@ -32,6 +37,11 @@ interface GfwPolygonOptions {
   nameField?: string;
   /** secondary attribute shown under the title */
   subField?: string;
+  /** Overrides for the generated provenance card. The dataset, version, tile
+   *  URL and API line are all derived from `entry`, so what is worth stating
+   *  by hand is only what GFW's catalogue does not say: who compiled the
+   *  polygons, how old they are, and what not to conclude from them. */
+  info?: Partial<LayerInfo>;
 }
 
 /** Attributes each GFW layer exposes for popups, keyed by layer id. */
@@ -57,6 +67,18 @@ export function gfwPolygonLayer(o: GfwPolygonOptions): LayerDescriptor {
     group: o.group,
     label: o.label,
     description: o.description,
+    // Derived from the same pinned entry that builds the tile URL, so a
+    // version bump cannot leave the panel describing the previous one.
+    info: {
+      source: `Global Forest Watch open data. Dataset ${o.entry.dataset}, version ${o.entry.version}.`,
+      resolution: `The tiles stop at zoom ${o.entry.maxzoom}. Above that the map stretches the last level, so the edges stay sharp but no new detail appears.`,
+      api: "Static XYZ vector tiles. Keyless, and they accept requests from other origins. The app pins a version instead of `latest`.",
+      endpoint: gfwVectorTiles(o.entry.dataset, o.entry.version),
+      format:
+        "Mapbox Vector Tiles. The source-layer name is the same as the dataset name.",
+      link: `https://data-api.globalforestwatch.org/dataset/${o.entry.dataset}`,
+      ...o.info,
+    },
     layerType: "fill",
     mapLayerIds: [o.id, lineId],
     defaultVisible: o.defaultVisible ?? false,

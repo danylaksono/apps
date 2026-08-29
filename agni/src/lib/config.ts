@@ -89,9 +89,11 @@ export const GIBS_LAYERS = {
     layer: "MODIS_Terra_CorrectedReflectance_TrueColor",
     matrixSet: "GoogleMapsCompatible_Level9",
     maxzoom: 9,
-    // GIBS declares image/jpeg for this one, but JPEG has no alpha and renders
-    // gaps between granules as black over the map. PNG is transcoded and a
-    // little larger; that is the right trade for an overlay.
+    // Asking for PNG here does nothing: measured August 2026, GIBS answers this
+    // product with image/jpeg under every extension, so the gaps between
+    // granules arrive black rather than transparent. Kept as png because it is
+    // what we would want if the server ever honoured it, and because the URL
+    // shape is what the provenance card shows.
     ext: "png",
   },
 } as const;

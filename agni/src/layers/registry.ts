@@ -48,11 +48,48 @@ export interface LegendItem {
   label: string;
 }
 
+/** Provenance for one layer, shown behind the (i) in the panel.
+ *
+ *  Only `source` and `api` are required — every layer can say who published it
+ *  and how the app reaches it. The rest are filled where there is something
+ *  true to say; a field left out simply does not render, which is better than a
+ *  row reading "unknown". The data lives in layers/datasetInfo.ts rather than
+ *  inline here, so provenance can be read and audited as one table instead of
+ *  being scattered through 1,200 lines of map plumbing. */
+export interface LayerInfo {
+  /** Publisher and dataset, named the way the publisher names it. */
+  source: string;
+  /** Native spatial resolution, or the unit the data is actually mapped in. */
+  resolution?: string;
+  /** Refresh cadence, or the vintage if it is a fixed snapshot. */
+  updated?: string;
+  /** Spatial extent — worth stating wherever it is not the whole country. */
+  coverage?: string;
+  /** How the app fetches it, in prose: protocol, keying, paging, caps. */
+  api: string;
+  /** The request the app actually makes, with the parts that vary left as
+   *  `{placeholders}`. Rendered verbatim and monospaced so it can be copied
+   *  and run — which is the point, and also why it is never a link: several of
+   *  these are tile templates, one downloads 3.9 MB, and the FIRMS key is
+   *  redacted out of it. Use `link` for something a human should open. */
+  endpoint?: string;
+  /** What arrives on the wire, and anything done to it in the browser. */
+  format?: string;
+  /** What to know before drawing a conclusion from this layer. */
+  caveat?: string;
+  /** The authoritative page for the dataset. */
+  link?: string;
+}
+
 export interface LayerDescriptor {
   id: string;
   group: LayerGroup;
   label: string;
   description: string;
+  /** Provenance for the panel's (i). Built-in layers leave this unset and are
+   *  looked up in datasetInfo.ts; runtime layers carry their own, since
+   *  nothing can be known about a pasted URL until it is pasted. */
+  info?: LayerInfo;
   /** primary map layer type, drives default opacity mapping */
   layerType: "circle" | "raster" | "fill" | "line";
   defaultVisible: boolean;
@@ -1072,6 +1109,12 @@ export const LAYERS: LayerDescriptor[] = [
     description:
       "The same forest estate classes as vector tiles, drawn instantly and at any zoom. GFW's copy is a 2017 vintage and arrives tiled, so it cannot be counted against — use it to read the map, and the KLHK penetapan layer above for the numbers.",
     entry: GFW_DATASETS.forestArea,
+    info: {
+      updated:
+        "The GFW copy is from 2017. The KLHK penetapan layer above it is seven years newer.",
+      caveat:
+        "These are tiles, so the map draws them at once and at any zoom, but the app cannot count them. Read the map with this layer. Take numbers from the KLHK penetapan layer.",
+    },
     color: "#34d399",
     fillAlpha: 0.14,
     fillColor: [
@@ -1106,6 +1149,12 @@ export const LAYERS: LayerDescriptor[] = [
     description:
       "Mapped oil palm concession boundaries (batas perkebunan sawit) from GFW. Fires clustered inside a concession indicate land clearing rather than wildfire.",
     entry: GFW_DATASETS.oilPalm,
+    info: {
+      coverage:
+        "Mapped concessions only. No polygon means no mapped boundary. It does not mean no plantation.",
+      caveat:
+        "A concession boundary shows where a permit applies. It does not show who started a fire inside it. The boundaries come from government and company sources of different ages.",
+    },
     color: "#f472b6",
     nameField: "conc_name",
     subField: "company",
@@ -1117,6 +1166,12 @@ export const LAYERS: LayerDescriptor[] = [
     description:
       "RSPO-certified oil palm concessions. Burning inside a certified area carries compliance implications in addition to environmental ones.",
     entry: GFW_DATASETS.rspoOilPalm,
+    info: {
+      source:
+        "Roundtable on Sustainable Palm Oil, through Global Forest Watch open data. Dataset rspo_oil_palm, version v2025.",
+      caveat:
+        "Certification covers the area the member mapped at the time of the assessment. A fire inside one can affect that certification. Check the record before you make a claim about it.",
+    },
     color: "#fb7185",
     nameField: "company",
     subField: "comp_group",
@@ -1128,6 +1183,10 @@ export const LAYERS: LayerDescriptor[] = [
     description:
       "Wood fiber and industrial timber plantation concessions, frequently sited on drained peat.",
     entry: GFW_DATASETS.woodFiber,
+    info: {
+      caveat:
+        "Companies often put these plantations on drained peat. Read this layer together with the peat layers. Drainage is what lets peat burn.",
+    },
     color: "#a78bfa",
     nameField: "conc_name",
     subField: "company",
@@ -1139,6 +1198,12 @@ export const LAYERS: LayerDescriptor[] = [
     description:
       "Selective logging concessions. Drainage canals and skid trails dry the forest floor and carry fire inland.",
     entry: GFW_DATASETS.logging,
+    info: {
+      updated:
+        "Version v202106. This is the oldest concession layer, so a boundary can have a new holder by now.",
+      caveat:
+        "Selective logging leaves canals and skid trails. These dry the forest floor and carry fire inland, so the effect lasts longer than the felling.",
+    },
     color: "#60a5fa",
     nameField: "name",
     subField: "company",
@@ -1149,6 +1214,10 @@ export const LAYERS: LayerDescriptor[] = [
     label: "Mining concessions",
     description: "Mining concession boundaries. Source: GFW.",
     entry: GFW_DATASETS.mining,
+    info: {
+      caveat:
+        "These are permit boundaries, not open pits. Much of a permit area can be untouched.",
+    },
     color: "#94a3b8",
     nameField: "conc_name",
     subField: "mineral",
@@ -1162,6 +1231,14 @@ export const LAYERS: LayerDescriptor[] = [
     description:
       "Indonesia's primary forest and peatland moratorium areas. New concessions are barred here, so fires inside them warrant scrutiny.",
     entry: GFW_DATASETS.moratorium,
+    info: {
+      source:
+        "PIPPIB, the Indonesian moratorium on primary forest and peatland, through Global Forest Watch open data. Dataset idn_forest_moratorium, version v20200923.",
+      updated:
+        "The revision of September 2020. PIPPIB changes from time to time, so a current boundary can differ.",
+      caveat:
+        "New concessions are not permitted inside these areas. Check the record first if a fire starts here. The moratorium controls permits, not people.",
+    },
     color: "#22d3ee",
     nameField: "pippib_en",
   }),
@@ -1172,6 +1249,13 @@ export const LAYERS: LayerDescriptor[] = [
     description:
       "National parks and reserves. Fire inside a protected area carries the greatest biodiversity impact.",
     entry: GFW_DATASETS.protectedAreas,
+    info: {
+      source:
+        "World Database on Protected Areas (UNEP-WCMC and IUCN), through Global Forest Watch open data. Dataset wdpa_protected_areas, version v202512.",
+      caveat:
+        "WDPA holds designations of very different strength, from strict nature reserves to managed-resource areas. Click a polygon and read `desig_eng` to tell them apart.",
+      link: "https://www.protectedplanet.net/",
+    },
     color: "#4ade80",
     nameField: "name",
     subField: "desig_eng",

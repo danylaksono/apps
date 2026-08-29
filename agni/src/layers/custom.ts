@@ -31,6 +31,7 @@ import {
   removeLayerSafe,
   removeSourceIfUnused,
   type LayerDescriptor,
+  type LayerInfo,
 } from "./registry";
 
 /** How a custom layer draws itself.
@@ -97,6 +98,50 @@ export function customLayerId(label: string): string {
   return `custom-${slug}-${Date.now().toString(36).slice(-5)}`;
 }
 
+/** Provenance for a layer the user added themselves.
+ *
+ *  The built-ins have a hand-checked entry in datasetInfo.ts; a pasted URL has
+ *  nothing but the spec, so this reports exactly what the app knows and does
+ *  not dress it up. Whoever pasted the URL is the authority on what is behind
+ *  it, which is what the caveat says. */
+function customInfo(spec: CustomLayerSpec, tiles?: string): LayerInfo {
+  const detail: Record<
+    CustomKind,
+    Pick<LayerInfo, "api" | "endpoint" | "format">
+  > = {
+    "arcgis-image": {
+      api: `ArcGIS MapServer export, sublayer ${spec.layerId ?? 0}. The server draws each tile when the app asks for it.`,
+      endpoint: tiles ?? spec.url,
+      format:
+        "PNG drawn by the server. These are pixels, so the layer works at any feature count, but you cannot click it or count it.",
+    },
+    "arcgis-vector": {
+      api: "ArcGIS REST query. The app reads the features page by page.",
+      endpoint: `${spec.url}/${spec.layerId ?? 0}/query?f=geojson`,
+      format:
+        "GeoJSON with real features, so the click popup can read them. The paging limit of the service caps how many arrive.",
+    },
+    xyz: {
+      api: "XYZ raster template. The app requests the tiles without change.",
+      endpoint: spec.url,
+      format:
+        "Raster tiles as the server sends them. The app does not decode or restyle them.",
+    },
+    geojson: {
+      api: "The app downloads the whole file once, when you add the layer.",
+      endpoint: spec.url,
+      format: "GeoJSON, drawn in the colour the app gave the layer.",
+    },
+  };
+  return {
+    source: "Added at run time. This layer is not part of the app catalogue.",
+    ...detail[spec.kind],
+    caveat:
+      "Nobody has checked this source against the publisher. The resolution, the age and the licence are whatever the endpoint sends. The app knows only the URL you gave it.",
+    link: spec.url,
+  };
+}
+
 // ----------------------------------------------------------- descriptors ---
 
 function rasterDescriptor(
@@ -108,6 +153,7 @@ function rasterDescriptor(
     group: "custom",
     label: spec.label,
     description: spec.description,
+    info: customInfo(spec, tiles),
     layerType: "raster",
     defaultVisible: true,
     defaultOpacity: 0.85,
@@ -143,6 +189,7 @@ function vectorDescriptor(spec: CustomLayerSpec): LayerDescriptor {
     mapLayerIds: multi ? [spec.id, lineId] : [spec.id],
     label: spec.label,
     description: spec.description,
+    info: customInfo(spec),
     layerType: geometry === "point" ? "circle" : geometry === "line" ? "line" : "fill",
     defaultVisible: true,
     defaultOpacity: 0.9,

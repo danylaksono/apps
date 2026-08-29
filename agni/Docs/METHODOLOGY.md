@@ -12,7 +12,7 @@ How Agni sources, processes, and visualises data. Read this before adding or mod
 
 1. **Static-first, keyless-first.** Boundaries are pre-baked into PMTiles and population into Parquet, served from `public/data/` — no tile server, no API key. Every live source but FIRMS is keyless.
 2. **Live layers degrade gracefully.** FIRMS (API key), GIBS (keyless), KHG (token-gated) are optional. If a source fails, the layer is marked unavailable in the UI; the rest of the map keeps working.
-3. **Config-driven layers.** Every layer is a typed descriptor in `src/layers/registry.ts`. Adding a layer = appending a descriptor; the store, panel, legend, and map sync pick it up automatically.
+3. **Config-driven layers.** Every layer is a typed descriptor in `src/layers/registry.ts`. Adding a layer = appending a descriptor; the store, panel, legend, and map sync pick it up automatically. Its provenance — source, resolution, cadence, coverage, endpoint and caveat — is a matching entry in `src/layers/datasetInfo.ts`, shown behind the (i) in the layer row so the map states its own limits rather than leaving them in this file.
 4. **Client-side analytics.** KPIs and charts are computed in the browser — turf.js for spatial joins, DuckDB-WASM for the population aggregates. No backend.
 5. **One filter, one truth.** The filter row scopes the map, the KPI cards and every chart from a single `FireFilters` object, so the three cannot disagree.
 

@@ -91,7 +91,7 @@ Project context and knowledge base for AI agents working on this repository.
 ## Architecture Decisions
 
 - **Static-first, keyless-first**: core layers always render (pre-baked PMTiles + keyless sources); live/token-gated sources are optional, config-driven, and degrade gracefully.
-- **Config-driven layer registry** (`src/layers/registry.ts`): each layer is a typed descriptor (id, group, label, icon, type, source spec, paint/layout, opacity, legend, enabled default). Adding a layer = appending a descriptor.
+- **Config-driven layer registry** (`src/layers/registry.ts`): each layer is a typed descriptor (id, group, label, icon, type, source spec, paint/layout, opacity, legend, enabled default). Adding a layer = appending a descriptor, plus its provenance entry in `src/layers/datasetInfo.ts` — the source, resolution, endpoint and caveat behind the (i) in each layer row.
 - **Zustand store** (`src/store/layers.ts`): per-layer visibility/opacity, active basemap, hovered feature, KPI results. Map effects subscribe and add/remove sources+layers reactively.
 - **Data pipeline** (`pipeline/`, Python): converts local gpkg/geojson → PMTiles in `public/data/`. No tile server; fully static deploy.
 - **KPI scaffold** (later): exposed population (H3 hexes in fire-buffer), active fire count, affected kabupaten/kecamatan count, peat area in buffer, max AOD — via turf.js.
