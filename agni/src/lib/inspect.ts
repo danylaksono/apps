@@ -19,8 +19,10 @@ function esc(v: unknown): string {
     .replace(/"/g, "&quot;");
 }
 
-/** Layer ids to query, in the order they should appear in the popup. */
-function queryableLayerIds(map: MaplibreMap): string[] {
+/** Layer ids to query, in the order they should appear in the popup. Also the
+ *  query scope itself: only the registry's layers are inspectable, and the
+ *  basemap's own layers must never be swept up with them. */
+export function inspectableLayerIds(map: MaplibreMap): string[] {
   const ids: string[] = [];
   for (const d of allLayers()) {
     // fill layers carry the attributes; the -line twin would just duplicate
@@ -92,7 +94,7 @@ export function buildInspectHtml(
 ): string | null {
   if (!features.length) return null;
 
-  const order = queryableLayerIds(map);
+  const order = inspectableLayerIds(map);
   const byLayer = new Map<string, MapGeoJSONFeature>();
   for (const f of features) {
     if (!byLayer.has(f.layer.id)) byLayer.set(f.layer.id, f);

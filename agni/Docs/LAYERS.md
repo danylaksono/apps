@@ -6,10 +6,10 @@ Every layer is a descriptor in `src/layers/registry.ts`. IDs are stable — the 
 
 | ID          | Source                       | Type   | Notes                         |
 | ----------- | ---------------------------- | ------ | ----------------------------- |
-| `dark`      | CARTO Dark Matter            | raster | default                       |
+| `dark`      | OpenFreeMap Dark             | vector | default                       |
 | `satellite` | Esri World Imagery           | raster |                               |
 | `osm`       | OpenStreetMap standard tiles | raster | capped at z19 per OSMF policy |
-| `light`     | CARTO Voyager                | raster |                               |
+| `light`     | OpenFreeMap Positron         | vector |                               |
 
 ## Overlay layers
 

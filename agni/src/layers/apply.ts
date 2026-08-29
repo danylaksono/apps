@@ -9,6 +9,10 @@ import { allLayers } from "./custom";
 import type { LayerDescriptor } from "./registry";
 import { BASEMAPS, basemapSourceId } from "./basemaps";
 import {
+  vectorBasemapLayerIds,
+  vectorBasemapRevision,
+} from "./vectorBasemap";
+import {
   applyFireFilters,
   fireFilterExpression,
   latestTimestamp,
@@ -43,6 +47,33 @@ function enforceOrder(map: MaplibreMap): void {
   for (const p of present) {
     // no beforeId => move to the very top of the stack
     map.moveLayer(p.id);
+  }
+}
+
+/** Basemaps are all pre-registered in the style, so switching is a visibility
+ *  toggle rather than a setStyle. A raster basemap is one layer; a vector one
+ *  is however many its style JSON brought, and those arrive asynchronously —
+ *  hence the revision in the key, which makes a freshly injected basemap look
+ *  like a change even when the selection did not move.
+ *
+ *  Keyed per map instance so a remount cannot inherit a verdict about a style
+ *  that no longer exists. */
+const appliedBasemap = new WeakMap<MaplibreMap, string>();
+
+function syncBasemaps(map: MaplibreMap, selected: string): void {
+  const key = `${selected}|${vectorBasemapRevision()}`;
+  if (appliedBasemap.get(map) === key) return;
+  appliedBasemap.set(map, key);
+
+  for (const b of BASEMAPS) {
+    const visibility = b.id === selected ? "visible" : "none";
+    const ids =
+      b.kind === "vector"
+        ? vectorBasemapLayerIds(map, b.id)
+        : [basemapSourceId(b.id)];
+    for (const id of ids) {
+      if (map.getLayer(id)) map.setLayoutProperty(id, "visibility", visibility);
+    }
   }
 }
 
@@ -97,17 +128,7 @@ export function currentFilteredFires(): FeatureCollection | null {
 export function applyMapState(map: MaplibreMap, state: MapSyncState): boolean {
   if (!map.isStyleLoaded()) return false;
 
-  // basemaps: toggle visibility (all pre-registered in the base style)
-  for (const b of BASEMAPS) {
-    const layerId = basemapSourceId(b.id);
-    if (map.getLayer(layerId)) {
-      map.setLayoutProperty(
-        layerId,
-        "visibility",
-        b.id === state.basemap ? "visible" : "none",
-      );
-    }
-  }
+  syncBasemaps(map, state.basemap);
 
   // overlay layers
   for (const d of allLayers()) {

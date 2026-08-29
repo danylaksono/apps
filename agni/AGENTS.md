@@ -71,7 +71,7 @@ Project context and knowledge base for AI agents working on this repository.
 
 | Group       | Layer                                         | Source                                                    |
 | ----------- | --------------------------------------------- | --------------------------------------------------------- |
-| Basemap     | Satellite / Dark / Light                      | Esri World Imagery, CARTO Dark Matter, CARTO Voyager      |
+| Basemap     | Satellite / Dark / Light / OSM                | Esri World Imagery, OpenFreeMap Dark + Positron, OSM      |
 | Fire        | Active fire points (NOAA21/SNPP/MODIS)        | FIRMS `/api/area/csv` with Kalimantan bbox                |
 | Fire        | Fire heatmap + glow                           | derived from FIRMS points                                 |
 | Haze        | Aerosol Optical Depth                         | NASA GIBS (keyless WMTS) — needs endpoint re-verification |

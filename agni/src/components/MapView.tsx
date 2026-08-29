@@ -17,8 +17,18 @@ import maplibreWorkerUrl from "maplibre-gl/dist/maplibre-gl-worker.mjs?worker&ur
 import type { MapMouseEvent, StyleSpecification } from "maplibre-gl";
 import { Protocol } from "pmtiles";
 import "maplibre-gl/dist/maplibre-gl.css";
-import { BASEMAPS, DEFAULT_BASEMAP, basemapSourceId } from "../layers/basemaps";
-import { buildInspectHtml } from "../lib/inspect";
+import {
+  BASEMAPS,
+  DEFAULT_BASEMAP,
+  OFM_GLYPHS,
+  OFM_SPRITE,
+  basemapSourceId,
+} from "../layers/basemaps";
+import {
+  cancelVectorBasemaps,
+  ensureVectorBasemap,
+} from "../layers/vectorBasemap";
+import { buildInspectHtml, inspectableLayerIds } from "../lib/inspect";
 import { applyMapState, currentFilteredFires } from "../layers/apply";
 import { GLYPH_SOURCE, updateGlyphs, type GlyphMode } from "../layers/glyphs";
 import {
@@ -49,7 +59,10 @@ function buildBaseStyle(): StyleSpecification {
       paint: { "background-color": "#07090d" },
     },
   ];
+  // Only the raster basemaps can be declared up front. The vector ones are a
+  // style JSON each, fetched and spliced in on first use — see vectorBasemap.ts.
   for (const b of BASEMAPS) {
+    if (b.kind !== "raster") continue;
     const id = basemapSourceId(b.id);
     sources[id] = {
       type: "raster",
@@ -65,7 +78,10 @@ function buildBaseStyle(): StyleSpecification {
       layout: { visibility: b.id === DEFAULT_BASEMAP ? "visible" : "none" },
     });
   }
-  return { version: 8, sources, layers };
+  // Declared here rather than set later with setGlyphs/setSprite: every OFM
+  // style points at these same two endpoints, so there is nothing to defer,
+  // and a spliced-in style can draw its labels the moment it lands.
+  return { version: 8, glyphs: OFM_GLYPHS, sprite: OFM_SPRITE, sources, layers };
 }
 
 /** Minimal subset of the store the map needs to apply. */
@@ -126,6 +142,7 @@ export default function MapView() {
     };
     map.on("load", () => {
       applyAll();
+      syncBasemap();
     });
     // BIG layers are fetched the first time they are switched on, not upfront;
     // GIBS layers resolve their date the same way. Both report through
@@ -141,6 +158,14 @@ export default function MapView() {
           setAvailability(g.id, status, reason),
         );
       }
+    };
+    // A vector basemap is only fetched once it is actually asked for, and it
+    // lands after the store change that selected it — applyAll again then, so
+    // the layers it brought get their visibility set.
+    const syncBasemap = () => {
+      const selected = useLayersStore.getState().basemap;
+      const def = BASEMAPS.find((b) => b.id === selected);
+      if (def?.kind === "vector") ensureVectorBasemap(map, def, applyAll);
     };
     // repoint the CAMS image sources; setCamsTime skips sources already there
     const syncCamsTime = () => {
@@ -165,6 +190,7 @@ export default function MapView() {
     const unsubscribe = useLayersStore.subscribe(() => {
       syncRasterDate();
       applyAll();
+      syncBasemap();
       syncBigLayers();
       syncCamsTime();
       refreshPopulation(map);
@@ -229,7 +255,13 @@ export default function MapView() {
       useLayersStore
         .getState()
         .setProbePoint({ lon: e.lngLat.lng, lat: e.lngLat.lat });
-      const html = buildInspectHtml(map, map.queryRenderedFeatures(e.point));
+      // Scoped to the registry's layers: a vector basemap puts fifty layers of
+      // water, landuse and roads under the cursor that the popup would only
+      // throw away again.
+      const html = buildInspectHtml(
+        map,
+        map.queryRenderedFeatures(e.point, { layers: inspectableLayerIds(map) }),
+      );
       if (!html) {
         popup.remove();
         return;
@@ -243,6 +275,7 @@ export default function MapView() {
       map.off("click", onClick);
       popup.remove();
       unsubscribe();
+      cancelVectorBasemaps(map);
       setMapRef(null);
       map.remove();
       removeProtocol("pmtiles");
