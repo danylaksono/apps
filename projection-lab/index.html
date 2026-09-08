@@ -1,0 +1,273 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <title>Projection Lab — compare map projections</title>
+  <meta name="description"
+    content="An interactive comparison of map projections: side by side, overlaid, or as small multiples, with configurable projection parameters, zoom and distortion analysis." />
+  <link rel="icon"
+    href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Ccircle cx='16' cy='16' r='13' fill='none' stroke='%237cdbff' stroke-width='2.5'/%3E%3Cellipse cx='16' cy='16' rx='5.5' ry='13' fill='none' stroke='%237cdbff' stroke-width='2'/%3E%3Cpath d='M3.6 11h24.8M3.6 21h24.8' stroke='%237cdbff' stroke-width='2'/%3E%3C/svg%3E" />
+  <link rel="stylesheet" href="styles.css" />
+</head>
+
+<body data-theme="dark">
+  <header class="topbar">
+    <div class="brand">
+      <span class="logo" aria-hidden="true">◍</span>
+      <div class="brand-text">
+        <h1>Projection Lab</h1>
+        <p><span id="projection-total">—</span> projections · drag to spin · scroll to zoom</p>
+      </div>
+    </div>
+
+    <div class="modes" role="group" aria-label="Comparison mode">
+      <button type="button" data-mode="side" class="is-active">Side by side</button>
+      <button type="button" data-mode="overlay">Overlay</button>
+      <button type="button" data-mode="multiples">Small multiples</button>
+    </div>
+
+    <div class="topbar-actions">
+      <button type="button" id="zoom-out" class="icon" title="Zoom out (−)">−</button>
+      <button type="button" id="zoom-in" class="icon" title="Zoom in (+)">+</button>
+      <button type="button" id="reset-view" class="ghost" title="Reset orientation and zoom (r)">Reset</button>
+      <button type="button" id="copy-link" class="ghost" title="Copy a link that restores this exact view">Link</button>
+      <button type="button" id="export-png" class="ghost" title="Download the current comparison as a PNG">PNG</button>
+      <button type="button" id="theme-toggle" class="icon" title="Switch to light theme">☾</button>
+      <button type="button" id="sidebar-toggle" class="icon" title="Show/hide the controls">☰</button>
+    </div>
+  </header>
+
+  <div class="layout">
+    <aside class="sidebar" aria-label="Controls">
+
+      <section class="group">
+        <h2>Projections</h2>
+        <div class="control">
+          <label for="select-a"><span class="dot dot-a"></span>Projection A</label>
+          <select id="select-a"></select>
+        </div>
+        <div class="control">
+          <label for="select-b"><span class="dot dot-b"></span>Projection B</label>
+          <select id="select-b"></select>
+        </div>
+        <button type="button" id="swap" class="ghost full">⇄ Swap A and B</button>
+
+        <div class="only-side">
+          <p class="label-row">Split direction</p>
+          <div class="segmented segmented-3">
+            <label><input type="radio" name="split-orientation" value="auto" checked><span>Auto</span></label>
+            <label><input type="radio" name="split-orientation" value="columns"><span>Columns</span></label>
+            <label><input type="radio" name="split-orientation" value="rows"><span>Rows</span></label>
+          </div>
+        </div>
+
+        <div class="only-overlay">
+          <p class="label-row">Overlay style</p>
+          <div class="segmented">
+            <label><input type="radio" name="overlay-style" value="blend" checked><span>Blend</span></label>
+            <label><input type="radio" name="overlay-style" value="wipe"><span>Wipe</span></label>
+          </div>
+          <div class="control">
+            <label for="overlay-opacity">Blend opacity<output>0.55</output></label>
+            <input id="overlay-opacity" type="range" min="0.1" max="1" step="0.05" value="0.55">
+          </div>
+          <p class="hint">In wipe mode, drag the divider on the map.</p>
+        </div>
+      </section>
+
+      <section class="group">
+        <h2>Orientation &amp; view</h2>
+        <div class="control">
+          <label for="rot-lambda">Rotate λ — longitude<output>0°</output></label>
+          <input id="rot-lambda" type="range" min="-180" max="180" step="0.5" value="0">
+        </div>
+        <div class="control">
+          <label for="rot-phi">Rotate φ — latitude<output>0°</output></label>
+          <input id="rot-phi" type="range" min="-90" max="90" step="0.5" value="0">
+        </div>
+        <div class="control">
+          <label for="rot-gamma">Rotate γ — roll<output>0°</output></label>
+          <input id="rot-gamma" type="range" min="-180" max="180" step="0.5" value="0">
+        </div>
+        <div class="control">
+          <label for="zoom">Zoom<output>×1.00</output></label>
+          <input id="zoom" type="range" min="-2.7" max="5.9" step="0.01" value="0">
+        </div>
+        <div class="control">
+          <label for="view-preset">Preset orientation</label>
+          <select id="view-preset"></select>
+        </div>
+
+        <p class="label-row">Drag gesture <span class="hint-inline">(hold Shift for the other one)</span></p>
+        <div class="segmented">
+          <label><input type="radio" name="drag-mode" value="rotate" checked><span>Rotate</span></label>
+          <label><input type="radio" name="drag-mode" value="pan"><span>Pan</span></label>
+        </div>
+        <label class="check"><input type="checkbox" id="lock-roll" checked><span>Keep roll fixed while
+            dragging</span></label>
+        <label class="check"><input type="checkbox" id="spin"><span>Spin continuously</span></label>
+        <div class="control">
+          <label for="spin-speed">Spin speed<output>8°/s</output></label>
+          <input id="spin-speed" type="range" min="1" max="60" step="1" value="8">
+        </div>
+
+        <p class="label-row">Scale reference</p>
+        <div class="segmented">
+          <label><input type="radio" name="fit-mode" value="fit" checked><span>Fit each panel</span></label>
+          <label><input type="radio" name="fit-mode" value="equal"><span>Equal radius</span></label>
+        </div>
+        <p class="hint">“Equal radius” gives every projection the same sphere radius, so the panels are directly
+          comparable in size — wide projections then spill past the frame.</p>
+      </section>
+
+      <section class="group">
+        <h2>Projection parameters</h2>
+        <label class="check"><input type="checkbox" id="link-params" checked><span>Share orientation &amp; parameters
+            between A and B</span></label>
+        <div class="only-unlinked">
+          <p class="label-row">Editing</p>
+          <div class="segmented">
+            <label><input type="radio" name="editing" value="a" checked><span id="editing-label-a">A</span></label>
+            <label><input type="radio" name="editing" value="b"><span id="editing-label-b">B</span></label>
+          </div>
+        </div>
+        <div id="param-controls"></div>
+      </section>
+
+      <section class="group">
+        <h2>Distortion</h2>
+        <div class="segmented segmented-3">
+          <label><input type="radio" name="distortion" value="none" checked><span>Off</span></label>
+          <label><input type="radio" name="distortion" value="area"><span>Area</span></label>
+          <label><input type="radio" name="distortion" value="angular"><span>Shape</span></label>
+        </div>
+        <div class="control">
+          <label for="distortion-step">Shading grid<output>10°</output></label>
+          <input id="distortion-step" type="range" min="4" max="30" step="1" value="10">
+        </div>
+        <div class="control">
+          <label for="distortion-alpha">Shading opacity<output>0.72</output></label>
+          <input id="distortion-alpha" type="range" min="0.1" max="1" step="0.02" value="0.72">
+        </div>
+        <label class="check"><input type="checkbox" id="layer-tissot"><span>Tissot indicatrices</span></label>
+        <div class="control">
+          <label for="tissot-step">Indicatrix spacing<output>30°</output></label>
+          <input id="tissot-step" type="range" min="10" max="60" step="5" value="30">
+        </div>
+        <div class="control">
+          <label for="tissot-radius">Indicatrix radius<output>6.0°</output></label>
+          <input id="tissot-radius" type="range" min="1" max="15" step="0.5" value="6">
+        </div>
+        <p class="hint">Each indicatrix is a true circle on the globe: drawn as an ellipse, shape is distorted; drawn
+          bigger, area is inflated. While shading is on, land is reduced to an outline so the colours read across the
+          whole map.</p>
+      </section>
+
+      <section class="group">
+        <h2>Layers &amp; style</h2>
+        <div class="checks">
+          <label class="check"><input type="checkbox" id="layer-ocean" checked><span>Ocean</span></label>
+          <label class="check"><input type="checkbox" id="layer-land" checked><span>Land</span></label>
+          <label class="check"><input type="checkbox" id="layer-borders" checked><span>Borders</span></label>
+          <label class="check"><input type="checkbox" id="layer-graticule" checked><span>Graticule</span></label>
+          <label class="check"><input type="checkbox" id="layer-sphere" checked><span>Outline</span></label>
+          <label class="check"><input type="checkbox" id="show-labels" checked><span>Panel labels</span></label>
+          <label class="check"><input type="checkbox" id="show-metrics" checked><span>Distortion badges</span></label>
+        </div>
+        <div class="control">
+          <label for="graticule-step">Graticule step<output>20°</output></label>
+          <input id="graticule-step" type="range" min="5" max="45" step="5" value="20">
+        </div>
+        <p class="label-row">Coastline detail</p>
+        <div class="segmented">
+          <label><input type="radio" name="detail" value="110m" checked><span>1:110m</span></label>
+          <label><input type="radio" name="detail" value="50m"><span>1:50m</span></label>
+        </div>
+        <button type="button" id="clear-highlight" class="ghost full">Clear country highlight</button>
+        <p class="hint">Click a country on any map to highlight it everywhere — the quickest way to see how a projection
+          treats one shape.</p>
+      </section>
+
+      <section class="group">
+        <h2>Small multiples</h2>
+        <div class="control">
+          <label for="preset-select">Load a set</label>
+          <select id="preset-select">
+            <option value="">Choose a preset…</option>
+            <option value="popular">Popular world maps</option>
+            <option value="compromise">Compromise / general purpose</option>
+            <option value="equalArea">Equal-area</option>
+            <option value="conformal">Conformal</option>
+            <option value="globes">Globes / azimuthal</option>
+            <option value="conic">Conic</option>
+            <option value="interrupted">Interrupted &amp; polyhedral</option>
+            <option value="all">Everything</option>
+          </select>
+        </div>
+        <div class="control">
+          <label for="multiple-cols">Columns<output>auto</output></label>
+          <input id="multiple-cols" type="range" min="0" max="8" step="1" value="0">
+        </div>
+        <div class="browser-toolbar">
+          <input id="browser-search" type="search" placeholder="Search projections…" aria-label="Search projections">
+          <span id="multiple-count" class="pill">0 selected</span>
+          <button type="button" id="browser-clear" class="mini">clear</button>
+        </div>
+        <div id="browser-list" class="browser-list"></div>
+      </section>
+
+      <section class="group">
+        <h2>About</h2>
+        <p class="hint">A configurable take on Mike Bostock&rsquo;s <em>projection comparison</em>: the same world drawn
+          through every projection <code>d3-geo</code> and <code>d3-geo-projection</code> can produce.</p>
+        <details>
+          <summary>Keyboard shortcuts</summary>
+          <ul class="keys">
+            <li><kbd>←</kbd><kbd>→</kbd><kbd>↑</kbd><kbd>↓</kbd> rotate (with <kbd>Shift</kbd> for bigger steps)</li>
+            <li><kbd>+</kbd><kbd>−</kbd> zoom, <kbd>r</kbd> reset view</li>
+            <li><kbd>1</kbd><kbd>2</kbd><kbd>3</kbd> comparison mode</li>
+            <li><kbd>g</kbd> graticule, <kbd>t</kbd> indicatrices, <kbd>d</kbd> distortion mode</li>
+            <li><kbd>s</kbd> spin, <kbd>x</kbd> clear highlight</li>
+          </ul>
+        </details>
+        <details>
+          <summary>How the badges are computed</summary>
+          <p class="hint">Local scale factors are measured from the projection itself by finite differences on a 12°
+            grid, then combined into the Tissot semi-axes. <em>Area spread</em> is the ratio between the 98th and 2nd
+            percentile of local area scale; <em>shape</em> is the median and 98th-percentile angular distortion. A
+            projection is labelled equal-area or conformal only when the measurements say so.</p>
+        </details>
+        <p class="hint">Coastlines: Natural Earth via <code>world-atlas</code>. Built with d3 — no network requests, no
+          build step.</p>
+      </section>
+    </aside>
+
+    <main class="viewport">
+      <div id="stage" class="stage mode-side split-columns"></div>
+
+      <div id="legend" class="legend" hidden>
+        <span id="legend-title" class="legend-title">Area scale vs. true area</span>
+        <div id="legend-bar" class="legend-bar"></div>
+        <div id="legend-ticks" class="legend-ticks"></div>
+      </div>
+
+      <div id="status" class="status" role="status"></div>
+    </main>
+  </div>
+
+  <div id="tooltip" class="tooltip"></div>
+
+  <script src="vendor/d3.min.js"></script>
+  <script src="vendor/d3-geo-projection.min.js"></script>
+  <script src="vendor/topojson-client.min.js"></script>
+  <script src="data/world-110m.js"></script>
+  <script src="src/versor.js"></script>
+  <script src="src/projections.js"></script>
+  <script src="src/metrics.js"></script>
+  <script src="src/render.js"></script>
+  <script src="src/app.js"></script>
+</body>
+
+</html>

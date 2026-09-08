@@ -12,6 +12,7 @@ This site includes:
 
 - **City Rose** (React + Vite) — `/apps/city-rose/`
 - **Joyplot** (React + DeckGL) — `/apps/joyplot/`
+- **Projection Lab** (static JS) — `/apps/projection-lab/`
 - **Walk (Isochrone)** (static JS) — `/apps/walk/`
 - **Sector 7** (canvas game) — `/apps/sector7/`
 - **Archived ObservableHQ site** — `/apps/archive/observablehq/`
@@ -27,6 +28,11 @@ npm run dev
 ```
 
 Then open http://localhost:5173/.
+
+### Projection Lab (static)
+
+Open `projection-lab/index.html` in your browser. Serve the folder over HTTP
+(`python3 -m http.server`) if you want the optional 1:50m coastlines.
 
 ### Walk (static)
 
