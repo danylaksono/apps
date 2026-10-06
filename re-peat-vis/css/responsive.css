@@ -1,0 +1,15 @@
+@media (max-width:640px){
+  header{top:8px;left:8px;right:8px}
+  header h1{display:none}
+  #kpi{width:auto;min-width:150px;margin-left:auto}
+  #kpi b{font-size:18px}
+  #tools{top:auto;bottom:auto;top:84px;transform:none;right:8px}
+  #tools button{width:34px;height:34px}
+  .pop{right:56px;top:84px;transform:none;width:calc(100% - 72px)}
+  #legendDock{right:8px;bottom:auto;top:84px;margin-right:52px}
+  #card{left:8px;right:8px;bottom:8px;width:auto;max-height:46%}
+  #card h2{font-size:16px}
+  .lead{font-size:13.5px}
+  #toast{top:64px}
+}
+@media (prefers-reduced-motion: reduce){#intro,#haze,.lbl,.chrome{transition:none}}
