@@ -11,6 +11,13 @@ const rs=new THREE.Mesh(new THREE.PlaneGeometry(200,7),waterMat);rs.rotation.x=-
 {const pts=[];for(let k=0;k<=180;k++){const a=k/180*Math.PI*2,x=100*Math.cos(a),z=100*Math.sin(a);pts.push(new THREE.Vector3(x,s0(x,z)+0.6,z));}
  const ring=new THREE.Line(new THREE.BufferGeometry().setFromPoints(pts),new THREE.LineDashedMaterial({color:0x2A3A36,dashSize:2.4,gapSize:1.6,clippingPlanes:clipList}));
  ring.computeLineDistances();scene.add(ring);}
+// Kompartemen (sub-KHG): units bounded by the main canals, extended to the KHG rim.
+const kompartemen=new THREE.Group();scene.add(kompartemen);
+{const h=Math.sqrt(100*100-40*40);
+ const bm=new THREE.LineDashedMaterial({color:0xF4F1E6,dashSize:3.2,gapSize:1.6,clippingPlanes:clipList});
+ [[[-100,0],[100,0]],[[-40,0],[-40,h]],[[10,0],[10,-99.5]]].forEach(([a,b])=>{const pts=[];const n=60;
+  for(let k=0;k<=n;k++){const x=a[0]+(b[0]-a[0])*k/n,z=a[1]+(b[1]-a[1])*k/n;pts.push(new THREE.Vector3(x,surfNG(x,z)+0.9,z));}
+  const l=new THREE.Line(new THREE.BufferGeometry().setFromPoints(pts),bm);l.computeLineDistances();kompartemen.add(l);});}
 
 // ---------- canal water ----------
 const ribbons=canals.map((c,ci)=>{const ss=[];const n=140;for(let k=0;k<=n;k++)ss.push(c.L*k/n);
@@ -25,4 +32,4 @@ function updateRibbons(){ribbons.forEach(rb=>{const c=rb.c;const nx=-c.dz,nz=c.d
   rb.g.attributes.position.needsUpdate=true;rb.g.computeVertexNormals();rb.g.computeBoundingSphere();});}
 function waterYOn(c,s){const q=cpt(c,s);return surfNG(q[0],q[1])-canalDc(canals.indexOf(c),s,blockIdx(c,s))*K.VE;}
 
-export {waterMat,updateRibbons,waterYOn};
+export {kompartemen,waterMat,updateRibbons,waterYOn};

@@ -49,5 +49,24 @@ function wtdFrom(x,z,n,burnt,bi){const dc=canalDc(n.ci,n.s,bi);const dU=0.8+0.00
 function wtdAt(x,z){const n=nearest(x,z);return wtdFrom(x,z,n,isBurnt(x,z),blockIdx(canals[n.ci],n.s));}
 function classOf(w){return w<=0.4?0:w<=0.6?1:w<=0.85?2:3;}
 
-export {s0,canals,C1,C2,C3,cpt,allBlocks,NB,donorGis,GATE_S,nearest,blockIdx,burns,isBurnt,surfNG,surfaceY,
+// ---------- kompartemen: the four units bounded by the main canals (C1 on z=0, C2 on x=-40, C3 on x=10) ----------
+function kompOf(x,z){return z>=0?(x<-40?0:1):(x<10?2:3);}
+// Cheapest action that lifts a kompartemen to >=60% safe TMA, tried in the narration's order (gate, sekat, pump),
+// under a hard dry season (El Niño-like: k=1.15, rain, canals behind sekat half dried, day 90). Computed once. Returns 'keep' | 'gate' | 'block' | 'pump' | 'ready' (residual risk) per kompartemen.
+let stratCache=null;
+function kompStrategy(){if(stratCache)return stratCache;
+  const save=Object.assign({},st),act=blockAct.slice();
+  const pts=[[],[],[],[]];for(let x=-100;x<=100;x+=4)for(let z=-100;z<=100;z+=4)if(Math.hypot(x,z)<100){const n=nearest(x,z);pts[kompOf(x,z)].push([x,z,n,isBurnt(x,z),blockIdx(canals[n.ci],n.s)]);}
+  const safe=k=>{let ok=0;for(const [x,z,n,b,bi] of pts[k])if(wtdFrom(x,z,n,b,bi)<=0.4)ok++;return ok/pts[k].length;};
+  const ladder=[['keep',()=>{blockAct.fill(0);Object.assign(st,{front:0,pump:0});}],
+    ['gate',()=>{blockAct.fill(0);donorGis.forEach(g=>blockAct[g]=1);st.front=1;}],
+    ['block',()=>{blockAct.fill(1);st.front=1;}],
+    ['pump',()=>{st.pump=1;}]];
+  Object.assign(st,BASE,{t:90,k:1.15,rainOn:true,dry:0.5});setDerived();
+  const res=[0,1,2,3].map(()=>'ready'),done=[false,false,false,false];
+  for(const [name,apply] of ladder){apply();setDerived();
+    for(let k=0;k<4;k++)if(!done[k]&&safe(k)>=0.6){res[k]=name;done[k]=true;}}
+  Object.assign(st,save);blockAct.set(act);setDerived();return stratCache=res;}
+
+export {kompOf,kompStrategy,s0,canals,C1,C2,C3,cpt,allBlocks,NB,donorGis,GATE_S,nearest,blockIdx,burns,isBurnt,surfNG,surfaceY,
   BASE,st,blockAct,rainNow,setDerived,canalDc,wtdFrom,wtdAt,classOf};

@@ -3,13 +3,18 @@
 import {K,CSS_CLASS} from './config.js';
 import {fmt} from './utils.js';
 import {scene,clipList,camera} from './renderer.js';
-import {s0,surfNG,surfaceY,st,burns,C2,cpt,wtdAt,classOf} from './model.js';
+import {kompStrategy,s0,surfNG,surfaceY,st,burns,C2,cpt,wtdAt,classOf} from './model.js';
 import {gate,pumps} from './structures.js';
 import {app} from './app.js';
+import {kompartemen} from './water.js';
 
 const labelBox=document.getElementById('labels');const V=(x,y,z)=>new THREE.Vector3(x,y,z);
 const labels=[
   {t:'Kubah gambut',sc:[0],pos:()=>V(10,s0(10,10)+7,10)},
+  {t:'Kompartemen 1',k:0,sc:[0,3,5],when:()=>kompartemen.visible,pos:()=>V(-70,s0(-70,50)+3,50)},
+  {t:'Kompartemen 2',k:1,sc:[0,3,5],when:()=>kompartemen.visible,pos:()=>V(35,s0(35,45)+3,45)},
+  {t:'Kompartemen 3',k:2,sc:[0,3,5],when:()=>kompartemen.visible,pos:()=>V(-45,s0(-45,-50)+3,-50)},
+  {t:'Kompartemen 4',k:3,sc:[0,3,5],when:()=>kompartemen.visible,pos:()=>V(55,s0(55,-40)+3,-40)},
   {t:'Kanal drainase',sc:[0,1],pos:()=>st.cut>-100?V(st.cut+4,surfNG(st.cut+4,0)+2.5,0):V(-30,s0(-30,0)+2.5,0)},
   {t:'Muka air tanah (TMA)',sc:[0,1],prof:true,pos:()=>{const z=-45,w=wtdAt(st.cut,z);return V(st.cut,surfNG(st.cut,z)-w*K.VE-0.6,z);}},
   {t:'Batas 0,4 m di bawah permukaan',sc:[0,1,2],prof:true,pos:()=>V(st.cut,surfNG(st.cut,50)-0.4*K.VE-0.5,50)},
@@ -27,14 +32,15 @@ const labels=[
   {t:'Sumur bor, jangkauan ±200–300 m',sc:[5],when:()=>st.strat>0.6,pos:()=>V(-44,s0(-44,40)+4,40)},
   {t:'Risiko tersisa',sc:[5],when:()=>st.strat>0.6,pos:()=>V(21,s0(21,-48)+5,-48)}
 ];
+const ACT={keep:'pertahankan',gate:'pintu air',block:'sekat',pump:'pompa',ready:'risiko tersisa'};
 labels.forEach(l=>{l.el=document.createElement('div');l.el.className='lbl';l.el.textContent=l.t;labelBox.appendChild(l.el);});
 const pins=[];
 const pinMat=new THREE.MeshStandardMaterial({color:0xF4F1E6,roughness:.6,clippingPlanes:clipList});
-const pinTopMat=new THREE.MeshBasicMaterial({color:0xE07B2A});
+const PIN_COL=[0x2F7FB5,0x7E5BA8,0x9C6B3C];
 function addPin(x,z){if(pins.length>=3){const o=pins.shift();scene.remove(o.g);o.el.remove();}
   const g=new THREE.Group();const y=surfaceY(x,z);const post=new THREE.Mesh(new THREE.CylinderGeometry(0.25,0.25,4,6),pinMat);post.position.y=2;
-  const cap=new THREE.Mesh(new THREE.SphereGeometry(0.6,8,6),pinTopMat);cap.position.y=4.2;g.add(post,cap);g.position.set(x,y,z);scene.add(g);
-  const el=document.createElement('div');el.className='lbl pin on';labelBox.appendChild(el);pins.push({g,x,z,y,el,cap});
+  const cap=new THREE.Mesh(new THREE.SphereGeometry(0.6,8,6),new THREE.MeshBasicMaterial({color:PIN_COL[pins.length]}));cap.position.y=4.2;g.add(post,cap);g.position.set(x,y,z);scene.add(g);
+  const el=document.createElement('div');el.className='lbl pin on';labelBox.appendChild(el);pins.push({g,x,z,y,el,cap,hist:[]});
   document.getElementById('clearPins').hidden=false;}
 document.getElementById('clearPins').onclick=()=>{pins.forEach(p=>{scene.remove(p.g);p.el.remove();});pins.length=0;document.getElementById('clearPins').hidden=true;};
 const pv=new THREE.Vector3();
@@ -43,9 +49,10 @@ function updateLabels(w,h){
   labels.forEach(l=>{let on=app.mode==='story'&&l.sc.includes(app.sceneIdx)&&(!l.when||l.when());
     if(on&&l.prof&&st.cut<=-100)on=false;
     if(on){const p=l.pos();if(!l.prof&&st.cut>-100&&p.x<st.cut-0.5)on=false;if(on)on=place(l.el,p,w,h);}
+    if(on&&l.k!==undefined)l.el.textContent=app.sceneIdx===5&&st.strat>0.6?l.t+': '+ACT[kompStrategy()[l.k]]:l.t;
     l.el.classList.toggle('on',on);});
   pins.forEach((p,i)=>{const wv=wtdAt(p.x,p.z);const c=classOf(wv);p.el.style.borderLeftColor=CSS_CLASS[c];
-    p.el.textContent='Sumur pantau '+(i+1)+': TMA '+fmt(wv,2)+' m';p.cap.material=p.cap.material;
+    p.el.textContent='Sumur pantau '+(i+1)+': TMA '+fmt(wv,2)+' m';p.cap.material.color.setHex(PIN_COL[i]);
     const vis=!(st.cut>-100&&p.x<st.cut)&&app.mode!=='intro';p.el.classList.toggle('on',vis&&place(p.el,V(p.x,p.y+5.2,p.z),w,h));});}
 
-export {updateLabels,addPin};
+export {updateLabels,addPin,pins,PIN_COL};

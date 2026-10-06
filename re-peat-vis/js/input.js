@@ -6,7 +6,7 @@ import {app} from './app.js';
 import {pickTerrain,candAt} from './picking.js';
 import {sb,toggleBlock} from './sandbox.js';
 import {addPin} from './labels.js';
-import {toggleInfo,closeInfo,toggleCut,toggleLegend,toggleCard} from './ui.js';
+import {toggleInfo,closeInfo,toggleCut,toggleLegend,toggleCard,toggleKomp,toggleWell} from './ui.js';
 
 const ptrs=new Map();let lastPinch=0,lastMid=null,clickTimer=null;
 export const mouse={x:-1,y:-1,in:false};
@@ -38,7 +38,7 @@ canvas.addEventListener('wheel',e=>{e.preventDefault();userCam();const f=1+Math.
   cam.r=clamp(cam.r*f,50,420);},{passive:false});
 window.addEventListener('keydown',e=>{const t=e.target;if(t&&(t.tagName==='INPUT'||t.tagName==='TEXTAREA'))return;if(app.mode==='intro')return;
   const k=e.key.toLowerCase();if(['arrowup','arrowdown','arrowleft','arrowright','w','a','s','d','q','e','+','=','-','_'].includes(k)){keys.add(k);userCam();if(k.startsWith('arrow'))e.preventDefault();}
-  if(k==='r')resetView();if(k==='i')toggleInfo();if(k==='c')toggleCut();if(k==='l')toggleLegend();if(k==='p')toggleCard();
+  if(k==='r')resetView();if(k==='i')toggleInfo();if(k==='c')toggleCut();if(k==='l')toggleLegend();if(k==='k')toggleKomp();if(k==='g')toggleWell();if(k==='p')toggleCard();
   if(k==='escape'){closeInfo();}});
 window.addEventListener('keyup',e=>keys.delete(e.key.toLowerCase()));
 function handleClick(m){if(app.mode==='intro')return;

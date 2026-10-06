@@ -36,6 +36,10 @@
       <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 11v6M12 7.5v.5"/></svg></button>
     <button id="btnCut" aria-pressed="false" title="Potongan melintang (C)" aria-label="Potongan melintang">
       <svg viewBox="0 0 24 24"><path d="M4 16l8-8 8 8"/><path d="M12 3v18" stroke-dasharray="2 2.5"/><path d="M4 20h16"/></svg></button>
+    <button id="btnKomp" aria-pressed="true" title="Batas kompartemen (K)" aria-label="Batas kompartemen">
+      <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="8" stroke-dasharray="2 2.5"/><path d="M4 12h16M10 12v8" stroke-dasharray="2 2.5"/></svg></button>
+    <button id="btnWell" aria-pressed="false" aria-controls="wellDock" title="Grafik sumur pantau (G)" aria-label="Grafik sumur pantau">
+      <svg viewBox="0 0 24 24"><path d="M4 4v16h16"/><path d="M7 9l4 4 3-2 5 5"/></svg></button>
     <button id="btnLegend" aria-expanded="true" aria-controls="legendDock" title="Legenda (L)" aria-label="Legenda">
       <svg viewBox="0 0 24 24"><rect x="4" y="5" width="4" height="4" rx="1"/><rect x="4" y="15" width="4" height="4" rx="1"/><path d="M11 7h9M11 17h9"/></svg></button>
     <hr>
@@ -74,14 +78,20 @@
       <span><i class="sw" style="background:var(--water)"></i>Air kanal dan sungai</span>
     </div>
     <div class="legend" id="legStrat" hidden>
-      <span class="ttl">Strategi kompartemen</span>
-      <span><i class="sw" style="background:#7FBFAF"></i>Pertahankan (TMA aman)</span>
+      <span class="ttl">Strategi tiap kompartemen</span>
+      <span><i class="sw" style="background:#7FBFAF"></i>Pertahankan (tanpa tindakan)</span>
       <span><i class="sw" style="background:#4C7FC0"></i>Operasi pintu air</span>
       <span><i class="sw" style="background:#9C6B3C"></i>Perbaiki atau bangun sekat</span>
       <span><i class="sw" style="background:#7E5BA8"></i>Pompa</span>
-      <span><i class="sw" style="background:#C9C6B5"></i>Pantau</span>
-      <span><i class="sw" style="background:#8E2F4F"></i>Risiko tersisa: siaga pemadaman</span>
+      <span><i class="sw" style="background:#8E2F4F"></i>Risiko tersisa: bekas terbakar, siaga pemadaman</span>
     </div>
+  </div>
+
+  <div id="wellDock" class="panel chrome" hidden>
+    <div class="ttl">TMA sumur pantau</div>
+    <canvas id="wellChart" width="300" height="170" role="img" aria-label="Grafik TMA sumur pantau terhadap waktu"></canvas>
+    <div class="wlegend" id="wellLeg"></div>
+    <p id="wellEmpty">Klik gambut untuk memasang sumur pantau virtual.</p>
   </div>
 
   <section id="card" class="panel chrome" aria-label="Panel cerita dan tantangan">

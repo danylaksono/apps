@@ -4,7 +4,7 @@ import {P} from './utils.js';
 const FACE=P(-55,3,8,150,Math.PI-0.45,1.2);
 const scenes=[
  {title:'Kubah gambut dalam satu KHG',dur:6.5,
-  narr:'Ini satu Kesatuan Hidrologis Gambut (KHG) rekaan. Gambut menumpuk membentuk kubah: paling tinggi di tengah dan menurun ke arah sungai. Potongan melintang memperlihatkan yang tidak terlihat di lapangan, yaitu tinggi muka air (TMA) di dalam gambut. Garis putus-putus putih adalah batas 0,4 m di bawah permukaan: TMA tidak boleh lebih dalam dari ini (PP 57/2016).',
+  narr:'Ini satu Kesatuan Hidrologis Gambut (KHG) rekaan. Gambut menumpuk membentuk kubah: paling tinggi di tengah dan menurun ke arah sungai. Kanal utama membagi KHG menjadi empat kompartemen; garis putus-putus krem di permukaan menandai batasnya. Potongan melintang memperlihatkan yang tidak terlihat di lapangan, yaitu tinggi muka air (TMA) di dalam gambut. Garis putus-putus putih adalah batas 0,4 m di bawah permukaan: TMA tidak boleh lebih dalam dari ini (PP 57/2016).',
   start:{},tw:[{k:'cut',f:-100,to:-55,s:2.6,e:5.6}],cam:[{t:2.2,p:P(0,0,0,275,2.35,0.8)},{t:6.2,p:FACE}]},
  {title:'Kemarau: kanal menguras gambut',dur:13.5,
   narr:'Saat kemarau, hujan berhenti tetapi evapotranspirasi tetap sekitar 4 mm per hari. Kanal drainase menarik air keluar dari gambut di sekitarnya, sehingga TMA turun paling dalam di dekat kanal. Warna jingga dan merah menandai TMA yang melewati batas 0,4 m. Gambut bekas terbakar mengering lebih cepat, memunculkan titik api, dan asap mulai menyelimuti langit.',
@@ -12,7 +12,7 @@ const scenes=[
  {title:'Sekat kanal menahan air',dur:10,
   narr:'Sekat kanal menaikkan muka air kanal secara bertingkat, dengan beda tinggi sekitar 0,3 m antar sekat. Gambut di sekitar kanal ikut basah kembali, tetapi pengaruhnya terbatas: sekitar 200 m dari kanal, dan hanya sekitar 20 m pada gambut bekas terbakar. Area yang jauh dari kanal tetap kering, jadi sekat saja belum cukup.',
   start:{t:75,color:1,cut:-55,et:0.35},tw:[{k:'pB',f:0,to:1,s:1.5,e:9.5}],cam:[{t:2.5,p:P(-48,3,22,175,Math.PI-0.8,0.98)}]},
- {title:'Berbagi air antar kompartemen',dur:11.5,
+ {title:'Berbagi air antar kompartemen (Sub-KHG)',dur:11.5,
   narr:'Kompartemen di dekat puncak kubah menyimpan surplus air di balik sekat. Saat pintu air dibuka, air mengalir menuruni lereng ke kompartemen yang defisit. Setiap minggu, model menghitung ke mana surplus paling berguna, dengan mendahulukan area yang paling berisiko terbakar.',
   start:{t:75,color:1,pB:1,et:0.35},tw:[{k:'gate',f:0,to:1,s:1.5,e:3},{k:'front',f:0,to:1,s:3,e:11}],cam:[{t:2.5,p:P(16,3,-28,150,0.95,0.86)}]},
  {title:'Pompa: menambah air saat kanal kering',dur:14,

@@ -19,6 +19,7 @@ import {showPanel,tickToast} from './ui.js';
 import {enter,runScene} from './story.js';
 import {sb,enterSandbox,sandboxStep} from './sandbox.js';
 import {updateKpi,updateTip} from './hud.js';
+import {updateWellChart} from './wellchart.js';
 
 // ---------- intro ----------
 function startFrom(fn){$('intro').classList.add('gone');document.body.classList.remove('intro');fn();}
@@ -40,7 +41,7 @@ function frame(now){const dt=Math.min(0.05,Math.max(0,(now-last)/1000));last=now
   let bsum=0;for(let g=0;g<NB;g++)bsum+=blockAct[g]*(g+1);
   const key=[st.te,st.color,st.front,st.cut,st.dry,st.pump,st.strat,st.k,bsum].map(v=>v.toFixed(3)).join('|');
   if(key!==lastKey){lastKey=key;updateTerrainColors();updateRibbons();updateProfile();}
-  updateKpi();
+  updateKpi();updateWellChart();
   const hov=updateStructures();
   // fire + haze
   const active=updateFire(dt);
