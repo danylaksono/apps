@@ -1,0 +1,144 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>SiTMAT Explorer</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css">
+<link rel="stylesheet" href="assets/style.css">
+</head>
+<body>
+<header>
+  <h1>SiTMAT Explorer</h1>
+  <span class="sub" id="subtitle">Peatland water table (TMAT) &middot; processed data from <code>sitmat_out/processed/</code></span>
+  <button id="themeBtn" title="Toggle light/dark">Theme</button>
+</header>
+
+<div id="loading">
+  <div id="loadMsg">Loading data&hellip;</div>
+  <div class="bar"><i id="loadBar"></i></div>
+  <div id="picker" class="hidden">
+    <p>Could not fetch the CSVs (opening via <code>file://</code>?). Either run <code>python -m http.server</code> in this folder, or pick the files:</p>
+    <label>daily_long.csv <input type="file" id="fLong" accept=".csv"></label>
+    <label>stations.csv <input type="file" id="fSt" accept=".csv"></label>
+    <button class="primary" id="fGo">Load</button>
+  </div>
+</div>
+
+<div id="app" class="hidden">
+  <div class="filters">
+    <label>Source
+      <select id="fKind"><option value="all">All</option><option value="community">Community (Masyarakat)</option><option value="concession">Concession (Konsesi)</option></select>
+    </label>
+    <label>Province <select id="fProv"></select></label>
+    <label>From <input type="date" id="fFrom"></label>
+    <label>To <input type="date" id="fTo"></label>
+    <label class="check"><input type="checkbox" id="fNoFlag" checked> Exclude QC-flagged values</label>
+    <span class="muted" id="fCount"></span>
+  </div>
+
+  <nav class="tabs" id="tabs">
+    <button data-tab="overview" class="active">Overview</button>
+    <button data-tab="map">Map</button>
+    <button data-tab="heat">Heatmap</button>
+    <button data-tab="table">Stations</button>
+    <button data-tab="qc">Data quality</button>
+  </nav>
+
+  <main>
+    <section id="tab-overview">
+      <div class="kpis" id="kpis"></div>
+      <div class="grid">
+        <div class="card wide"><h2>Mean water level per day (cm)</h2><div class="chart tall"><canvas id="cMean"></canvas></div></div>
+        <div class="card"><h2>Stations reporting per day</h2><div class="chart"><canvas id="cCount"></canvas></div></div>
+        <div class="card"><h2>Status mix per day (share of readings)</h2><div class="chart"><canvas id="cStatus"></canvas></div></div>
+        <div class="card"><h2>Water level distribution (cm)</h2><div class="chart"><canvas id="cHist"></canvas></div></div>
+        <div class="card"><h2>Mean water level by province (cm)</h2><div class="chart"><canvas id="cProv"></canvas></div></div>
+        <div class="card"><h2>Daily rain (mean mm) &amp; soil moisture (mean %)</h2><div class="chart"><canvas id="cRain"></canvas></div></div>
+      </div>
+    </section>
+
+    <section id="tab-map" class="hidden">
+      <div class="maptools">
+        <label>Colour by
+          <select id="mMode">
+            <option value="wl">Water level (cm)</option>
+            <option value="delta">Change vs 7 days earlier (cm)</option>
+            <option value="status">Status</option>
+            <option value="rain">Rain (mm)</option>
+            <option value="soil">Soil moisture (%)</option>
+          </select>
+        </label>
+        <button id="mPlay">&#9654; Play</button>
+        <span class="date" id="mDate"></span>
+        <input type="range" id="mSlider" min="0" max="0" value="0">
+        <label class="check"><input type="checkbox" id="mHide"> hide stations without data</label>
+      </div>
+      <div class="maprow">
+        <div id="map"></div>
+        <div class="card side">
+          <h2>On this date</h2>
+          <dl id="mStats"></dl>
+          <h2 style="margin-top:14px">Mean water level, filtered stations</h2>
+          <div class="chart" style="height:180px"><canvas id="cMapTs"></canvas></div>
+          <p class="muted" style="font-size:12px">Click a station for details.</p>
+        </div>
+      </div>
+    </section>
+
+    <section id="tab-heat" class="hidden">
+      <div class="card">
+        <div class="tabletools">
+          <label>Sort rows by
+            <select id="hSort">
+              <option value="prov">Province, then mean level</option>
+              <option value="mean">Mean water level</option>
+              <option value="cov">Coverage</option>
+              <option value="name">Name</option>
+            </select>
+          </label>
+          <span class="muted">One row per station, one column per day. Hover for values, click to open a station.</span>
+        </div>
+        <div id="heatAxis"></div>
+        <div class="heatwrap"><canvas id="heat"></canvas></div>
+        <div class="legend" id="heatLegend" style="display:inline-block;margin-top:8px"></div>
+      </div>
+    </section>
+
+    <section id="tab-table" class="hidden">
+      <div class="card">
+        <div class="tabletools">
+          <input type="search" id="tSearch" placeholder="Search name, id, province&hellip;">
+          <button id="tCsv">Export CSV</button>
+          <span class="muted" id="tInfo"></span>
+        </div>
+        <div class="tablewrap"><table id="tbl"><thead></thead><tbody></tbody></table></div>
+        <div class="pager"><button id="tPrev">&larr;</button><span id="tPage"></span><button id="tNext">&rarr;</button></div>
+      </div>
+    </section>
+
+    <section id="tab-qc" class="hidden">
+      <div class="grid">
+        <div class="card"><h2>QC report (qc_report.txt)</h2><pre id="qcText" class="muted">Not available.</pre></div>
+        <div class="card"><h2>Flags by source</h2><div class="chart"><canvas id="cFlags"></canvas></div></div>
+        <div class="card"><h2>Station coverage (% of days with a value)</h2><div class="chart"><canvas id="cCov"></canvas></div></div>
+        <div class="card"><h2>Missing data by day (% of filtered stations)</h2><div class="chart"><canvas id="cMiss"></canvas></div></div>
+        <div class="card wide"><h2>Flagged readings (largest absolute value first)</h2>
+          <div class="tablewrap" style="max-height:360px;overflow-y:auto"><table id="flagTbl"></table></div>
+        </div>
+      </div>
+    </section>
+
+    <section id="detail" class="card hidden">
+      <div class="head"><h2 id="dTitle" style="margin:0"></h2><span class="muted" id="dMeta"></span><button id="dClose" style="margin-left:auto">Close</button></div>
+      <div class="chart tall"><canvas id="cDetail"></canvas></div>
+    </section>
+  </main>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
+<script src="assets/app.js"></script>
+</body>
+</html>
