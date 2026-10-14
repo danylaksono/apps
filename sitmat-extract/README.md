@@ -10,8 +10,12 @@ The endpoints are undocumented and may change. Keep the request rate polite.
 ```
 sitmat_tmat_extract.py   downloader + post-processor
 check_output.py          quick pandas sanity checks on daily_long.csv
+prepare_geo.py           spatial join + web-sized boundary layers (needs geopandas)
 index.html               dashboard (reads sitmat_out/processed/*.csv)
-assets/app.js, style.css dashboard code and styles
+assets/app.js, js/*.js   dashboard code (data, theme, overview, map, regions, tables)
+assets/style.css         styles
+assets/geo/              khg/adm1/adm2 .geojson for the web (generated); src/ = geoBoundaries inputs
+assets/batas-khg-indonesia.geojson   KHG polygons (88 MB source, not read by the browser)
 sitmat_out/
   raw/                   gzip'd JSON as downloaded (resumable)
   processed/             CSVs used by the dashboard
@@ -55,43 +59,80 @@ and `--spike-cm` (default 60) sets the `spike` flag.
   `flag` is empty, `range` or `spike`.
 - `water_level_wide.csv`: stations × dates matrix of `water_level_cm`.
 - `stations.csv`: `kind, station_id, name, company_code, company_name, lon, lat, provinsi, kabupaten, kecamatan`. Most community stations have no province.
+- `stations_geo.csv`: from `prepare_geo.py`. `kind, station_id, has_loc, khg_id, khg_name, khg_dist_km, adm1, adm2, adm2_id`.
 - `qc_report.txt`: coverage per kind and flag counts.
 
 Flagged values are kept in the CSVs, not removed.
 
+## Spatial layers (`prepare_geo.py`)
+
+The dashboard assigns every station to a KHG, regency and province from its coordinates. The portal's
+own `provinsi` text is not used: for concession points it often holds the company head office
+(DKI Jakarta for stations in Riau or Kalbar).
+
+```bash
+pip install geopandas          # the project venv does not include it
+python prepare_geo.py --fetch-adm
+```
+
+- KHG: `assets/batas-khg-indonesia.geojson`, simplified to about 110 m (88 MB to 2 MB).
+- Provinces and regencies: geoBoundaries IDN ADM1/ADM2 (BPS / OCHA ROAP, CC BY 3.0 IGO), simplified. The ADM1 layer is the 2020 version and predates the 2022 Papua province splits.
+- A station outside every KHG but within 5 km (`--max-km`) is assigned to the nearest one, with the distance recorded in `khg_dist_km`.
+- Stations whose coordinates fall outside Indonesia, are (0,0) or have lat equal to lon get `has_loc = 0` and are left out of all spatial views. They are listed in the Data quality tab.
+
+`assets/geo/src/` (14 MB) and the 88 MB KHG file are large for git (GitHub warns at 50 MB); consider Git LFS or `.gitignore`.
+
 ## Dashboard
 
-The page loads the CSVs with `fetch`, so serve the folder over HTTP:
+The page loads the CSVs and boundaries with `fetch`, so serve the folder over HTTP:
 
 ```bash
 python -m http.server 8000
-# open http://localhost:8000/
+# open http://localhost:8000/   (append #map, #compare, #heat, #table or #qc to open a tab)
 ```
 
-Opening `index.html` directly from disk (`file://`) blocks the fetch. The page then shows file
-pickers for `daily_long.csv` and `stations.csv`.
+Opening `index.html` from disk (`file://`) blocks the fetch. The page then offers file pickers for
+the CSVs, but boundaries stay off. Leaflet, Chart.js and PapaParse come from cdnjs and the map uses
+OpenStreetMap tiles, so it needs internet access.
 
-Leaflet, Chart.js and PapaParse come from cdnjs and the map uses OpenStreetMap tiles, so it needs internet access.
+### How the numbers are made
 
-Global filters (top bar): source, province, date range, and whether QC-flagged values are excluded
-(on by default).
+- **Weekly median** per station (weeks are fixed 7-day blocks from the first date; at least 3 daily readings; blocks with fewer than 3 days in range are dropped).
+- **Panel**: stations with data in at least 40/60/80% of weeks (default 60%) and a baseline. The baseline is the median of the station's first four weeks in range.
+- **Change since start** = weekly median minus the station's own baseline. Regional lines are the median over panel stations, so stations that start or stop reporting cannot move them.
+- **Trend** = Theil–Sen slope (cm/week) on weekly values, at least 8 weeks, with a Mann–Kendall z (tie-corrected). "Significant" means |z| ≥ 1.96 and ignores autocorrelation, so it is indicative.
+- **−40 cm and −80 cm** are the concession status breaks (HIJAU ≥ −40, ORANYE −40 to −80, MERAH < −80) and are used as reference throughout.
+- Regions with fewer than "Min stations/region" stations (default 2) are greyed out.
+- Concession points are the default source. Community stations are opt-in (low coverage, inconsistent values).
 
 | Tab | Shows |
 |---|---|
-| Overview | KPIs; mean level per day by source; stations reporting per day; status mix; level histogram; mean by province; mean rain and soil moisture |
-| Map | Stations coloured by water level, 7-day change, status, rain or soil moisture. A date slider and play button step through time. Click a station for its series. |
-| Heatmap | Station × day matrix of water level, sortable by province, mean, coverage or name |
-| Stations | Sortable, searchable table with per-station stats over the selected dates; CSV export |
-| Data quality | The QC report, flags by source, station coverage histogram, missing data per day, list of flagged readings |
+| Trend | Plain-language summary, KPIs, change since start with station spread, level vs −40 cm limit, level-class shares, station trend histogram, start-vs-now distribution, trend by province, stations reporting per day |
+| Map | Stations, a **contour surface**, KHG, regencies or provinces coloured by level, change since start, share below −40 cm, or trend. Week slider with play. Click a region for its series and most-drying stations, or filter to it. |
+| Regions | Ranking table (level, change, trend, share below −40 cm, % stations drying, sparkline) for KHG / regencies / provinces; community-vs-concession scatter per KHG |
+| Region × week | Heatmap of regions by week: change, level, or % below −40 cm |
+| Stations | Searchable, sortable table with per-station trend and a weekly-level sparkline; CSV export |
+| Data | Daily readings or weekly medians as a table: free-text search, QC flag, status and level-range filters, sortable columns, paging, CSV export of the filtered rows, sparkline per row |
+| Data quality | QC report, flags, coverage, thin days, location warnings, flagged readings |
 
-Clicking a station anywhere opens a detail chart (level with min/max, soil moisture, rain; flagged days marked red).
+Filters: source, province, regency, KHG, dates, panel coverage, min stations per region, and whether
+QC-flagged values are excluded (default on). Clicking a station opens its daily and weekly series,
+trend line and the −40 cm limit.
 
-Map and heatmap colours use a brown–teal ramp whose range is the 2nd to 98th percentile of unflagged
-water levels. Higher (less negative) levels are wetter.
+**Contour surface.** Station values for the selected week are interpolated over the visible map
+(inverse-distance weighting, power 2, radius about 25 km or two cells, 90 columns) and turned into bands
+with Turf.js `isobands` (loaded from jsDelivr). It is recomputed on every week, filter, metric and
+pan/zoom. It is a visual aid for patterns, not a hydrological model: values are only drawn near
+stations and clustered stations dominate their surroundings.
+
+Colours: red to blue diverging ramp with a grey midpoint (red = drier), a sequential red ramp for
+shares, and the status colours (green / orange / red) for level classes. The source colours were
+checked with the dataviz palette validator in light and dark mode.
 
 ## Known data caveats
 
-- Community stations have low coverage (mean ~12% in the current extract).
-- Some community readings are positive and above 100 cm. They are flagged `range`.
-- Community stations have almost no province, regency or company metadata, so the province filter mostly affects concession points.
-- Station IDs for concession points may not be stable across days; check with `check_output.py`.
+- **Short record.** About six months covers one dry-season drawdown and the start of the wet season. Trends cannot be separated from seasonality, so read them as drawdown and recession rate.
+- **Station dropout.** Concession points reporting per day fall from about 740 in April to about 400 in October, with some near-empty days. The dashboard compares stations with themselves for this reason.
+- **No rain or soil moisture.** `rain_fall_mm` and `soil_moisture_pct` are 0 in every concession row (not returned by the portal), and `water_level_min/max_cm` equal `water_level_cm`. The dashboard ignores them. A water balance (neraca air) needs external rainfall, e.g. CHIRPS or GPM IMERG joined by KHG.
+- Community stations: mean coverage about 12%, most carry a `range` or `spike` flag, and their status classes do not follow the −40/−80 cm breaks.
+- Some stations have bad coordinates (see Data quality); station IDs for concession points may not be stable across days (`check_output.py`).

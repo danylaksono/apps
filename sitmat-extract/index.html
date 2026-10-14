@@ -10,7 +10,7 @@
 <body>
 <header>
   <h1>SiTMAT Explorer</h1>
-  <span class="sub" id="subtitle">Peatland water table (TMAT) &middot; processed data from <code>sitmat_out/processed/</code></span>
+  <span class="sub" id="subtitle">Peatland water table (TMAT)</span>
   <button id="themeBtn" title="Toggle light/dark">Theme</button>
 </header>
 
@@ -18,9 +18,10 @@
   <div id="loadMsg">Loading data&hellip;</div>
   <div class="bar"><i id="loadBar"></i></div>
   <div id="picker" class="hidden">
-    <p>Could not fetch the CSVs (opening via <code>file://</code>?). Either run <code>python -m http.server</code> in this folder, or pick the files:</p>
+    <p>Could not fetch the CSVs (opening via <code>file://</code>?). Either run <code>python -m http.server</code> in this folder, or pick the files (boundaries then stay off):</p>
     <label>daily_long.csv <input type="file" id="fLong" accept=".csv"></label>
     <label>stations.csv <input type="file" id="fSt" accept=".csv"></label>
+    <label>stations_geo.csv (optional) <input type="file" id="fGeo" accept=".csv"></label>
     <button class="primary" id="fGo">Load</button>
   </div>
 </div>
@@ -28,92 +29,166 @@
 <div id="app" class="hidden">
   <div class="filters">
     <label>Source
-      <select id="fKind"><option value="all">All</option><option value="community">Community (Masyarakat)</option><option value="concession">Concession (Konsesi)</option></select>
+      <select id="fKind">
+        <option value="concession">Concession points</option>
+        <option value="community">Community stations</option>
+        <option value="all">Both</option>
+      </select>
     </label>
     <label>Province <select id="fProv"></select></label>
+    <label>Regency <select id="fReg"></select></label>
+    <label>KHG <select id="fKhg"></select></label>
     <label>From <input type="date" id="fFrom"></label>
     <label>To <input type="date" id="fTo"></label>
+    <label title="Stations need this share of weeks with data to enter the fixed panel used for change and trend">Panel coverage
+      <select id="fCov"><option value="0.4">≥ 40% of weeks</option><option value="0.6" selected>≥ 60% of weeks</option><option value="0.8">≥ 80% of weeks</option></select>
+    </label>
+    <label title="Regions with fewer stations are greyed out">Min stations/region <input type="number" id="fMinN" min="1" max="20" value="2" style="width:64px"></label>
     <label class="check"><input type="checkbox" id="fNoFlag" checked> Exclude QC-flagged values</label>
     <span class="muted" id="fCount"></span>
   </div>
+  <div id="geoWarn" class="warn hidden">Boundary files (assets/geo/*.geojson) or stations_geo.csv were not found. Run <code>prepare_geo.py</code>; region views will be limited.</div>
 
   <nav class="tabs" id="tabs">
-    <button data-tab="overview" class="active">Overview</button>
+    <button data-tab="overview" class="active">Trend</button>
     <button data-tab="map">Map</button>
-    <button data-tab="heat">Heatmap</button>
+    <button data-tab="compare">Regions</button>
+    <button data-tab="heat">Region × week</button>
     <button data-tab="table">Stations</button>
+    <button data-tab="data">Data</button>
     <button data-tab="qc">Data quality</button>
   </nav>
 
   <main>
     <section id="tab-overview">
+      <p class="story" id="story"></p>
       <div class="kpis" id="kpis"></div>
       <div class="grid">
-        <div class="card wide"><h2>Mean water level per day (cm)</h2><div class="chart tall"><canvas id="cMean"></canvas></div></div>
-        <div class="card"><h2>Stations reporting per day</h2><div class="chart"><canvas id="cCount"></canvas></div></div>
-        <div class="card"><h2>Status mix per day (share of readings)</h2><div class="chart"><canvas id="cStatus"></canvas></div></div>
-        <div class="card"><h2>Water level distribution (cm)</h2><div class="chart"><canvas id="cHist"></canvas></div></div>
-        <div class="card"><h2>Mean water level by province (cm)</h2><div class="chart"><canvas id="cProv"></canvas></div></div>
-        <div class="card"><h2>Daily rain (mean mm) &amp; soil moisture (mean %)</h2><div class="chart"><canvas id="cRain"></canvas></div></div>
+        <div class="card wide"><h2>Change in water level since the start of the period</h2>
+          <p class="note">Each station is compared with its own first four weeks, then the median across the fixed panel is taken (line) with the middle 50% of stations (band). Stations that appear or disappear cannot move this line.</p>
+          <div class="chart tall"><canvas id="cAnom"></canvas></div></div>
+        <div class="card"><h2>Water level against the −40 cm limit</h2>
+          <p class="note">Panel median vs. all stations that reported. The gap between the lines is the effect of changing station membership.</p>
+          <div class="chart"><canvas id="cLevel"></canvas></div></div>
+        <div class="card"><h2>Share of panel stations by level class</h2>
+          <p class="note">Classes follow the concession status breaks: −40 cm and −80 cm.</p>
+          <div class="chart"><canvas id="cShare"></canvas></div></div>
+        <div class="card"><h2>Station trends</h2>
+          <p class="note">Theil–Sen slope per station over weekly medians (≥ 8 weeks). Left of 0 = drying.</p>
+          <div class="chart"><canvas id="cSlopes"></canvas></div></div>
+        <div class="card"><h2>Distribution of station levels: start vs now</h2>
+          <p class="note">Median level of each panel station, first four weeks vs last four weeks.</p>
+          <div class="chart"><canvas id="cDist"></canvas></div></div>
+        <div class="card"><h2>Trend by province</h2>
+          <p class="note">Theil–Sen slope of each province's median change. Provinces need the minimum number of panel stations.</p>
+          <div class="chart tall"><canvas id="cProv"></canvas></div></div>
+        <div class="card"><h2>Stations reporting per day</h2>
+          <p class="note">Membership changes over time, which is why trends use weekly medians and a fixed panel.</p>
+          <div class="chart tall"><canvas id="cDaily"></canvas></div></div>
       </div>
+      <details class="card caveats"><summary>How to read this</summary>
+        <ul>
+          <li><b>Period.</b> The extract covers about six months: one dry-season drawdown and the start of the wet season. It cannot separate a long-term trend from seasonal drawdown, so read the numbers as <i>drawdown since April</i> and <i>recession rate</i>.</li>
+          <li><b>Panel.</b> Only stations with data in at least the chosen share of weeks, and a baseline in their first weeks, enter change and trend statistics.</li>
+          <li><b>Significance.</b> The Mann–Kendall test ignores autocorrelation in weekly series, so “significant” is indicative only.</li>
+          <li><b>Rain and soil moisture.</b> The portal returns 0 for every concession reading, so they are not used. A water balance (neraca air) needs an external rainfall source such as CHIRPS or GPM IMERG.</li>
+          <li><b>Community stations</b> have low coverage and inconsistent values, so they are opt-in via the Source filter.</li>
+        </ul>
+      </details>
     </section>
 
     <section id="tab-map" class="hidden">
       <div class="maptools">
-        <label>Colour by
-          <select id="mMode">
-            <option value="wl">Water level (cm)</option>
-            <option value="delta">Change vs 7 days earlier (cm)</option>
-            <option value="status">Status</option>
-            <option value="rain">Rain (mm)</option>
-            <option value="soil">Soil moisture (%)</option>
-          </select>
-        </label>
+        <label>Show <select id="mAgg">
+          <option value="station">Stations</option>
+          <option value="contour">Contour surface (interpolated)</option>
+          <option value="khg">KHG (peat hydrological units)</option>
+          <option value="adm2">Regencies</option>
+          <option value="adm1">Provinces</option></select></label>
+        <label>Colour by <select id="mMetric">
+          <option value="level">Water level</option>
+          <option value="change">Change since start</option>
+          <option value="share">Below −40 cm</option>
+          <option value="trend">Trend (whole period)</option></select></label>
         <button id="mPlay">&#9654; Play</button>
         <span class="date" id="mDate"></span>
-        <input type="range" id="mSlider" min="0" max="0" value="0">
-        <label class="check"><input type="checkbox" id="mHide"> hide stations without data</label>
+        <input type="range" id="mSlider" min="0" max="0" value="0" aria-label="Week">
+        <label class="check"><input type="checkbox" id="mLines" checked> province lines</label>
+        <label class="check"><input type="checkbox" id="mStations"> stations on top of regions</label>
       </div>
       <div class="maprow">
         <div id="map"></div>
-        <div class="card side">
-          <h2>On this date</h2>
-          <dl id="mStats"></dl>
-          <h2 style="margin-top:14px">Mean water level, filtered stations</h2>
-          <div class="chart" style="height:180px"><canvas id="cMapTs"></canvas></div>
-          <p class="muted" style="font-size:12px">Click a station for details.</p>
+        <div class="side">
+          <div class="card">
+            <h2>This week</h2>
+            <dl class="kv" id="mStats"></dl>
+            <div class="chart" style="height:130px"><canvas id="cMapTs"></canvas></div>
+            <p class="muted small" id="mNote"></p>
+          </div>
+          <div class="card" id="mReg"><p class="muted">Click a region to see its series; click a station for its detail.</p></div>
         </div>
+      </div>
+    </section>
+
+    <section id="tab-compare" class="hidden">
+      <div class="maprow">
+        <div class="card">
+          <div class="tabletools">
+            <label>Rank <select id="cmpLevel"><option value="khg">KHG</option><option value="adm2">Regencies</option><option value="adm1">Provinces</option></select></label>
+            <input type="search" id="cmpSearch" placeholder="Filter by name&hellip;">
+            <span class="muted" id="cmpInfo"></span>
+          </div>
+          <div class="tablewrap tall"><table id="cmpTbl"><thead id="cmpHead"></thead><tbody id="cmpBody"></tbody></table></div>
+        </div>
+        <div class="card" id="cReg"></div>
+      </div>
+      <div class="card" style="margin-top:14px">
+        <h2>Water sharing: community vs concession in the same KHG</h2>
+        <p class="note">Mean level of community stations against concession points inside each KHG that has both. Points on the dashed line mean the same water table; below it, communities see lower water than the concessions around them. <span id="shareInfo"></span> Community data is sparse and mostly flagged; treat as indicative.</p>
+        <div class="chart tall"><canvas id="cShare2"></canvas></div>
       </div>
     </section>
 
     <section id="tab-heat" class="hidden">
       <div class="card">
         <div class="tabletools">
-          <label>Sort rows by
-            <select id="hSort">
-              <option value="prov">Province, then mean level</option>
-              <option value="mean">Mean water level</option>
-              <option value="cov">Coverage</option>
-              <option value="name">Name</option>
-            </select>
-          </label>
-          <span class="muted">One row per station, one column per day. Hover for values, click to open a station.</span>
+          <label>Rows <select id="hLevel"><option value="adm1">Provinces</option><option value="adm2">Regencies</option><option value="khg" selected>KHG</option></select></label>
+          <label>Value <select id="hMetric"><option value="change">Change since start</option><option value="level">Water level</option><option value="share">% below −40 cm</option></select></label>
+          <label>Sort <select id="hSort"><option value="slope">Trend (most drying first)</option><option value="now">Current value (lowest first)</option><option value="n">Stations (most first)</option><option value="name">Province, name</option></select></label>
         </div>
-        <div id="heatAxis"></div>
-        <div class="heatwrap"><canvas id="heat"></canvas></div>
-        <div class="legend" id="heatLegend" style="display:inline-block;margin-top:8px"></div>
+        <div class="hgrid" id="hGrid"></div>
+        <div class="legend inline" id="hLegend"></div>
       </div>
     </section>
 
     <section id="tab-table" class="hidden">
       <div class="card">
         <div class="tabletools">
-          <input type="search" id="tSearch" placeholder="Search name, id, province&hellip;">
+          <input type="search" id="tSearch" placeholder="Search name, KHG, regency&hellip;">
           <button id="tCsv">Export CSV</button>
           <span class="muted" id="tInfo"></span>
         </div>
-        <div class="tablewrap"><table id="tbl"><thead></thead><tbody></tbody></table></div>
+        <div class="tablewrap"><table id="tbl"><thead id="tHead"></thead><tbody id="tBody"></tbody></table></div>
         <div class="pager"><button id="tPrev">&larr;</button><span id="tPage"></span><button id="tNext">&rarr;</button></div>
+      </div>
+    </section>
+
+    <section id="tab-data" class="hidden">
+      <div class="card">
+        <div class="tabletools">
+          <label>View <select id="dView"><option value="daily">Daily readings</option><option value="weekly">Weekly medians</option></select></label>
+          <label>Search <input type="search" id="dSearch" placeholder="station, KHG, regency, province&hellip;"></label>
+          <label class="dailyOnly">QC flag <select id="dFlag"><option value="">any</option><option value="clean">clean</option><option value="flagged">flagged</option><option value="range">range</option><option value="spike">spike</option></select></label>
+          <label class="dailyOnly">Status <select id="dStatus"><option value="">any</option></select></label>
+          <label>Level from <input type="number" id="dMin" placeholder="cm" style="width:80px"></label>
+          <label>to <input type="number" id="dMax" placeholder="cm" style="width:80px"></label>
+          <label>Rows <select id="dSize"><option>50</option><option selected>100</option><option>250</option><option>500</option></select></label>
+          <button id="dCsv">Export CSV</button>
+          <span class="muted" id="dInfo"></span>
+        </div>
+        <p class="note">Uses the filters at the top (source, province, regency, KHG, dates). Daily view lists every reading including flagged ones; the sparkline is the station's weekly median over the selected dates (dotted line = −40 cm).</p>
+        <div class="tablewrap tall"><table id="dTbl"><thead id="dHead"></thead><tbody id="dBody"></tbody></table></div>
+        <div class="pager"><button id="dPrev">&larr;</button><span id="dPage"></span><button id="dNext">&rarr;</button></div>
       </div>
     </section>
 
@@ -121,11 +196,12 @@
       <div class="grid">
         <div class="card"><h2>QC report (qc_report.txt)</h2><pre id="qcText" class="muted">Not available.</pre></div>
         <div class="card"><h2>Flags by source</h2><div class="chart"><canvas id="cFlags"></canvas></div></div>
-        <div class="card"><h2>Station coverage (% of days with a value)</h2><div class="chart"><canvas id="cCov"></canvas></div></div>
-        <div class="card"><h2>Missing data by day (% of filtered stations)</h2><div class="chart"><canvas id="cMiss"></canvas></div></div>
+        <div class="card"><h2>Station coverage</h2><div class="chart"><canvas id="cCov"></canvas></div></div>
+        <div class="card"><h2>Stations reporting per day</h2><p class="note" id="thinInfo"></p><div class="chart"><canvas id="cMiss"></canvas></div></div>
+        <div class="card wide"><h2>Location checks</h2><p class="note" id="locInfo"></p>
+          <div class="tablewrap" style="max-height:300px;overflow-y:auto"><table id="locTbl"></table></div></div>
         <div class="card wide"><h2>Flagged readings (largest absolute value first)</h2>
-          <div class="tablewrap" style="max-height:360px;overflow-y:auto"><table id="flagTbl"></table></div>
-        </div>
+          <div class="tablewrap" style="max-height:300px;overflow-y:auto"><table id="flagTbl"></table></div></div>
       </div>
     </section>
 
@@ -139,6 +215,14 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@turf/turf@6.5.0/turf.min.js"></script>
+<script src="assets/js/data.js"></script>
+<script src="assets/js/theme.js"></script>
+<script src="assets/js/overview.js"></script>
+<script src="assets/js/map.js"></script>
+<script src="assets/js/regions.js"></script>
+<script src="assets/js/tables.js"></script>
+<script src="assets/js/datatab.js"></script>
 <script src="assets/app.js"></script>
 </body>
 </html>
