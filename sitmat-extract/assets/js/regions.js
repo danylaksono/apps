@@ -28,7 +28,7 @@ function renderCompare() {
       `<td class="num">${fmt(r.startBelow, 0)}→${fmt(r.curBelow, 0)}%</td><td class="num">${fmt(r.dry, 0)}</td><td>${sparkline(r.an.med, css("--kind-conc"))}</td></tr>`;
   }).join("") || `<tr><td colspan="10" class="muted">No ${PLURAL[level]} with at least ${S.f.minN} stations in this selection.</td></tr>`;
   $("cmpInfo").textContent = `${rows.length} ${PLURAL[level]} · ● = significant trend (Mann–Kendall, 95%)`;
-  if (S.regSel && S.regSel.level === level) regionCard(level, S.regSel.key, "cReg", "cCmpReg");
+  if (S.regSel && S.regSel.level === level) regionCard(level, S.regSel.key, "cReg", "cCmpReg", true);
   else $("cReg").innerHTML = '<p class="muted">Click a row to see the regional series and its most-drying stations.</p>';
   renderSharing();
 }
@@ -40,7 +40,7 @@ function initCompare() {
     const k = e.target.closest("th")?.dataset.k; if (!k || k === "spark") return;
     CMP.dir = CMP.sort === k ? -CMP.dir : 1; CMP.sort = k; renderCompare();
   });
-  $("cmpBody").addEventListener("click", (e) => { const tr = e.target.closest("tr[data-k]"); if (!tr) return; const level = $("cmpLevel").value; selectRegion(level, level === "adm1" ? tr.dataset.k : +tr.dataset.k); });
+  $("cmpBody").addEventListener("click", (e) => { const tr = e.target.closest("tr[data-k]"); if (!tr) return; const level = $("cmpLevel").value; selectRegion(level, level === "khg" || level === "adm2" ? +tr.dataset.k : tr.dataset.k); });
   $("cReg").addEventListener("click", (e) => { const tr = e.target.closest("tr[data-st]"); if (tr) selectStation(S.stations[+tr.dataset.st]); });
 }
 

@@ -61,9 +61,5 @@ function renderOverview() {
   chart("cProv", { type: "bar", data: { labels: pr.map((r) => r.name), datasets: [{ label: "cm/week", data: pr.map((r) => r.slope), backgroundColor: pr.map((r) => divColor(r.slope, 0, 1.5)), borderWidth: 0 }] },
     options: { indexAxis: "y", plugins: { legend: { display: false }, tooltip: { callbacks: { label: (c) => `${sgn(c.raw, 2)} cm/week`, afterLabel: (c) => `${pr[c.dataIndex].nP} panel stations, change ${sgn(pr[c.dataIndex].curChange)} cm` } } }, scales: { x: { title: { display: true, text: "trend of regional median, cm/week" } } } } });
 
-  // reporting per day
-  const days = dayRange(), kinds = [...new Set(pop.map((s) => s.kind))];
-  chart("cDaily", { type: "bar", data: { labels: days.map((i) => S.dates[i]), datasets: kinds.map((k) => ({ label: k, backgroundColor: kindColor(k), borderWidth: 0, barPercentage: 1, categoryPercentage: 1,
-    data: days.map((i) => { let n = 0; for (const s of pop) if (s.kind === k && val(s, i) === val(s, i)) n++; return n; }) })) },
-    options: { plugins: { legend: legendOpts }, scales: { x: Object.assign({ stacked: true }, xTicks), y: { stacked: true, title: { display: true, text: "stations with a reading" } } } } });
+  renderTransitions(panel);
 }

@@ -8,8 +8,8 @@ const FLAGS = ["", "range", "spike"];
 const STATUS = ["HIJAU", "KUNING", "ORANYE", "MERAH", "HITAM", "BIRU"];
 const MIN_WEEK_DAYS = 3;     // valid daily readings needed for a weekly median
 const BASE_WEEKS = 4;        // baseline = median of the first N valid weeks of the range
-const LEVELS = { adm1: "Province", adm2: "Regency", khg: "KHG" };
-const PLURAL = { adm1: "provinces", adm2: "regencies", khg: "KHGs" };
+const LEVELS = { adm1: "Province", adm2: "Regency", khg: "KHG", company: "Concession" };
+const PLURAL = { adm1: "provinces", adm2: "regencies", khg: "KHGs", company: "concessions" };
 
 const $ = (id) => document.getElementById(id);
 const fmt = (v, d = 1) => (v == null || Number.isNaN(v) ? "–" : v.toFixed(d));
@@ -19,7 +19,7 @@ const esc = (t) => String(t ?? "").replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<
 const S = {
   stations: [], dates: [], nd: 0, nw: 0, wkOf: null, weeks: [], weekOK: null, weekStart: [],
   geo: { khg: null, adm1: null, adm2: null },
-  info: { khg: new Map(), adm2: new Map(), adm1: new Map() },
+  info: { khg: new Map(), adm2: new Map(), adm1: new Map(), company: new Map() },
   f: { kind: "concession", adm1: "", adm2: "", khg: "", noFlag: true, i0: 0, i1: 0, minCov: 0.6, minN: 2 },
   pop: [], panel: [], tab: "overview", sel: null, ver: 0, qcText: "", charts: {}, cache: {},
 };
@@ -29,7 +29,7 @@ const S = {
 function parseCsv(src, onProgress) {
   return new Promise((resolve, reject) => {
     const rows = [];
-    Papa.parse(src, {
+    Papa.parse(typeof src === "string" ? `${src}?_=${Date.now()}` : src, {   // cache-bust: a fresh update shows without a hard reload
       header: true, skipEmptyLines: true, download: typeof src === "string",
       chunk: (r) => { for (const x of r.data) rows.push(x); onProgress && onProgress(r.meta.cursor); },
       complete: () => resolve(rows), error: reject,
@@ -49,7 +49,7 @@ async function loadAll(longSrc, stSrc, geoSrc) {
   $("loadMsg").textContent = "Loading boundaries…";
   const [khg, a1, a2, qc] = await Promise.all([
     getJson(GEO_DIR + "khg.geojson"), getJson(GEO_DIR + "adm1.geojson"), getJson(GEO_DIR + "adm2.geojson"),
-    fetch(DATA_DIR + "qc_report.txt").then((r) => (r.ok ? r.text() : "")).catch(() => ""),
+    fetch(DATA_DIR + "qc_report.txt", { cache: "no-cache" }).then((r) => (r.ok ? r.text() : "")).catch(() => ""),
   ]);
   S.geo = { khg, adm1: a1, adm2: a2 }; S.qcText = qc;
   bar.style.width = "100%";
@@ -71,7 +71,7 @@ function build(stRows, long, geoRows) {
   };
   for (const r of stRows) {
     const o = mk(r.kind, r.station_id);
-    o.name = r.name || r.station_id; o.provText = r.provinsi || ""; o.kabText = r.kabupaten || ""; o.company = r.company_name || r.company_code || "";
+    o.name = r.name || r.station_id; o.provText = r.provinsi || ""; o.kabText = r.kabupaten || ""; o.company = r.company_name || r.company_code || "";   // company_name is empty on the portal; the code is the key
     o.lon = parseFloat(r.lon); o.lat = parseFloat(r.lat);
     o.hasLoc = o.lon >= 94 && o.lon <= 142 && o.lat >= -12.5 && o.lat <= 7;   // inside Indonesia; (0,0) and lat==lon placeholders fail
     const g = geoBy.get(r.kind + "|" + r.station_id);
@@ -91,6 +91,7 @@ function build(stRows, long, geoRows) {
   for (const s of S.stations) {
     if (s.khg >= 0 && !S.info.khg.has(s.khg)) S.info.khg.set(s.khg, { name: s.khgName || "KHG " + s.khg, parent: s.adm1 });
     if (s.adm2id >= 0 && !S.info.adm2.has(s.adm2id)) S.info.adm2.set(s.adm2id, { name: s.adm2, parent: s.adm1 });
+    if (s.company && !S.info.company.has(s.company)) S.info.company.set(s.company, { name: s.company, parent: s.adm1 });
     if (s.adm1 && !S.info.adm1.has(s.adm1)) S.info.adm1.set(s.adm1, { name: s.adm1, parent: "" });
   }
   S.geo.khg && S.geo.khg.features.forEach((f) => { const p = f.properties, i = S.info.khg.get(p.khg_id); if (i) i.parent = p.prov || i.parent; else S.info.khg.set(p.khg_id, { name: p.name, parent: p.prov, noStations: true }); });
@@ -217,6 +218,7 @@ function classShares(list, minN = S.f.minN) {
 function regionKey(s, level) {
   if (level === "khg") return s.khg >= 0 ? s.khg : null;
   if (level === "adm2") return s.adm2id >= 0 ? s.adm2id : null;
+  if (level === "company") return s.company || null;
   return s.adm1 || null;
 }
 

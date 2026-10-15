@@ -9,10 +9,11 @@ The endpoints are undocumented and may change. Keep the request rate polite.
 
 ```
 sitmat_tmat_extract.py   downloader + post-processor
+update.py                one-command update to today (download, process, geo)
 check_output.py          quick pandas sanity checks on daily_long.csv
 prepare_geo.py           spatial join + web-sized boundary layers (needs geopandas)
 index.html               dashboard (reads sitmat_out/processed/*.csv)
-assets/app.js, js/*.js   dashboard code (data, theme, overview, map, regions, tables)
+assets/app.js, js/*.js   dashboard code (data, theme, overview, insights, map, regions, tables)
 assets/style.css         styles
 assets/geo/              khg/adm1/adm2 .geojson for the web (generated); src/ = geoBoundaries inputs
 assets/batas-khg-indonesia.geojson   KHG polygons (88 MB source, not read by the browser)
@@ -32,6 +33,15 @@ sitmat_out/
 Concession snapshots return a different set of points each day, so the union is kept.
 Each point's `history` block always covers the last 30 days and ignores the requested date,
 so only the `detail` block is used for the requested day.
+
+## Update to today
+
+```bash
+python update.py            # download what is new, rebuild the CSVs, assign regions to new stations
+python update.py --check    # how far behind is the data (no requests)
+```
+
+It fetches every missing concession day plus the last two (they may have been partial), refreshes the community stations (their history is merged with what is on disk, since the API only reaches back 90 days), rebuilds `sitmat_out/processed/`, and runs `prepare_geo.py` when new stations have no KHG or province yet (needs geopandas; otherwise it prints the command). A full community refresh is about 125 requests, so allow a few minutes. If it stops on a rate limit, run it again. Extra options go to the extractor, e.g. `python update.py --delay 2.5`. Then reload the dashboard.
 
 ## Extract
 
@@ -88,7 +98,7 @@ The page loads the CSVs and boundaries with `fetch`, so serve the folder over HT
 
 ```bash
 python -m http.server 8000
-# open http://localhost:8000/   (append #map, #compare, #heat, #table or #qc to open a tab)
+# open http://localhost:8000/   (append #patterns, #map, #compare, #heat, #table or #qc to open a tab)
 ```
 
 Opening `index.html` from disk (`file://`) blocks the fetch. The page then offers file pickers for
@@ -107,17 +117,24 @@ OpenStreetMap tiles, so it needs internet access.
 
 | Tab | Shows |
 |---|---|
-| Trend | Plain-language summary, KPIs, change since start with station spread, level vs −40 cm limit, level-class shares, station trend histogram, start-vs-now distribution, trend by province, stations reporting per day |
-| Map | Stations, a **contour surface**, KHG, regencies or provinces coloured by level, change since start, share below −40 cm, or trend. Week slider with play. Click a region for its series and most-drying stations, or filter to it. |
-| Regions | Ranking table (level, change, trend, share below −40 cm, % stations drying, sparkline) for KHG / regencies / provinces; community-vs-concession scatter per KHG |
+| Trend | Plain-language summary, KPIs, change since start with station spread, level-class shares, level vs −40 cm limit, class-transition flow (first 4 weeks → mid → last 4 weeks), start-vs-now distribution, station trend histogram, trend by province |
+| Patterns | Duration curves (early vs late third, and per province), longest dry spell per station, breadth (% stations rising minus falling per day, and by province × week), time below −40 cm per concession |
+| Map | A Layers panel: one surface (none, **contour**, **hexbin**, KHG, regencies, provinces or **concession footprints**) plus independent overlays (stations, **Getis-Ord Gi\* hotspots**, province lines, KHG outlines), coloured by level, change since start, share below −40 cm, or trend. Week slider with play. Click a region for its series and most-drying stations, or filter to it. |
+| Regions | Ranking table (KHG / regencies / provinces / concessions) (level, change, trend, share below −40 cm, % stations drying, sparkline) ; community-vs-concession scatter per KHG |
 | Region × week | Heatmap of regions by week: change, level, or % below −40 cm |
 | Stations | Searchable, sortable table with per-station trend and a weekly-level sparkline; CSV export |
 | Data | Daily readings or weekly medians as a table: free-text search, QC flag, status and level-range filters, sortable columns, paging, CSV export of the filtered rows, sparkline per row |
 | Data quality | QC report, flags, coverage, thin days, location warnings, flagged readings |
 
-Filters: source, province, regency, KHG, dates, panel coverage, min stations per region, and whether
-QC-flagged values are excluded (default on). Clicking a station opens its daily and weekly series,
+Filters (sticky bar): where (source, province, regency, KHG), when (dates), and under Method the panel coverage, min stations per region and whether
+QC-flagged values are excluded (default on). Clicking a station opens a side drawer (Esc closes) with its daily and weekly series,
 trend line and the −40 cm limit.
+
+**Patterns.** All views use the QC toggle and either the fixed panel or within-station day-to-day differences, so the drop in reporting stations cannot create a signal. Dry spells allow gaps of up to 2 missing days and open runs are lower bounds. Breadth counts a station only on days where it also reported the day before (change > 1 cm). Concessions are keyed on the portal `company_code` (`company_name` is empty); the dot plot describes readings, not compliance.
+
+**Hotspots (Gi\*).** Binary 25 km weights, self included, on the selected metric for the selected week; stations with fewer than 4 valid neighbours are left grey. z is relative to the stations currently selected, there is no multiple-testing correction, and clusters largely follow concession boundaries. **Concession footprints** are convex hulls of each company's stations, split into clusters more than 40 km apart.
+
+**Hexbin.** Stations are binned on a hexagonal grid (equal-area cells in projected km); the cell size follows the zoom level (Fine / Medium / Coarse set the pixel size) so bins stay put while panning. Each cell shows the median of its stations, or the share below −40 cm; cells with fewer than "Min stations/region" stations are left out. Cells count stations, not area, so dense concession clusters dominate.
 
 **Contour surface.** Station values for the selected week are interpolated over the visible map
 (inverse-distance weighting, power 2, radius about 25 km or two cells, 90 columns) and turned into bands

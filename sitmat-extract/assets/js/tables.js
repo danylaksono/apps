@@ -97,8 +97,8 @@ function renderQc() {
 
 function selectStation(s) {
   S.sel = s; $("detail").classList.remove("hidden"); renderDetail();
-  $("detail").scrollIntoView({ behavior: "smooth", block: "nearest" });
 }
+function closeDetail() { S.sel = null; $("detail").classList.add("hidden"); }
 
 function renderDetail() {
   const s = S.sel; if (!s) return;

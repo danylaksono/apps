@@ -249,6 +249,17 @@ def parse_date(x):
 # ==========================================================================
 # 3. DOWNLOAD
 # ==========================================================================
+def merge_history(old, new):
+    """Add the daily records of `old` that `new` no longer covers (new wins for dates in both)."""
+    try:
+        o = old["properties"]["properties"].get("history") or []
+        n = new["properties"]["properties"]
+        have = {parse_date(h.get("date") or h.get("tanggal")) for h in n.get("history") or []}
+        n["history"] = (n.get("history") or []) + [h for h in o if parse_date(h.get("date") or h.get("tanggal")) not in have]
+    except (TypeError, KeyError, AttributeError):
+        pass
+
+
 def download_community(client, out, start, end, limit, log):
     raw = out / "raw" / "community_detail"
     # The server counts days back from *today*, so ask for enough days to reach `start`.
@@ -273,13 +284,15 @@ def download_community(client, out, start, end, limit, log):
     for i, f in enumerate(todo, 1):
         sid = f["properties"].get("station_id") or f["properties"].get("code")
         target = raw / f"{safe_name(sid)}.json.gz"
-        # skip if already downloaded for (at least) this many days
+        # skip if already downloaded today for (at least) this many days; older files are refreshed
+        old = None
         if target.exists():
             try:
-                if load_gz(target).get("_days", 0) >= days:
+                old = load_gz(target)
+                if old.get("_days", 0) >= days and old.get("_fetched") == date.today().isoformat():
                     continue
             except Exception:
-                pass                                   # corrupt file -> download again
+                old = None                             # corrupt file -> download again
         data = client.get_json(
             "/api/air-gambut/masyarakat/station-detail",
             {"station_id": sid, "days": days, "source": "simatag"},
@@ -288,6 +301,8 @@ def download_community(client, out, start, end, limit, log):
             log(f"community {sid}: no data ({data})")
             continue
         data["_days"] = days                           # remember what we asked for
+        data["_fetched"] = date.today().isoformat()
+        merge_history(old, data)                       # the API only reaches back 90 days; keep what we already had
         save_gz(target, data)
         print(f"  [{i}/{len(todo)}] community {sid}")
 
@@ -306,8 +321,8 @@ def download_concession(client, out, start, end, limit, log):
     today = date.today()
     for i, d in enumerate(dates, 1):
         target = raw / f"{d.isoformat()}.json.gz"
-        # keep finished days; always refresh today (still changing)
-        if target.exists() and d < today:
+        # keep finished days; refresh the last two (today is still changing, yesterday may have been fetched mid-day)
+        if target.exists() and d < today - timedelta(days=1):
             continue
         data = client.get_json("/api/konsensi", {"tanggal": d.isoformat()})
         if data in (None, "FAILED"):

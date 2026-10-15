@@ -2,7 +2,7 @@
 /* SiTMAT Explorer bootstrap: filters, tabs, refresh loop. Modules live in assets/js/. */
 
 const RENDER = {
-  overview: () => renderOverview(), map: () => renderMap(), compare: () => renderCompare(),
+  overview: () => renderOverview(), patterns: () => renderPatterns(), map: () => renderMap(), compare: () => renderCompare(),
   heat: () => renderHeat(), table: () => renderTable(), data: () => renderData(), qc: () => renderQc(),
 };
 
@@ -12,17 +12,18 @@ function fillSelect(id, items, allLabel, keep) {
   el.value = items.some(([v]) => String(v) === cur) ? cur : "";
 }
 
-// province -> regency -> KHG option lists depend on the selections above them
+// province -> regency -> KHG option lists: only places with at least one station that has readings, for the chosen source
+const hasReadings = (s) => s._any ?? (s._any = s.wl.some((v) => v === v));
+
 function fillGeoSelects() {
-  const prov = $("fProv").value, reg = $("fReg").value;
-  const inProv = (s) => !prov || s.adm1 === prov;
-  fillSelect("fReg", uniq(S.stations.filter((s) => s.adm2id >= 0 && inProv(s)).map((s) => [s.adm2id, s.adm2])), "All regencies", true);
-  const reg2 = $("fReg").value;
-  fillSelect("fKhg", uniq(S.stations.filter((s) => s.khg >= 0 && inProv(s) && (!reg2 || String(s.adm2id) === reg2)).map((s) => [s.khg, s.khgName])), "All KHG", true);
-}
-function uniq(pairs) {
-  const m = new Map(pairs.map(([k, v]) => [k, v]));
-  return [...m].sort((a, b) => String(a[1]).localeCompare(String(b[1])));
+  const kind = $("fKind").value;
+  const live = S.stations.filter((s) => s.hasLoc && hasReadings(s) && (kind === "all" || s.kind === kind));
+  const count = (list, key, label) => { const m = new Map(); for (const s of list) { const k = key(s); if (k === "" || k === -1) continue; const o = m.get(k) || { label: label(s), n: 0 }; o.n++; m.set(k, o); } return [...m].map(([k, o]) => [k, `${o.label} (${o.n})`, o.label]).sort((a, b) => a[2].localeCompare(b[2])); };
+  fillSelect("fProv", count(live, (s) => s.adm1, (s) => s.adm1).map(([k, t]) => [k, t]), "All provinces", true);
+  const prov2 = $("fProv").value, inP = live.filter((s) => !prov2 || s.adm1 === prov2);
+  fillSelect("fReg", count(inP, (s) => s.adm2id, (s) => s.adm2).map(([k, t]) => [k, t]), "All regencies", true);
+  const reg2 = $("fReg").value, inR = inP.filter((s) => !reg2 || String(s.adm2id) === reg2);
+  fillSelect("fKhg", count(inR, (s) => s.khg, (s) => s.khgName).map(([k, t]) => [k, t]), "All KHG", true);
 }
 
 function readFilters() {
@@ -36,7 +37,7 @@ function readFilters() {
 }
 
 function onFilter(e) {
-  if (e && (e.target.id === "fProv" || e.target.id === "fReg")) fillGeoSelects();
+  if (e && ["fKind", "fProv", "fReg"].includes(e.target.id)) fillGeoSelects();
   readFilters(); S.regSel = null; refresh();
 }
 
@@ -67,7 +68,6 @@ function refresh() {
 }
 
 function initUi() {
-  fillSelect("fProv", [...new Set(S.stations.map((s) => s.adm1).filter(Boolean))].sort().map((p) => [p, p]), "All provinces");
   fillGeoSelects();
   $("fFrom").min = $("fTo").min = S.dates[0]; $("fFrom").max = $("fTo").max = S.dates[S.nd - 1];
   $("fFrom").value = S.dates[0]; $("fTo").value = S.dates[S.nd - 1];
@@ -79,8 +79,9 @@ function initUi() {
     const el = document.documentElement; el.dataset.theme = isDark() ? "light" : "dark";
     M.layersKey = ""; M.ctxKey = ""; refresh();
   };
-  $("dClose").onclick = () => { S.sel = null; $("detail").classList.add("hidden"); };
-  initMap(); initCompare(); initHeat(); initTable(); initData();
+  $("dClose").onclick = closeDetail;
+  addEventListener("keydown", (e) => { if (e.key === "Escape" && S.sel) closeDetail(); });
+  initMap(); initCompare(); initHeat(); initTable(); initData(); initPatterns();
   if (!S.geo.khg) $("geoWarn").classList.remove("hidden");
   readFilters();
   const h = location.hash.slice(1);
