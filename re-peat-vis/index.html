@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Menjaga gambut tetap basah: simulasi satu KHG</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/theme.css">
+<link rel="stylesheet" href="css/base.css">
+<link rel="stylesheet" href="css/stage.css">
+<link rel="stylesheet" href="css/hud.css">
+<link rel="stylesheet" href="css/card.css">
+<link rel="stylesheet" href="css/overlays.css">
+<link rel="stylesheet" href="css/responsive.css">
+</head>
+<body class="intro">
+<div id="stage">
+  <canvas id="gl" aria-label="Model 3D satu KHG rekaan"></canvas>
+  <div id="haze"></div>
+  <div id="labels"></div>
+  <div id="tip" role="status"></div>
+  <header class="chrome">
+    <h1 class="panel">Menjaga gambut tetap basah</h1>
+    <div id="kpi" class="panel" aria-live="polite">
+      <div class="row"><span>TMA aman (≤ 0,4 m)</span><b id="kpiVal">–</b></div>
+      <div class="gauge"><i id="kpiGauge"></i></div>
+      <span class="day" id="kpiDay"></span>
+    </div>
+  </header>
+  <div id="toast" role="status"></div>
+
+  <nav id="tools" class="panel chrome" aria-label="Alat tampilan">
+    <button id="btnInfo" aria-expanded="false" aria-controls="infoPop" title="Petunjuk navigasi dan keterangan (I)" aria-label="Petunjuk navigasi dan keterangan">
+      <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 11v6M12 7.5v.5"/></svg></button>
+    <button id="btnCut" aria-pressed="false" title="Potongan melintang (C)" aria-label="Potongan melintang">
+      <svg viewBox="0 0 24 24"><path d="M4 16l8-8 8 8"/><path d="M12 3v18" stroke-dasharray="2 2.5"/><path d="M4 20h16"/></svg></button>
+    <button id="btnKomp" aria-pressed="true" title="Batas kompartemen (K)" aria-label="Batas kompartemen">
+      <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="8" stroke-dasharray="2 2.5"/><path d="M4 12h16M10 12v8" stroke-dasharray="2 2.5"/></svg></button>
+    <button id="btnWell" aria-pressed="false" aria-controls="wellDock" title="Grafik sumur pantau (G)" aria-label="Grafik sumur pantau">
+      <svg viewBox="0 0 24 24"><path d="M4 4v16h16"/><path d="M7 9l4 4 3-2 5 5"/></svg></button>
+    <button id="btnLegend" aria-expanded="true" aria-controls="legendDock" title="Legenda (L)" aria-label="Legenda">
+      <svg viewBox="0 0 24 24"><rect x="4" y="5" width="4" height="4" rx="1"/><rect x="4" y="15" width="4" height="4" rx="1"/><path d="M11 7h9M11 17h9"/></svg></button>
+    <hr>
+    <button id="resetView" title="Atur ulang tampilan (R)" aria-label="Atur ulang tampilan">
+      <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="7"/><path d="M12 2v4M12 18v4M2 12h4M18 12h4"/><circle cx="12" cy="12" r="1.5"/></svg></button>
+    <button id="clearPins" title="Hapus sumur pantau" aria-label="Hapus sumur pantau" hidden>
+      <svg viewBox="0 0 24 24"><path d="M12 21v-8"/><circle cx="12" cy="8" r="4"/><path d="M17 17l4 4M21 17l-4 4"/></svg></button>
+    <button id="btnPanel" aria-expanded="true" aria-controls="card" title="Tampilkan atau ciutkan panel (P)" aria-label="Tampilkan atau ciutkan panel">
+      <svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M3 14h18"/></svg></button>
+  </nav>
+
+  <div id="infoPop" class="pop panel" hidden>
+    <h3>Navigasi</h3>
+    <dl>
+      <dt>Seret kiri</dt><dd>Memutar</dd>
+      <dt>Seret kanan</dt><dd>Menggeser (atau Shift + seret)</dd>
+      <dt>Roda, seret tengah</dt><dd>Zoom ke arah kursor</dd>
+      <dt>Klik dua kali</dt><dd>Terbang ke titik</dd>
+      <dt>Layar sentuh</dt><dd>Satu jari memutar, dua jari menggeser dan zoom</dd>
+      <dt>Keyboard</dt><dd><kbd>←</kbd><kbd>→</kbd><kbd>↑</kbd><kbd>↓</kbd> geser, <kbd>Q</kbd><kbd>E</kbd> putar, <kbd>+</kbd><kbd>−</kbd> zoom, <kbd>R</kbd> atur ulang</dd>
+    </dl>
+    <h3>Memeriksa</h3>
+    <p>Arahkan kursor ke gambut untuk membaca TMA. Klik gambut untuk memasang sumur pantau virtual (maksimal 3). Tombol potongan melintang membuka irisan kubah gambut.</p>
+    <h3>Tentang ilustrasi ini</h3>
+    <p>Skematis, bukan hasil model. KHG rekaan; skala vertikal dibesar-besarkan sekitar 75 kali. Angka mengikuti register parameter metodologi.</p>
+  </div>
+  <div id="cutPop" class="pop panel" hidden><label for="cutPos">Posisi potongan</label><input type="range" id="cutPos" min="-95" max="55" step="1" value="-55"></div>
+
+  <div id="legendDock" class="panel chrome">
+    <div class="legend" id="legTma">
+      <span class="ttl">Kedalaman TMA</span>
+      <span><i class="sw" style="background:var(--ok)"></i>≤ 0,4 m (aman)</span>
+      <span><i class="sw" style="background:var(--mod)"></i>0,4–0,6 m</span>
+      <span><i class="sw" style="background:var(--high)"></i>0,6–0,85 m</span>
+      <span><i class="sw" style="background:var(--ext)"></i>&gt; 0,85 m</span>
+      <span><i class="sw" style="background:var(--water)"></i>Air kanal dan sungai</span>
+    </div>
+    <div class="legend" id="legStrat" hidden>
+      <span class="ttl">Strategi tiap kompartemen</span>
+      <span><i class="sw" style="background:#7FBFAF"></i>Pertahankan (tanpa tindakan)</span>
+      <span><i class="sw" style="background:#4C7FC0"></i>Operasi pintu air</span>
+      <span><i class="sw" style="background:#9C6B3C"></i>Perbaiki atau bangun sekat</span>
+      <span><i class="sw" style="background:#7E5BA8"></i>Pompa</span>
+      <span><i class="sw" style="background:#8E2F4F"></i>Risiko tersisa: bekas terbakar, siaga pemadaman</span>
+    </div>
+  </div>
+
+  <div id="wellDock" class="panel chrome" hidden>
+    <div class="ttl">TMA sumur pantau</div>
+    <canvas id="wellChart" width="300" height="170" role="img" aria-label="Grafik TMA sumur pantau terhadap waktu"></canvas>
+    <div class="wlegend" id="wellLeg"></div>
+    <p id="wellEmpty">Klik gambut untuk memasang sumur pantau virtual.</p>
+  </div>
+
+  <section id="card" class="panel chrome" aria-label="Panel cerita dan tantangan">
+    <div id="story">
+      <div class="cardhead"><span id="stepTxt">Adegan 1 dari 7</span><div class="dots" id="dots"></div><span class="sp"></span>
+        <button class="iconbtn collapse" data-collapse aria-label="Ciutkan panel" title="Ciutkan panel"><svg viewBox="0 0 24 24"><path d="M6 9l6 6 6-6"/></svg></button></div>
+      <h2 id="title"></h2>
+      <div class="collapsible">
+        <p class="lead" id="narr" aria-live="polite"></p>
+        <p class="note" id="cmp" hidden></p>
+      </div>
+      <div class="prog" aria-hidden="true"><i id="prog"></i></div>
+      <div class="controls">
+        <button id="prev">Sebelumnya</button>
+        <button id="replay">Ulangi</button>
+        <button id="next" class="primary">Berikutnya</button>
+      </div>
+    </div>
+    <div id="sandbox" hidden>
+      <div class="cardhead"><span>Tantangan</span><span class="sp"></span><button class="link" id="toStory">Kembali ke cerita</button>
+        <button class="iconbtn collapse" data-collapse aria-label="Ciutkan panel" title="Ciutkan panel"><svg viewBox="0 0 24 24"><path d="M6 9l6 6 6-6"/></svg></button></div>
+      <h2>Lindungi KHG ini dari kemarau</h2>
+      <div class="collapsible">
+        <p class="lead">Klik lingkaran putih di kanal untuk memasang atau mencabut sekat. Sebelum musim berjalan, warna menunjukkan pratinjau hari ke-50.</p>
+        <div class="budget">
+          <div class="budget-row"><span>Anggaran</span><span id="budgetTxt">0 dari 100 poin</span></div>
+          <div class="prog"><i id="budgetBar"></i></div>
+          <div class="costs">Sekat 5, pintu air 10, estafet pompa 30 poin</div>
+        </div>
+        <div class="tools-row">
+          <button id="tGate" aria-pressed="false">Pintu air</button>
+          <button id="tPump" aria-pressed="false">Estafet pompa</button>
+          <div class="seg" role="group" aria-label="Jenis tahun"><button id="cNormal" aria-pressed="false">Normal</button><button id="cEl" aria-pressed="true">El Niño</button></div>
+        </div>
+      </div>
+      <div class="controls">
+        <button class="primary" id="run">Mulai musim kemarau</button>
+        <button id="reset">Atur ulang</button>
+        <button id="model">Rencana model</button>
+      </div>
+      <div class="result collapsible" id="sbResult" aria-live="polite" hidden></div>
+    </div>
+  </section>
+
+  <div id="intro">
+    <div class="wrap">
+      <h1>Menjaga gambut tetap basah</h1>
+      <p>Lihat bagaimana air bergerak di dalam satu Kesatuan Hidrologis Gambut (KHG), mengapa kemarau memicu kebakaran, dan bagaimana sekat kanal, pintu air, dan pompa dibagi agar air sampai ke tempat yang paling membutuhkan.</p>
+      <div class="row"><button class="go" id="startStory">Mulai cerita</button><button class="alt" id="startPlay">Langsung ke tantangan</button></div>
+      <!-- <small>Tujuh adegan singkat, lalu giliran Anda mengatur air.</small> -->
+    </div>
+  </div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script type="module" src="js/main.js"></script>
+</body>
+</html>

@@ -1,0 +1,116 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Merauke City",
+        "type": "city",
+        "category": "urban"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          140.395,
+          -8.497
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Kampung Sermayam",
+        "type": "kampung",
+        "category": "project",
+        "note": "Lokasi tanam tebu perdana Jokowi (23/7/2024)"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          140.65,
+          -7.8
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Kampung Kwoor (Kweel)",
+        "type": "kampung",
+        "category": "protest",
+        "note": "Protes Suku Yei: 'Kami Bisa Hidup Tanpa Sawit dan Tebu' (19/7/2024)"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          140.85,
+          -7.6
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Kampung Kuper",
+        "type": "kampung",
+        "category": "project",
+        "note": "Panen raya padi, tinjauan Menhan & Mentan (17/4/2024)"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          140.5,
+          -8.42
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Wanam",
+        "type": "kampung",
+        "category": "conflict",
+        "note": "232 excavator beroperasi, penggusuran hutan adat Marind Maklew"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          140.05,
+          -7.3
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Wobikel (pelabuhan)",
+        "type": "port",
+        "category": "logistics",
+        "note": "Kapal J7Explorer Haji Isam berlabuh (Juni 2024), alat berat diturunkan"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          140.02,
+          -7.22
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "PT Global Papua Abadi",
+        "type": "company",
+        "category": "concession",
+        "note": "30.778 ha, tebu, sudah menggusur >800 ha hutan"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          140.5,
+          -8.2
+        ]
+      }
+    }
+  ]
+}

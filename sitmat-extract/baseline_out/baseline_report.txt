@@ -1,0 +1,23 @@
+Window: 2026-04-01 .. 2026-10-14
+
+Row cleaning:
+  rows_in_file: 132757
+  rows_in_date_range: 132757
+  rows_with_water_level: 132204
+  dropped_range: 159
+  dropped_spike: 0
+  rows_clean: 132045
+
+[community] stations with any valid data: 73
+  kept: 36   dropped: 37
+    dropped (fewer than 30 valid days; coverage below 50%): 25
+    dropped (coverage below 50%): 12
+  median of station medians: -80.0 cm; share of station-days in Sangat Rawan: 50%
+
+[concession] stations with any valid data: 1157
+  kept: 307   dropped: 850
+    dropped (coverage below 80%): 553
+    dropped (fewer than 60 valid days; coverage below 80%): 297
+  median of station medians: -37.0 cm; share of station-days in Sangat Rawan: 1%
+
+Files: baseline_daily.csv, station_summary.csv, station_monthly.csv, monthly_overview.csv, dropped_stations.csv

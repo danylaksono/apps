@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>apps — danylaksono.dev</title>
+    <style>
+        body {
+            font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+            margin: 0;
+            padding: 0;
+            background: #0b0f1b;
+            color: #e6eef7;
+        }
+
+        main {
+            max-width: 740px;
+            margin: 0 auto;
+            padding: 3rem 1.5rem;
+        }
+
+        h1 {
+            font-size: 2.2rem;
+            margin: 0 0 1rem;
+        }
+
+        p {
+            margin: 0.75rem 0;
+            line-height: 1.6;
+            color: #a6b3c8;
+        }
+
+        a {
+            color: #7cdbff;
+            text-decoration: none;
+        }
+
+        a:hover {
+            text-decoration: underline;
+        }
+
+        .grid {
+            display: grid;
+            gap: 1rem;
+            margin-top: 2rem;
+        }
+
+        .card {
+            padding: 1.2rem;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 12px;
+            background: rgba(255, 255, 255, 0.04);
+        }
+
+        .card h2 {
+            margin: 0 0 0.5rem;
+            font-size: 1.1rem;
+        }
+
+        .card p {
+            margin: 0;
+            font-size: 0.95rem;
+        }
+
+        footer {
+            margin-top: 3rem;
+            font-size: 0.9rem;
+            color: rgba(166, 179, 200, 0.7);
+        }
+    </style>
+</head>
+
+<body>
+    <main>
+        <h1> apps</h1>
+        <p>This repository hosts small interactive demos and playgrounds. Each folder on <code>main</code> is built and
+            published to GitHub Pages automatically.</p>
+
+        <div class="grid">
+            <div class="card">
+                <h2><a href="/apps/agni/">Agni</a></h2>
+                <p>A situational map of Kalimantan fire &amp; haze — active fires, peat, concessions and animated CAMS
+                    smoke forecasts (deployed from <code>/agni</code>).</p>
+            </div>
+            <div class="card">
+                <h2><a href="/apps/city-rose/">City Rose</a></h2>
+                <p>A Vite + React demo with a “city rose” visualization (deployed from <code>/city-rose</code>).</p>
+            </div>
+
+            <div class="card">
+                <h2><a href="/apps/cekplot/">Cekplot</a></h2>
+                <p>A route planner for multi-stop trips in Makassar City (deployed from <code>/cekplot</code>).</p>
+            </div>
+
+            <div class="card">
+                <h2><a href="/apps/joyplot/">Joyplot</a></h2>
+                <p>An interactive deck.gl joyplot map visualization (deployed from <code>/joyplot</code>).</p>
+            </div>
+
+            <div class="card">
+                <h2><a href="/apps/dataqa/">Data QA</a></h2>
+                <p>An interactive data quality analysis tool with DuckDB and MapLibre (deployed from
+                    <code>/dataqa</code>).</p>
+            </div>
+
+            <div class="card">
+                <h2><a href="/apps/pigparty/">Pig Party</a></h2>
+                <p>A scrollytelling map visualization about the PSN project in Merauke (deployed from
+                    <code>/pigparty</code>).</p>
+            </div>
+
+            <div class="card">
+                <h2><a href="/apps/projection-lab/">Projection Lab</a></h2>
+                <p>An interactive comparison of 100 map projections — side by side, overlaid or as small multiples,
+                    with configurable projection parameters and measured distortion (deployed from
+                    <code>/projection-lab</code>).</p>
+            </div>
+
+            <div class="card">
+                <h2><a href="/apps/sector7/">Sector 7</a></h2>
+                <p>An HTML+JS canvas game experience (deployed from <code>/sector7</code>).</p>
+            </div>
+
+            <div class="card">
+                <h2><a href="/apps/walk/">Walk (Isochrone)</a></h2>
+                <p>A lightweight, pure JS isochrone generator that runs entirely in the browser (deployed from
+                    <code>/walk</code>).
+                </p>
+            </div>
+        </div>
+
+        <footer>
+            <p>To edit these projects, check out the repository and run each demo from its own folder.</p>
+        </footer>
+    </main>
+</body>
+
+</html>

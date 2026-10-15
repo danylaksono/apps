@@ -1,0 +1,1282 @@
+kind,station_id,has_loc,khg_id,khg_dist_km,adm1,khg_name,adm2,adm2_id
+community,LPA-C2213122025-M0010,1,4,0.0,Sumatera Utara,Aek Siriam - Batang Singkuang,Mandailing Natal,329
+community,LPA-C2313122025-M0011,1,,0.0,Kalimantan Selatan,,Kota Banjar Baru,179
+community,LPA-C2413122025-M0012,1,5,0.0,Sumatera Utara,Aek Sordang - Aek Kalang,Tapanuli Tengah,488
+community,LPA-C2513122025-M0013,1,96,0.0,Sumatera Utara,Sungai Kualuh Bilah - Sungai Barumun,Labuhan Batu,283
+community,LPA-C2613122025-M0014,1,,0.0,Kalimantan Selatan,,Kota Banjar Baru,179
+community,LPA-C2713122025-M0015,1,0,0.0,Sumatera Barat,Aek Lunang - Aek Sidang,Pesisir Selatan,403
+community,LPA-C2813122025-M0016,1,41,0.0,Sumatera Utara,Sungai Barumun - Sungai Kubu,Labuhan Batu,283
+community,LPA-C2913122025-M0017,1,54,0.0,Sumatera Selatan,Sungai Burnai - Sungai Sibumbung,Ogan Komering Ilir,374
+community,LPA-C3013122025-M0018,1,54,0.0,Sumatera Selatan,Sungai Burnai - Sungai Sibumbung,Ogan Komering Ilir,374
+community,LPA-C3113122025-M0019,1,0,0.0,Sumatera Barat,Aek Lunang - Aek Sidang,Pesisir Selatan,403
+community,LPA-M0101102024-P0260,1,41,0.0,Sumatera Utara,Sungai Barumun - Sungai Kubu,Labuhan Batu Selatan,284
+community,LPA-M0101102024-P0432,1,128,0.0,Sumatera Utara,Sungai Nata - Sungai Sinunukan,Mandailing Natal,329
+community,LPA-M0115052025-P9770,1,130,0.0,Riau,Sungai Nilo - Sungai Napuh,Pelalawan,397
+community,LPA-M0215052025-P0128,1,54,0.0,Sumatera Selatan,Sungai Burnai - Sungai Sibumbung,Ogan Komering Ilir,374
+community,LPA-M0315052025-P2547,0,,,,,,
+community,MTI-004NLNLJIWB4,1,163,0.0,Riau,Sungai Siak - Sungai Kampar,Siak,442
+community,MTI-04J1V6MUVG3N,1,102,0.0,Sumatera Selatan,Sungai Lalan - Sungai Merang,Musi Banyuasin,357
+community,MTI-09UUOAFNM0BM,1,114,0.0,Jambi,Sungai Mendahara - Sungai Batanghari,Tanjung Jabung Timur,486
+community,MTI-0EIOCIISKWFX,0,,,,,,
+community,MTI-0PY44HEH6LBX,1,26,0.0,Riau,Pulau Padang,Kepulauan Meranti,155
+community,MTI-0QPGP748RCSW,1,29,0.0,Riau,Pulau Tebing Tinggi,Kepulauan Meranti,155
+community,MTI-13R6GKKDBU1X,1,25,0.0,Riau,Pulau Bengkalis,Bengkalis,48
+community,MTI-1IKTIWUIRETP,1,103,0.0,Kalimantan Tengah,Sungai Lamandau - Sungai Arut,Kotawaringin Barat,272
+community,MTI-1UHDSWLVN1C4,1,77,0.0,Kalimantan Barat,Sungai Kapuas - Sungai Ambawang,Kubu Raya,275
+community,MTI-1UM6LFUBJ628,1,140,0.0,Kalimantan Tengah,Sungai Pukun - Sungai Mentaya,Kotawaringin Timur,273
+community,MTI-1VC25TYEM52Q,1,45,0.0,Jambi,Sungai Batanghari - Sungai Kampeh,Muaro Jambi,352
+community,MTI-1XGPC699F2RA,1,114,0.0,Jambi,Sungai Mendahara - Sungai Batanghari,Muaro Jambi,352
+community,MTI-2UR9BSJBDF23,1,114,0.0,Jambi,Sungai Mendahara - Sungai Batanghari,Tanjung Jabung Timur,486
+community,MTI-323W0FLGJGLV,1,155,0.0,Kalimantan Utara,Sungai Sebuku - Sungai Sembakung,Nunukan,372
+community,MTI-3J5MPFRRO7N0,1,147,0.0,Riau,Sungai Rokan Kiri - Sungai Mandau,Siak,442
+community,MTI-3JSOMI5H9WL8,0,,,,,,
+community,MTI-42GJ42W55DTD,0,,,,,,
+community,MTI-450AUCLI8GSZ,1,44,0.0,Jambi,Sungai Batanghari - Sungai Air Hitam Laut,Muaro Jambi,352
+community,MTI-4HCUF7WSKX7X,0,,,,,,
+community,MTI-6IY9N869MOWZ,1,138,0.0,Kalimantan Barat,Sungai Penyangkat - Sungai Selat Maya,Kubu Raya,275
+community,MTI-6RN68VCBRTEN,1,41,0.0,Riau,Sungai Barumun - Sungai Kubu,Rokan Hilir,424
+community,MTI-71DNK6IMMIIP,1,18,0.0,Aceh,Krueng Tripa - Krueng Seuneuam,Nagan Raya,361
+community,MTI-778N952JF9Q9,1,26,0.0,Riau,Pulau Padang,Kepulauan Meranti,155
+community,MTI-798KFLD476Z6,0,,,,,,
+community,MTI-7I2PZLSBC0RE,0,,,,,,
+community,MTI-7RPA4A4M83IL,0,,,,,,
+community,MTI-7UZWTP3IOEE0,0,,,,,,
+community,MTI-7W4GEYS9W01S,0,,,,,,
+community,MTI-80G6Q9UJ3PXI,0,,,,,,
+community,MTI-8BN2QUDW7BCC,1,155,0.0,Kalimantan Utara,Sungai Sebuku - Sungai Sembakung,Nunukan,372
+community,MTI-8I3UYP664M2G,1,113,0.0,Kalimantan Timur,Sungai Melintang - Sungai Layah,Kutai Kartanegara,281
+community,MTI-93OFXGTH1XYL,0,,,,,,
+community,MTI-96DA9JHETANT,0,,,,,,
+community,MTI-96DGTXVHGWYA,1,133,0.0,Kalimantan Barat,Sungai Pawan - Sungai Kepulu,Ketapang,163
+community,MTI-9BT33VBEJTHV,1,25,0.0,Riau,Pulau Bengkalis,Bengkalis,48
+community,MTI-9XFHZ83SIHFH,1,,0.0,DI Yogyakarta,,Sleman,454
+community,MTI-A1547QSJXCF1,1,134,0.0,Kalimantan Barat,Sungai Pawan - Sungai Tolak,Ketapang,163
+community,MTI-AIF4R20B0UXP,1,114,0.0,Jambi,Sungai Mendahara - Sungai Batanghari,Tanjung Jabung Timur,486
+community,MTI-ARDQQANE32JW,1,18,0.0,Aceh,Krueng Tripa - Krueng Seuneuam,Nagan Raya,361
+community,MTI-B721V4XOZOW6,0,,,,,,
+community,MTI-BH8U75M2Y06C,1,116,0.0,Kalimantan Utara,Sungai Mentarang - Sungai Belayu,Tana Tidung,478
+community,MTI-BHTOIBDSAJH2,1,67,0.0,Kalimantan Tengah,Sungai Kahayan - Sungai Kapuas,Kapuas,137
+community,MTI-BWMJEF9L0EJ4,0,,,,,,
+community,MTI-C81IL14XMKBH,1,114,0.0,Jambi,Sungai Mendahara - Sungai Batanghari,Tanjung Jabung Timur,486
+community,MTI-CCQ2HOUL6078,0,,,,,,
+community,MTI-CF0Z88I8MAHV,1,102,0.0,Sumatera Selatan,Sungai Lalan - Sungai Merang,Musi Banyuasin,357
+community,MTI-CFXHPJAAHCSB,1,155,0.0,Kalimantan Utara,Sungai Sebuku - Sungai Sembakung,Nunukan,372
+community,MTI-CHFOSD0S9LF0,1,146,0.0,Riau,Sungai Rokan - Sungai Siak Kecil,Bengkalis,48
+community,MTI-CKK5W1QKU1CR,1,116,0.0,Kalimantan Utara,Sungai Mentarang - Sungai Belayu,Tana Tidung,478
+community,MTI-DU5LLR7QYGSV,0,,,,,,
+community,MTI-EFRJJS64J08L,1,44,0.0,Jambi,Sungai Batanghari - Sungai Air Hitam Laut,Muaro Jambi,352
+community,MTI-F6EFAHAN6ZR1,0,,,,,,
+community,MTI-G8Y2JJ36DEDV,0,,,,,,
+community,MTI-GAFOS2MB0AFM,1,114,0.0,Jambi,Sungai Mendahara - Sungai Batanghari,Tanjung Jabung Timur,486
+community,MTI-GEWNOIDO5DCD,1,114,0.0,Jambi,Sungai Mendahara - Sungai Batanghari,Tanjung Jabung Timur,486
+community,MTI-GHYO9PCM3813,0,,,,,,
+community,MTI-GWJ00KIVSF18,1,114,0.0,Jambi,Sungai Mendahara - Sungai Batanghari,Tanjung Jabung Timur,486
+community,MTI-H4OS5TQM06AD,1,,0.0,DI Yogyakarta,,Sleman,454
+community,MTI-HPDWC0NK0G2E,1,29,0.0,Riau,Pulau Tebing Tinggi,Kepulauan Meranti,155
+community,MTI-HZWOWSSMVEJO,1,,0.0,DI Yogyakarta,,Sleman,454
+community,MTI-I1GKX24RXZSI,0,,,,,,
+community,MTI-J78DI8MRXN59,1,,0.0,DKI Jakarta,,Kota Jakarta Pusat,203
+community,MTI-JA5NJQ37B4FW,0,,,,,,
+community,MTI-JDUU4UF92S0K,1,44,0.0,Jambi,Sungai Batanghari - Sungai Air Hitam Laut,Muaro Jambi,352
+community,MTI-JK3UT52ST1GS,1,26,0.0,Riau,Pulau Padang,Kepulauan Meranti,155
+community,MTI-JWXDFURHQH13,1,31,0.0,Jambi,Sungai Air Hitam Laut - Sungai Buntu Kecil,Musi Banyuasin,357
+community,MTI-JYLQBI8YDMWF,1,77,0.0,Kalimantan Barat,Sungai Kapuas - Sungai Ambawang,Kubu Raya,275
+community,MTI-KBD4EMEQ3J2B,0,,,,,,
+community,MTI-KO2SCBF1NL1O,1,20,0.16,Aceh,Krueng Wonki - Krueng Gubon,Aceh Barat,0
+community,MTI-KYPAH00UHHO6,0,,,,,,
+community,MTI-LOGH9IGBECTN,1,114,0.0,Jambi,Sungai Mendahara - Sungai Batanghari,Muaro Jambi,352
+community,MTI-LWS4ECLCIAA3,1,146,4.28,Riau,Sungai Rokan - Sungai Siak Kecil,Bengkalis,48
+community,MTI-MJ5IHVU6SJEA,1,18,0.0,Aceh,Krueng Tripa - Krueng Seuneuam,Nagan Raya,361
+community,MTI-N6MB2ERI758T,1,20,0.0,Aceh,Krueng Wonki - Krueng Gubon,Aceh Barat,0
+community,MTI-NPY6A0I5TVZC,1,20,0.0,Aceh,Krueng Wonki - Krueng Gubon,Aceh Barat,0
+community,MTI-NV44U4QVM1QU,0,,,,,,
+community,MTI-NWTJQIG1UTC1,0,,,,,,
+community,MTI-OXB86Y70D1GN,1,155,0.0,Kalimantan Utara,Sungai Sebuku - Sungai Sembakung,Nunukan,372
+community,MTI-P3F3YBZQPYPA,1,20,0.0,Aceh,Krueng Wonki - Krueng Gubon,Aceh Barat,0
+community,MTI-P7C7AJVB3RQT,1,27,0.0,Riau,Pulau Rangsang,Kepulauan Meranti,155
+community,MTI-PH0LWACHPZ5Q,0,,,,,,
+community,MTI-PRA21WW1DJ1W,1,114,0.0,Jambi,Sungai Mendahara - Sungai Batanghari,Tanjung Jabung Timur,486
+community,MTI-PULN6BW9BRFM,1,18,0.0,Aceh,Krueng Tripa - Krueng Seuneuam,Nagan Raya,361
+community,MTI-PXQSI2UWZ5DP,1,114,0.0,Jambi,Sungai Mendahara - Sungai Batanghari,Tanjung Jabung Timur,486
+community,MTI-QG5CIHVO8U66,1,15,0.0,Aceh,Krueng Surin - Krueng Muling,Nagan Raya,361
+community,MTI-QP8DP1VPT9ZJ,0,,,,,,
+community,MTI-QR86IS80Y7OK,0,,,,,,
+community,MTI-QV87GTD7GYA8,1,114,0.0,Jambi,Sungai Mendahara - Sungai Batanghari,Tanjung Jabung Timur,486
+community,MTI-R10CHI3J7QNX,0,,,,,,
+community,MTI-RX2VD81WKKTS,1,103,0.0,Kalimantan Tengah,Sungai Lamandau - Sungai Arut,Kotawaringin Barat,272
+community,MTI-SLIKY3JXUS7N,1,,0.0,DI Yogyakarta,,Sleman,454
+community,MTI-TFF4M4AN36V1,0,,,,,,
+community,MTI-TN5E9S92QFLE,0,,,,,,
+community,MTI-TONT0SPSXHP0,1,113,0.0,Kalimantan Timur,Sungai Melintang - Sungai Layah,Kutai Barat,280
+community,MTI-U611EB7HQ80J,1,43,0.0,Jambi,Sungai Batang - Sungai Tungkal,Tanjung Jabung Barat,485
+community,MTI-U89BTJQZWCVG,0,,,,,,
+community,MTI-UNUE0VII8BWG,0,,,,,,
+community,MTI-UP09E1RYV65F,0,,,,,,
+community,MTI-UREPMELJJWHQ,1,18,0.0,Aceh,Krueng Tripa - Krueng Seuneuam,Nagan Raya,361
+community,MTI-VOSM09RED0JD,0,,,,,,
+community,MTI-VZPLT9QLJCK9,0,,,,,,
+community,MTI-WKQURWGVYLJW,1,142,0.0,Kalimantan Barat,Sungai Punggurbesar - Sungai Ambawang,Kubu Raya,275
+community,MTI-X1R4W07JKW0U,1,29,0.0,Riau,Pulau Tebing Tinggi,Kepulauan Meranti,155
+community,MTI-XAGVINDONESIA,1,,0.0,DI Yogyakarta,,Sleman,454
+community,MTI-XD5AMRRZ7F6M,0,,,,,,
+community,MTI-Y56M9GUPUHNO,0,,,,,,
+community,MTI-YJCQQ37ZMYQF,1,163,0.0,Riau,Sungai Siak - Sungai Kampar,Siak,442
+community,MTI-YMF2H4EOWWL5,1,44,0.0,Jambi,Sungai Batanghari - Sungai Air Hitam Laut,Muaro Jambi,352
+community,MTI-YP26VOIDW8E9,1,,0.0,DI Yogyakarta,,Sleman,454
+concession,01_ABM:G33,1,41,0.0,Sumatera Utara,Sungai Barumun - Sungai Kubu,Labuhan Batu Selatan,284
+concession,01_ABM:G53,1,41,0.0,Sumatera Utara,Sungai Barumun - Sungai Kubu,Labuhan Batu Selatan,284
+concession,01_ABM:TP_D47,1,41,0.0,Sumatera Utara,Sungai Barumun - Sungai Kubu,Labuhan Batu Selatan,284
+concession,01_ABM:TP_D66,1,41,0.0,Sumatera Utara,Sungai Barumun - Sungai Kubu,Labuhan Batu Selatan,284
+concession,01_ABM:TP_G33,1,41,0.0,Sumatera Utara,Sungai Barumun - Sungai Kubu,Labuhan Batu Selatan,284
+concession,01_ABM:TP_G53,1,41,0.0,Sumatera Utara,Sungai Barumun - Sungai Kubu,Labuhan Batu Selatan,284
+concession,01_ABM:TP_G65,1,41,0.0,Sumatera Utara,Sungai Barumun - Sungai Kubu,Labuhan Batu Selatan,284
+concession,02_AHL:SBG-B085,1,155,0.0,Kalimantan Utara,Sungai Sebuku - Sungai Sembakung,Nunukan,372
+concession,02_AHL:SBG-C002,1,155,0.0,Kalimantan Utara,Sungai Sebuku - Sungai Sembakung,Nunukan,372
+concession,02_AHL:SBG-C042,1,155,0.0,Kalimantan Utara,Sungai Sebuku - Sungai Sembakung,Nunukan,372
+concession,02_AHL:SBG-C065,1,155,0.0,Kalimantan Utara,Sungai Sebuku - Sungai Sembakung,Nunukan,372
+concession,02_AHL:SBG-E022,1,155,0.0,Kalimantan Utara,Sungai Sebuku - Sungai Sembakung,Nunukan,372
+concession,02_AHL:SBG-E025,1,155,0.0,Kalimantan Utara,Sungai Sebuku - Sungai Sembakung,Nunukan,372
+concession,02_AHL:SSP-A023,1,115,2.78,Kalimantan Utara,Sungai Mentarang- Sungai Sembakung,Tana Tidung,478
+concession,02_AHL:SSP-D106,1,116,0.0,Kalimantan Utara,Sungai Mentarang - Sungai Belayu,Tana Tidung,478
+concession,02_AHL:SSP-E006,1,116,0.0,Kalimantan Utara,Sungai Mentarang - Sungai Belayu,Tana Tidung,478
+concession,02_AHL:SSP-F012,1,116,0.0,Kalimantan Utara,Sungai Mentarang - Sungai Belayu,Tana Tidung,478
+concession,02_AHL:SSP-F151,1,116,0.0,Kalimantan Utara,Sungai Mentarang - Sungai Belayu,Tana Tidung,478
+concession,02_AHL:SSP-H824,1,116,0.0,Kalimantan Utara,Sungai Mentarang - Sungai Belayu,Tana Tidung,478
+concession,03_BNS:MDEG024A,1,71,0.0,Riau,Sungai Kampar - Sungai Gaung,Indragiri Hilir,124
+concession,03_BNS:NLEG012A,1,71,0.0,Riau,Sungai Kampar - Sungai Gaung,Indragiri Hilir,124
+concession,03_BNS:NPEC001A,1,71,0.0,Riau,Sungai Kampar - Sungai Gaung,Indragiri Hilir,124
+concession,03_BNS:RSEC033A,1,71,0.0,Riau,Sungai Kampar - Sungai Gaung,Indragiri Hilir,124
+concession,03_BNS:RSEF030A,1,71,0.0,Riau,Sungai Kampar - Sungai Gaung,Indragiri Hilir,124
+concession,03_BNS:TBED012B,1,71,0.0,Riau,Sungai Kampar - Sungai Gaung,Indragiri Hilir,124
+concession,03_BNS:TMAT-002-006,1,164,0.31,Riau,Sungai Siak Kecil - Sungai Siak,Siak,442
+concession,04_BDB:TP-BDBA0003,1,147,0.0,Riau,Sungai Rokan Kiri - Sungai Mandau,Rokan Hulu,425
+concession,04_BDB:TP-BDBA0011,1,147,0.0,Riau,Sungai Rokan Kiri - Sungai Mandau,Rokan Hulu,425
+concession,04_BDB:TP-BDBA0089,1,147,0.0,Riau,Sungai Rokan Kiri - Sungai Mandau,Siak,442
+concession,04_BDB:TP-BDBA0222,1,147,0.0,Riau,Sungai Rokan Kiri - Sungai Mandau,Rokan Hulu,425
+concession,04_BDB:TP-BDBA0280,1,147,0.0,Riau,Sungai Rokan Kiri - Sungai Mandau,Rokan Hulu,425
+concession,04_BDB:TP-BDBA0287,1,147,0.0,Riau,Sungai Rokan Kiri - Sungai Mandau,Rokan Hulu,425
+concession,05_BSS:TP_P6,1,90,0.0,Kalimantan Barat,Sungai Keramat - Sungai Jelai,Ketapang,163
+concession,06_DTK:P04101,1,58,0.0,Kalimantan Barat,Sungai Durian - Sungai Labai,Kubu Raya,275
+concession,06_DTK:P06001,1,58,0.0,Kalimantan Barat,Sungai Durian - Sungai Labai,Kubu Raya,275
+concession,06_DTK:P07901,1,101,0.0,Kalimantan Barat,Sungai Labai - Sungai Kualan,Ketapang,163
+concession,06_DTK:P11201,1,101,0.0,Kalimantan Barat,Sungai Labai - Sungai Kualan,Ketapang,163
+concession,06_DTK:P12401,1,101,0.0,Kalimantan Barat,Sungai Labai - Sungai Kualan,Ketapang,163
+concession,07_KAL:TP03,1,174,0.0,Kalimantan Barat,Sungai Tolak - Sungai Siduk,Ketapang,163
+concession,07_KAL:TP12,1,174,0.0,Kalimantan Barat,Sungai Tolak - Sungai Siduk,Ketapang,163
+concession,07_KAL:TP22,1,174,0.0,Kalimantan Barat,Sungai Tolak - Sungai Siduk,Ketapang,163
+concession,07_KAL:TP38,1,174,0.0,Kalimantan Barat,Sungai Tolak - Sungai Siduk,Ketapang,163
+concession,08_LIH:D14,1,94,0.0,Riau,Sungai Kiyap - Sungai Kerumutan,Pelalawan,397
+concession,08_LIH:G14,1,94,0.0,Riau,Sungai Kiyap - Sungai Kerumutan,Pelalawan,397
+concession,08_LIH:OA026,1,94,0.0,Riau,Sungai Kiyap - Sungai Kerumutan,Pelalawan,397
+concession,08_LIH:OB012,1,94,0.0,Riau,Sungai Kiyap - Sungai Kerumutan,Pelalawan,397
+concession,08_LIH:OH005,1,94,0.0,Riau,Sungai Kiyap - Sungai Kerumutan,Pelalawan,397
+concession,08_LIH:OI003,1,94,0.0,Riau,Sungai Kiyap - Sungai Kerumutan,Pelalawan,397
+concession,08_LIH:OJ005,1,94,0.0,Riau,Sungai Kiyap - Sungai Kerumutan,Pelalawan,397
+concession,09_MDK:MDK-01,1,163,0.0,Riau,Sungai Siak - Sungai Kampar,Pelalawan,397
+concession,09_MDK:MDK-06,1,163,0.0,Riau,Sungai Siak - Sungai Kampar,Pelalawan,397
+concession,09_MDK:MDK-11,1,163,0.0,Riau,Sungai Siak - Sungai Kampar,Pelalawan,397
+concession,09_MDK:MDK-22,1,163,0.0,Riau,Sungai Siak - Sungai Kampar,Pelalawan,397
+concession,09_MDK:MDK-33,1,163,0.0,Riau,Sungai Siak - Sungai Kampar,Pelalawan,397
+concession,100_SJAL:A12,1,6,0.0,Sumatera Barat,Aek Tapan - Aek Silaut,Pesisir Selatan,403
+concession,100_SJAL:B10,1,6,0.0,Sumatera Barat,Aek Tapan - Aek Silaut,Pesisir Selatan,403
+concession,100_SJAL:D18,1,6,0.0,Sumatera Barat,Aek Tapan - Aek Silaut,Pesisir Selatan,403
+concession,100_SJAL:E01,1,6,0.0,Sumatera Barat,Aek Tapan - Aek Silaut,Pesisir Selatan,403
+concession,100_SJAL:H19,1,6,0.0,Sumatera Barat,Aek Tapan - Aek Silaut,Pesisir Selatan,403
+concession,100_SJAL:J14,1,6,0.0,Sumatera Barat,Aek Tapan - Aek Silaut,Pesisir Selatan,403
+concession,101_HCT:N52,1,40,0.0,Kalimantan Selatan,Sungai Barito - Sungai Alalak,Tapin,490
+concession,102_SAK:D08,1,6,0.0,Sumatera Barat,Aek Tapan - Aek Silaut,Pesisir Selatan,403
+concession,102_SAK:F17,1,6,0.0,Sumatera Barat,Aek Tapan - Aek Silaut,Pesisir Selatan,403
+concession,102_SAK:I10,1,6,0.0,Sumatera Barat,Aek Tapan - Aek Silaut,Pesisir Selatan,403
+concession,102_SAK:i10,1,6,0.0,Sumatera Barat,Aek Tapan - Aek Silaut,Pesisir Selatan,403
+concession,103_GBSM:4,1,161,0.0,Kalimantan Tengah,Sungai Seruyan - Sungai Kelua Besar,Seruyan,441
+concession,103_GBSM:40,1,161,0.0,Kalimantan Tengah,Sungai Seruyan - Sungai Kelua Besar,Seruyan,441
+concession,104_SRY:B04,1,34,0.0,Kalimantan Barat,Sungai Ambawang - Sungai Kubu,Kubu Raya,275
+concession,104_SRY:C11,1,34,0.0,Kalimantan Barat,Sungai Ambawang - Sungai Kubu,Kubu Raya,275
+concession,104_SRY:C22,1,34,0.0,Kalimantan Barat,Sungai Ambawang - Sungai Kubu,Kubu Raya,275
+concession,104_SRY:E39,1,34,0.0,Kalimantan Barat,Sungai Ambawang - Sungai Kubu,Kubu Raya,275
+concession,104_SRY:F05,1,34,0.0,Kalimantan Barat,Sungai Ambawang - Sungai Kubu,Kubu Raya,275
+concession,104_SRY:F05AME,1,34,0.0,Kalimantan Barat,Sungai Ambawang - Sungai Kubu,Kubu Raya,275
+concession,104_SRY:G19,1,34,0.0,Kalimantan Barat,Sungai Ambawang - Sungai Kubu,Kubu Raya,275
+concession,104_SRY:G27,1,34,0.0,Kalimantan Barat,Sungai Ambawang - Sungai Kubu,Kubu Raya,275
+concession,104_SRY:I35,1,34,0.0,Kalimantan Barat,Sungai Ambawang - Sungai Kubu,Kubu Raya,275
+concession,104_SRY:I35DBE,1,34,0.0,Kalimantan Barat,Sungai Ambawang - Sungai Kubu,Kubu Raya,275
+concession,104_SRY:J15,1,34,0.0,Kalimantan Barat,Sungai Ambawang - Sungai Kubu,Kubu Raya,275
+concession,104_SRY:J22,1,34,0.0,Kalimantan Barat,Sungai Ambawang - Sungai Kubu,Kubu Raya,275
+concession,104_SRY:L35,1,34,0.0,Kalimantan Barat,Sungai Ambawang - Sungai Kubu,Kubu Raya,275
+concession,104_SRY:M39B,1,34,0.0,Kalimantan Barat,Sungai Ambawang - Sungai Kubu,Kubu Raya,275
+concession,105_EWF:D3,1,45,0.0,Jambi,Sungai Batanghari - Sungai Kampeh,Muaro Jambi,352
+concession,105_EWF:E12,1,45,0.0,Jambi,Sungai Batanghari - Sungai Kampeh,Muaro Jambi,352
+concession,105_EWF:I12,1,45,0.0,Jambi,Sungai Batanghari - Sungai Kampeh,Muaro Jambi,352
+concession,105_EWF:K5,1,45,0.0,Jambi,Sungai Batanghari - Sungai Kampeh,Muaro Jambi,352
+concession,105_EWF:k5,1,45,0.0,Jambi,Sungai Batanghari - Sungai Kampeh,Muaro Jambi,352
+concession,106_DMIL:F-17,1,148,0.0,Sumatera Selatan,Sungai Rumpit - Sungai Rawas,Musi Rawas Utara,359
+concession,106_DMIL:H-22,1,148,0.0,Sumatera Selatan,Sungai Rumpit - Sungai Rawas,Musi Rawas Utara,359
+concession,106_DMIL:I-14,1,148,0.0,Sumatera Selatan,Sungai Rumpit - Sungai Rawas,Musi Rawas Utara,359
+concession,106_DMIL:L-26,1,148,0.0,Sumatera Selatan,Sungai Rumpit - Sungai Rawas,Musi Rawas Utara,359
+concession,107_RSUP:07-05. 2/1,1,71,0.0,Riau,Sungai Kampar - Sungai Gaung,Indragiri Hilir,124
+concession,107_RSUP:08-08. 3/1,1,71,0.0,Riau,Sungai Kampar - Sungai Gaung,Indragiri Hilir,124
+concession,107_RSUP:11-03. 6/2,1,71,0.0,Riau,Sungai Kampar - Sungai Gaung,Indragiri Hilir,124
+concession,107_RSUP:14-16 .4/2,1,71,0.0,Riau,Sungai Kampar - Sungai Gaung,Indragiri Hilir,124
+concession,108_MMS:C29,1,130,0.0,Riau,Sungai Nilo - Sungai Napuh,Pelalawan,397
+concession,108_MMS:E41,1,130,0.0,Riau,Sungai Nilo - Sungai Napuh,Pelalawan,397
+concession,108_MMS:H36,1,130,0.0,Riau,Sungai Nilo - Sungai Napuh,Pelalawan,397
+concession,108_MMS:K59,1,130,0.0,Riau,Sungai Nilo - Sungai Napuh,Pelalawan,397
+concession,108_MMS:N43,1,130,0.0,Riau,Sungai Nilo - Sungai Napuh,Pelalawan,397
+concession,108_MMS:P54,1,130,0.0,Riau,Sungai Nilo - Sungai Napuh,Pelalawan,397
+concession,108_MMS:c29,1,130,0.0,Riau,Sungai Nilo - Sungai Napuh,Pelalawan,397
+concession,108_MMS:e41,1,130,0.0,Riau,Sungai Nilo - Sungai Napuh,Pelalawan,397
+concession,108_MMS:h36,1,130,0.0,Riau,Sungai Nilo - Sungai Napuh,Pelalawan,397
+concession,108_MMS:k59,1,130,0.0,Riau,Sungai Nilo - Sungai Napuh,Pelalawan,397
+concession,108_MMS:n43,1,130,0.0,Riau,Sungai Nilo - Sungai Napuh,Pelalawan,397
+concession,108_MMS:p54,1,130,0.0,Riau,Sungai Nilo - Sungai Napuh,Pelalawan,397
+concession,109_THIP:11-21,1,71,0.0,Riau,Sungai Kampar - Sungai Gaung,Indragiri Hilir,124
+concession,109_THIP:13-22,1,71,0.0,Riau,Sungai Kampar - Sungai Gaung,Indragiri Hilir,124
+concession,109_THIP:20,1,71,0.0,Riau,Sungai Kampar - Sungai Gaung,Indragiri Hilir,124
+concession,109_THIP:24-17,1,71,0.0,Riau,Sungai Kampar - Sungai Gaung,Indragiri Hilir,124
+concession,109_THIP:25-07,1,71,0.0,Riau,Sungai Kampar - Sungai Gaung,Indragiri Hilir,124
+concession,109_THIP:26-13,1,71,0.0,Riau,Sungai Kampar - Sungai Gaung,Indragiri Hilir,124
+concession,109_THIP:28,1,71,0.0,Riau,Sungai Kampar - Sungai Gaung,Indragiri Hilir,124
+concession,109_THIP:31-02,1,71,0.0,Riau,Sungai Kampar - Sungai Gaung,Pelalawan,397
+concession,109_THIP:31-16,1,71,0.0,Riau,Sungai Kampar - Sungai Gaung,Indragiri Hilir,124
+concession,109_THIP:35-18,1,71,0.0,Riau,Sungai Kampar - Sungai Gaung,Indragiri Hilir,124
+concession,109_THIP:39-23,1,71,0.0,Riau,Sungai Kampar - Sungai Gaung,Indragiri Hilir,124
+concession,109_THIP:40-09,1,71,0.0,Riau,Sungai Kampar - Sungai Gaung,Indragiri Hilir,124
+concession,109_THIP:40-16,1,71,0.0,Riau,Sungai Kampar - Sungai Gaung,Indragiri Hilir,124
+concession,109_THIP:43-03,1,71,0.0,Riau,Sungai Kampar - Sungai Gaung,Indragiri Hilir,124
+concession,109_THIP:43-10,1,71,0.0,Riau,Sungai Kampar - Sungai Gaung,Indragiri Hilir,124
+concession,109_THIP:43-32,1,71,0.0,Riau,Sungai Kampar - Sungai Gaung,Indragiri Hilir,124
+concession,109_THIP:45-30,1,71,0.0,Riau,Sungai Kampar - Sungai Gaung,Indragiri Hilir,124
+concession,109_THIP:46-20,1,71,0.0,Riau,Sungai Kampar - Sungai Gaung,Indragiri Hilir,124
+concession,109_THIP:48-23,1,71,0.0,Riau,Sungai Kampar - Sungai Gaung,Indragiri Hilir,124
+concession,109_THIP:48-31,1,71,0.0,Riau,Sungai Kampar - Sungai Gaung,Indragiri Hilir,124
+concession,109_THIP:49-33,1,71,0.0,Riau,Sungai Kampar - Sungai Gaung,Indragiri Hilir,124
+concession,109_THIP:50-17,1,71,0.0,Riau,Sungai Kampar - Sungai Gaung,Indragiri Hilir,124
+concession,109_THIP:50-24,1,71,0.0,Riau,Sungai Kampar - Sungai Gaung,Indragiri Hilir,124
+concession,109_THIP:51-08,1,71,0.0,Riau,Sungai Kampar - Sungai Gaung,Indragiri Hilir,124
+concession,109_THIP:54,1,71,0.0,Riau,Sungai Kampar - Sungai Gaung,Indragiri Hilir,124
+concession,109_THIP:59-24,1,71,0.0,Riau,Sungai Kampar - Sungai Gaung,Indragiri Hilir,124
+concession,109_THIP:63-23,1,71,0.0,Riau,Sungai Kampar - Sungai Gaung,Indragiri Hilir,124
+concession,109_THIP:67-09,1,71,0.0,Riau,Sungai Kampar - Sungai Gaung,Indragiri Hilir,124
+concession,109_THIP:7-22,1,135,0.0,Riau,Sungai Pelanduk - Sungai Tumu,Indragiri Hilir,124
+concession,109_THIP:70-07,1,71,0.0,Riau,Sungai Kampar - Sungai Gaung,Indragiri Hilir,124
+concession,109_THIP:71-03,1,71,0.0,Riau,Sungai Kampar - Sungai Gaung,Indragiri Hilir,124
+concession,109_THIP:71-17,1,71,0.0,Riau,Sungai Kampar - Sungai Gaung,Indragiri Hilir,124
+concession,109_THIP:72-18,1,71,0.0,Riau,Sungai Kampar - Sungai Gaung,Indragiri Hilir,124
+concession,109_THIP:73-02,1,71,0.0,Riau,Sungai Kampar - Sungai Gaung,Indragiri Hilir,124
+concession,109_THIP:75-11,1,71,0.0,Riau,Sungai Kampar - Sungai Gaung,Indragiri Hilir,124
+concession,10_MTI:MTI_H010_P3,1,84,0.0,Kalimantan Barat,Sungai Kapuas - Sungai Mendawak,Sanggau,431
+concession,10_MTI:MTI_H025_P3,1,84,0.0,Kalimantan Barat,Sungai Kapuas - Sungai Mendawak,Sanggau,431
+concession,10_MTI:MTI_H074_P3,1,84,0.0,Kalimantan Barat,Sungai Kapuas - Sungai Mendawak,Sanggau,431
+concession,10_MTI:MTI_H077_P3,1,84,0.0,Kalimantan Barat,Sungai Kapuas - Sungai Mendawak,Sanggau,431
+concession,10_MTI:MTI_H090_P3,1,84,0.0,Kalimantan Barat,Sungai Kapuas - Sungai Mendawak,Sanggau,431
+concession,10_MTI:MTI_H112_P2,1,84,0.0,Kalimantan Barat,Sungai Kapuas - Sungai Mendawak,Sanggau,431
+concession,10_MTI:MTI_H122_P1,1,84,0.0,Kalimantan Barat,Sungai Kapuas - Sungai Mendawak,Sanggau,431
+concession,10_MTI:MTI_H141_P3,1,84,0.0,Kalimantan Barat,Sungai Kapuas - Sungai Mendawak,Sanggau,431
+concession,10_MTI:MTI_H159_P3,1,84,0.0,Kalimantan Barat,Sungai Kapuas - Sungai Mendawak,Sanggau,431
+concession,10_MTI:MTI_H175_P3,1,84,0.0,Kalimantan Barat,Sungai Kapuas - Sungai Mendawak,Sanggau,431
+concession,10_MTI:MTI_H181_P3,1,84,0.0,Kalimantan Barat,Sungai Kapuas - Sungai Mendawak,Sanggau,431
+concession,10_MTI:MTI_H193_P3,1,84,0.0,Kalimantan Barat,Sungai Kapuas - Sungai Mendawak,Sanggau,431
+concession,10_MTI:MTI_H239_P3,1,84,0.0,Kalimantan Barat,Sungai Kapuas - Sungai Mendawak,Sanggau,431
+concession,10_MTI:MTI_H280_P3,1,84,0.0,Kalimantan Barat,Sungai Kapuas - Sungai Mendawak,Sanggau,431
+concession,10_MTI:MTI_J017_P3,1,173,0.0,Kalimantan Barat,Sungai Terentang - Sungai Kapuas,Kubu Raya,275
+concession,10_MTI:MTI_J029_P3,1,173,0.0,Kalimantan Barat,Sungai Terentang - Sungai Kapuas,Kubu Raya,275
+concession,10_MTI:MTI_J163_P3,1,173,0.0,Kalimantan Barat,Sungai Terentang - Sungai Kapuas,Kubu Raya,275
+concession,112_ATK:G50,1,89,0.0,Kalimantan Timur,Sungai Kedangyantau - Sungai Sabintulung,Kutai Kartanegara,281
+concession,112_ATK:J3,1,89,0.0,Kalimantan Timur,Sungai Kedangyantau - Sungai Sabintulung,Kutai Kartanegara,281
+concession,112_ATK:J30,1,89,0.0,Kalimantan Timur,Sungai Kedangyantau - Sungai Sabintulung,Kutai Kartanegara,281
+concession,112_ATK:L25,1,89,0.0,Kalimantan Timur,Sungai Kedangyantau - Sungai Sabintulung,Kutai Kartanegara,281
+concession,114_BTLA:44,1,121,0.0,Lampung,Sungai Mesuji - Sungai Kebumangah,Mesuji,342
+concession,115_GAN:E61,1,77,0.0,Kalimantan Barat,Sungai Kapuas - Sungai Ambawang,Kubu Raya,275
+concession,115_GAN:G72,1,77,0.0,Kalimantan Barat,Sungai Kapuas - Sungai Ambawang,Kubu Raya,275
+concession,115_GAN:I20,1,77,0.0,Kalimantan Barat,Sungai Kapuas - Sungai Ambawang,Kubu Raya,275
+concession,115_GAN:I55,1,77,0.0,Kalimantan Barat,Sungai Kapuas - Sungai Ambawang,Kubu Raya,275
+concession,115_GAN:J079,1,77,0.0,Kalimantan Barat,Sungai Kapuas - Sungai Ambawang,Kubu Raya,275
+concession,115_GAN:K67,1,77,0.0,Kalimantan Barat,Sungai Kapuas - Sungai Ambawang,Kubu Raya,275
+concession,115_GAN:L046,1,77,0.0,Kalimantan Barat,Sungai Kapuas - Sungai Ambawang,Kubu Raya,275
+concession,115_GAN:M096,1,77,0.0,Kalimantan Barat,Sungai Kapuas - Sungai Ambawang,Kubu Raya,275
+concession,115_GAN:M127,1,77,0.0,Kalimantan Barat,Sungai Kapuas - Sungai Ambawang,Kubu Raya,275
+concession,115_GAN:N58,1,77,0.0,Kalimantan Barat,Sungai Kapuas - Sungai Ambawang,Kubu Raya,275
+concession,116_ALM:TP-AA 37,1,11,0.0,Sumatera Utara,Batang Singkuang - Nainjan Nu Godang,Mandailing Natal,329
+concession,116_ALM:TP-J 14,1,11,0.0,Sumatera Utara,Batang Singkuang - Nainjan Nu Godang,Mandailing Natal,329
+concession,116_ALM:TP-M 16,1,11,0.0,Sumatera Utara,Batang Singkuang - Nainjan Nu Godang,Mandailing Natal,329
+concession,116_ALM:TP-P 15,1,11,0.0,Sumatera Utara,Batang Singkuang - Nainjan Nu Godang,Mandailing Natal,329
+concession,116_ALM:TP-W 37,1,11,0.0,Sumatera Utara,Batang Singkuang - Nainjan Nu Godang,Mandailing Natal,329
+concession,116_ALM:TP-Y 48,1,11,0.0,Sumatera Utara,Batang Singkuang - Nainjan Nu Godang,Mandailing Natal,329
+concession,117_SGSR:04 C C5,1,21,0.0,Sumatera Utara,Lae Sibungkuang,Tapanuli Tengah,488
+concession,117_SGSR:93 B D4,1,21,0.0,Sumatera Utara,Lae Sibungkuang,Tapanuli Tengah,488
+concession,117_SGSR:93BD4,1,21,0.0,Sumatera Utara,Lae Sibungkuang,Tapanuli Tengah,488
+concession,117_SGSR:95 G B4,1,21,0.0,Sumatera Utara,Lae Sibungkuang,Tapanuli Tengah,488
+concession,117_SGSR:97  I D3,1,21,0.0,Sumatera Utara,Lae Sibungkuang,Tapanuli Tengah,488
+concession,117_SGSR:B495GB4,1,21,0.0,Sumatera Utara,Lae Sibungkuang,Tapanuli Tengah,488
+concession,118_KAS:I 36,1,77,0.0,Kalimantan Barat,Sungai Kapuas - Sungai Ambawang,Kubu Raya,275
+concession,118_KAS:c 54,1,77,0.0,Kalimantan Barat,Sungai Kapuas - Sungai Ambawang,Kubu Raya,275
+concession,118_KAS:f 60,1,77,0.0,Kalimantan Barat,Sungai Kapuas - Sungai Ambawang,Kubu Raya,275
+concession,118_KAS:i 36,1,77,0.0,Kalimantan Barat,Sungai Kapuas - Sungai Ambawang,Kubu Raya,275
+concession,119_RZK:JKE-33,1,97,0.0,Kalimantan Barat,Sungai Kubu - Sungai Pungurbesar,Kubu Raya,275
+concession,119_RZK:JKE-43,1,97,0.0,Kalimantan Barat,Sungai Kubu - Sungai Pungurbesar,Kubu Raya,275
+concession,119_RZK:SDE-09,1,142,0.0,Kalimantan Barat,Sungai Punggurbesar - Sungai Ambawang,Kubu Raya,275
+concession,119_RZK:SDE-16,1,142,0.0,Kalimantan Barat,Sungai Punggurbesar - Sungai Ambawang,Kubu Raya,275
+concession,11_MAJI:TP-111,1,114,0.0,Jambi,Sungai Mendahara - Sungai Batanghari,Tanjung Jabung Timur,486
+concession,120_BPG:WT-03,1,97,0.0,Kalimantan Barat,Sungai Kubu - Sungai Pungurbesar,Kubu Raya,275
+concession,120_BPG:WT-14,1,97,0.0,Kalimantan Barat,Sungai Kubu - Sungai Pungurbesar,Kubu Raya,275
+concession,120_BPG:WT-18,1,173,0.0,Kalimantan Barat,Sungai Terentang - Sungai Kapuas,Kubu Raya,275
+concession,121_APC:B07,1,14,0.0,Aceh,Krueng Matee - Krueng Teumiyee,Nagan Raya,361
+concession,121_APC:D11,1,15,0.0,Aceh,Krueng Surin - Krueng Muling,Nagan Raya,361
+concession,121_APC:D15,1,15,0.0,Aceh,Krueng Surin - Krueng Muling,Nagan Raya,361
+concession,121_APC:E12A,1,15,0.0,Aceh,Krueng Surin - Krueng Muling,Nagan Raya,361
+concession,121_APC:H09,1,15,0.0,Aceh,Krueng Surin - Krueng Muling,Nagan Raya,361
+concession,122_GIN:DL15,1,71,0.0,Riau,Sungai Kampar - Sungai Gaung,Indragiri Hilir,124
+concession,122_GIN:DL28,1,71,0.0,Riau,Sungai Kampar - Sungai Gaung,Indragiri Hilir,124
+concession,122_GIN:DL3,1,71,0.0,Riau,Sungai Kampar - Sungai Gaung,Indragiri Hilir,124
+concession,122_GIN:DL35,1,71,0.0,Riau,Sungai Kampar - Sungai Gaung,Indragiri Hilir,124
+concession,122_GIN:DL39,1,71,0.0,Riau,Sungai Kampar - Sungai Gaung,Indragiri Hilir,124
+concession,122_GIN:DL53,1,71,0.0,Riau,Sungai Kampar - Sungai Gaung,Indragiri Hilir,124
+concession,124_SSA:B9,1,146,0.0,Riau,Sungai Rokan - Sungai Siak Kecil,Rokan Hilir,424
+concession,125_AAB:A12,1,92,0.0,Riau,Sungai Kiyap - Sungai Kampar Kiri,Kampar,136
+concession,127_GIJ:D19,1,67,0.0,Kalimantan Tengah,Sungai Kahayan - Sungai Kapuas,Kapuas,137
+concession,127_GIJ:G24,1,67,0.0,Kalimantan Tengah,Sungai Kahayan - Sungai Kapuas,Kapuas,137
+concession,128_MAS:08-26,1,25,0.0,Riau,Pulau Bengkalis,Bengkalis,48
+concession,128_MAS:10-22,1,25,0.0,Riau,Pulau Bengkalis,Bengkalis,48
+concession,129_TAA:06,1,,0.0,Kalimantan Barat,,Sekadau,434
+concession,129_TAA:09,1,154,0.0,Kalimantan Barat,Sungai Sambih - Sungai Landak,Landak,294
+concession,130_CNP:02,1,109,0.0,Kalimantan Barat,Sungai Mandor - Sungai Landak,Landak,294
+concession,130_CNP:08,1,109,0.0,Kalimantan Barat,Sungai Mandor - Sungai Landak,Landak,294
+concession,130_CNP:22,1,172,0.0,Kalimantan Barat,Sungai Temila - Sungai Mandor,Landak,294
+concession,131_HFT:A08,1,42,0.0,Sumatera Utara,Sungai Barumun - Sungai Mabar,Labuhan Batu Selatan,284
+concession,131_HFT:E21,1,42,0.0,Sumatera Utara,Sungai Barumun - Sungai Mabar,Labuhan Batu Selatan,284
+concession,132_SM:TP-A04,1,96,0.0,Sumatera Utara,Sungai Kualuh Bilah - Sungai Barumun,Labuhan Batu,283
+concession,135_MJL:E3,1,41,0.0,Sumatera Utara,Sungai Barumun - Sungai Kubu,Labuhan Batu Selatan,284
+concession,135_MJL:TP-B28,1,41,0.0,Sumatera Utara,Sungai Barumun - Sungai Kubu,Labuhan Batu Selatan,284
+concession,137_KPMA:N13,1,32,0.0,Papua,Sungai Ajari - Sungai Kubai,Nabire,360
+concession,138_NBR:M16,1,32,0.0,Papua,Sungai Ajari - Sungai Kubai,Nabire,360
+concession,139_ABR:C14h,1,137,0.0,Sumatera Selatan,Sungai Penu - Sungai Abah,Penukal Abab Lematang Ilir,400
+concession,139_ABR:D15f,1,137,0.0,Sumatera Selatan,Sungai Penu - Sungai Abah,Penukal Abab Lematang Ilir,400
+concession,139_ABR:c14h,1,137,0.0,Sumatera Selatan,Sungai Penu - Sungai Abah,Penukal Abab Lematang Ilir,400
+concession,13_NFS:DM.02 - 231,1,24,2.16,Aceh,Lae Sulampi - Lae Gosong,Aceh Singkil,5
+concession,13_NFS:DM.03 - 258,1,24,2.42,Aceh,Lae Sulampi - Lae Gosong,Aceh Singkil,5
+concession,13_NFS:DM.06 - 315,1,19,1.0,Aceh,Krueng Trumon - Lae Tarap,Aceh Singkil,5
+concession,13_NFS:KB.03 - 62,1,24,0.0,Aceh,Lae Sulampi - Lae Gosong,Aceh Singkil,5
+concession,13_NFS:KB.04 - 92,1,24,0.0,Aceh,Lae Sulampi - Lae Gosong,Aceh Singkil,5
+concession,140_KLS:KS1-B14a,1,54,0.0,Sumatera Selatan,Sungai Burnai - Sungai Sibumbung,Ogan Komering Ilir,374
+concession,140_KLS:KS1-C14n,1,54,0.0,Sumatera Selatan,Sungai Burnai - Sungai Sibumbung,Ogan Komering Ilir,374
+concession,140_KLS:KS2-C16,1,54,0.0,Sumatera Selatan,Sungai Burnai - Sungai Sibumbung,Ogan Komering Ilir,374
+concession,140_KLS:KS2-C69,1,54,0.0,Sumatera Selatan,Sungai Burnai - Sungai Sibumbung,Ogan Komering Ilir,374
+concession,140_KLS:KS2-D43,1,54,0.0,Sumatera Selatan,Sungai Burnai - Sungai Sibumbung,Ogan Komering Ilir,374
+concession,140_KLS:KS2-F62a,1,54,0.0,Sumatera Selatan,Sungai Burnai - Sungai Sibumbung,Ogan Komering Ilir,374
+concession,140_KLS:KS2-M56,1,54,0.0,Sumatera Selatan,Sungai Burnai - Sungai Sibumbung,Ogan Komering Ilir,374
+concession,142_TWL:TP-B08q,1,164,0.0,Riau,Sungai Siak Kecil - Sungai Siak,Siak,442
+concession,142_TWL:TP-C07f,1,164,0.0,Riau,Sungai Siak Kecil - Sungai Siak,Siak,442
+concession,144_GLP:17 F,1,128,0.0,Sumatera Utara,Sungai Nata - Sungai Sinunukan,Mandailing Natal,329
+concession,144_GLP:TMAT-24D,1,128,0.0,Sumatera Utara,Sungai Nata - Sungai Sinunukan,Mandailing Natal,329
+concession,145_KLA:B15,1,15,0.0,Aceh,Krueng Surin - Krueng Muling,Nagan Raya,361
+concession,145_KLA:C10,1,15,0.0,Aceh,Krueng Surin - Krueng Muling,Nagan Raya,361
+concession,145_KLA:E36,1,15,0.0,Aceh,Krueng Surin - Krueng Muling,Nagan Raya,361
+concession,146_MKI:L3,1,44,0.0,Jambi,Sungai Batanghari - Sungai Air Hitam Laut,Muaro Jambi,352
+concession,148_JJP:KSB-A43,1,145,0.0,Riau,Sungai Rokan - Sungai Kubu,Rokan Hilir,424
+concession,148_JJP:KSB-B54,1,145,0.0,Riau,Sungai Rokan - Sungai Kubu,Rokan Hilir,424
+concession,148_JJP:KSB-C50,1,145,0.0,Riau,Sungai Rokan - Sungai Kubu,Rokan Hilir,424
+concession,148_JJP:KSR-B05c,1,145,0.0,Riau,Sungai Rokan - Sungai Kubu,Rokan Hilir,424
+concession,149_PSL:MTI-6AN4GR1GQRGQ,1,155,0.0,Kalimantan Utara,Sungai Sebuku - Sungai Sembakung,Nunukan,372
+concession,149_PSL:MTI-IN7JQ7IHY21D,1,155,0.0,Kalimantan Utara,Sungai Sebuku - Sungai Sembakung,Nunukan,372
+concession,149_PSL:MTI-RCLETP1RFB81,1,,0.0,Kalimantan Utara,,Malinau,318
+concession,149_PSL:MTI-WEKK3BF50ADB,1,155,0.0,Kalimantan Utara,Sungai Sebuku - Sungai Sembakung,Nunukan,372
+concession,14_NSP:D034539,1,29,0.0,Riau,Pulau Tebing Tinggi,Kepulauan Meranti,155
+concession,14_NSP:I029429,1,29,0.0,Riau,Pulau Tebing Tinggi,Kepulauan Meranti,155
+concession,14_NSP:N021208,1,29,0.0,Riau,Pulau Tebing Tinggi,Kepulauan Meranti,155
+concession,14_NSP:Q015357,1,29,0.0,Riau,Pulau Tebing Tinggi,Kepulauan Meranti,155
+concession,14_NSP:S010343,1,29,0.0,Riau,Pulau Tebing Tinggi,Kepulauan Meranti,155
+concession,14_NSP:U004104,1,29,0.0,Riau,Pulau Tebing Tinggi,Kepulauan Meranti,155
+concession,151_WSSL:A32,1,52,0.0,Kalimantan Tengah,Sungai Buluh Besar - Sungai Seruyan,Seruyan,441
+concession,151_WSSL:J28,1,52,0.0,Kalimantan Tengah,Sungai Buluh Besar - Sungai Seruyan,Seruyan,441
+concession,151_WSSL:O30,1,52,0.0,Kalimantan Tengah,Sungai Buluh Besar - Sungai Seruyan,Seruyan,441
+concession,151_WSSL:S45,1,52,0.0,Kalimantan Tengah,Sungai Buluh Besar - Sungai Seruyan,Seruyan,441
+concession,151_WSSL:V46,1,52,0.0,Kalimantan Tengah,Sungai Buluh Besar - Sungai Seruyan,Seruyan,441
+concession,152_HMBP:C33,1,140,0.0,Kalimantan Tengah,Sungai Pukun - Sungai Mentaya,Kotawaringin Timur,273
+concession,152_HMBP:D16,1,140,0.0,Kalimantan Tengah,Sungai Pukun - Sungai Mentaya,Kotawaringin Timur,273
+concession,152_HMBP:F01,1,140,0.0,Kalimantan Tengah,Sungai Pukun - Sungai Mentaya,Kotawaringin Timur,273
+concession,152_HMBP:G32,1,140,0.0,Kalimantan Tengah,Sungai Pukun - Sungai Mentaya,Kotawaringin Timur,273
+concession,153_RSS:A 08 b,1,93,0.0,Riau,Sungai Kiyap - Sungai Kerinci,Kampar,136
+concession,153_RSS:B 08 s,1,93,0.0,Riau,Sungai Kiyap - Sungai Kerinci,Pelalawan,397
+concession,153_RSS:E 13 a,1,93,0.0,Riau,Sungai Kiyap - Sungai Kerinci,Pelalawan,397
+concession,153_RSS:b 08 s,1,93,0.0,Riau,Sungai Kiyap - Sungai Kerinci,Pelalawan,397
+concession,154_PHL:J7,1,45,0.0,Jambi,Sungai Batanghari - Sungai Kampeh,Muaro Jambi,352
+concession,156_KTU:D11,1,60,0.0,Riau,Sungai Gasip - Sungai Siak,Siak,442
+concession,157_HJLM:HJY_004,1,163,0.0,Riau,Sungai Siak - Sungai Kampar,Pelalawan,397
+concession,157_HJLM:HJY_006,1,163,0.0,Riau,Sungai Siak - Sungai Kampar,Pelalawan,397
+concession,158_ALI:ALI_004,1,163,0.0,Riau,Sungai Siak - Sungai Kampar,Pelalawan,397
+concession,158_ALI:ALI_006,1,163,0.0,Riau,Sungai Siak - Sungai Kampar,Pelalawan,397
+concession,158_ALI:ALI_015,1,163,0.0,Riau,Sungai Siak - Sungai Kampar,Pelalawan,397
+concession,159_ELD:ELD_004,1,163,0.0,Riau,Sungai Siak - Sungai Kampar,Siak,442
+concession,159_ELD:ELD_008,1,163,0.0,Riau,Sungai Siak - Sungai Kampar,Siak,442
+concession,159_ELD:ELD_015,1,163,0.0,Riau,Sungai Siak - Sungai Kampar,Siak,442
+concession,159_ELD:ELD_027,1,163,0.0,Riau,Sungai Siak - Sungai Kampar,Siak,442
+concession,15_RAPP:PEL/I-12,1,163,0.0,Riau,Sungai Siak - Sungai Kampar,Siak,442
+concession,15_RAPP:PEL/III-13,1,163,0.0,Riau,Sungai Siak - Sungai Kampar,Pelalawan,397
+concession,15_RAPP:PEL/IX-19,1,163,0.0,Riau,Sungai Siak - Sungai Kampar,Pelalawan,397
+concession,15_RAPP:PEL/X-7,1,163,0.0,Riau,Sungai Siak - Sungai Kampar,Pelalawan,397
+concession,15_RAPP:PEL/XIII-34,1,163,0.0,Riau,Sungai Siak - Sungai Kampar,Pelalawan,397
+concession,15_RAPP:PEL/XVIII-26a,1,163,0.0,Riau,Sungai Siak - Sungai Kampar,Pelalawan,397
+concession,160_SAU:SAU-002,1,163,0.0,Riau,Sungai Siak - Sungai Kampar,Pelalawan,397
+concession,160_SAU:SAU-015,1,163,0.0,Riau,Sungai Siak - Sungai Kampar,Pelalawan,397
+concession,160_SAU:SAU-022,1,163,0.0,Riau,Sungai Siak - Sungai Kampar,Pelalawan,397
+concession,160_SAU:SAU-035,1,163,0.0,Riau,Sungai Siak - Sungai Kampar,Pelalawan,397
+concession,160_SAU:SAU-045,1,94,0.0,Riau,Sungai Kiyap - Sungai Kerumutan,Pelalawan,397
+concession,161_WLMS:WLM.B410,1,120,0.0,Sumatera Selatan,Sungai Merang - Sungai Ngirawan,Musi Banyuasin,357
+concession,161_WLMS:WLM.C305,1,120,0.0,Sumatera Selatan,Sungai Merang - Sungai Ngirawan,Musi Banyuasin,357
+concession,161_WLMS:WLM.D504,1,129,0.0,Sumatera Selatan,Sungai Ngirawan - Sungai Sembilang,Musi Banyuasin,357
+concession,161_WLMS:WLM.D605a,1,129,0.0,Sumatera Selatan,Sungai Ngirawan - Sungai Sembilang,Musi Banyuasin,357
+concession,162_IFP:IPB0020,1,83,0.0,Kalimantan Tengah,Sungai Kapuas - Sungai Mangkutup,Kapuas,137
+concession,162_IFP:IPB0356,1,83,0.0,Kalimantan Tengah,Sungai Kapuas - Sungai Mangkutup,Kapuas,137
+concession,163_SHJ:A250059A,1,89,0.0,Kalimantan Timur,Sungai Kedangyantau - Sungai Sabintulung,Kutai Kartanegara,281
+concession,164_MDA:SP 04,1,13,0.0,Sumatera Utara,Batang Toru - Aek Maraitgadang,Mandailing Natal,329
+concession,164_MDA:SP 13,1,1,0.0,Sumatera Utara,Aek Maraitgadang - Aek Sikapas,Mandailing Natal,329
+concession,164_MDA:SP04,1,13,0.0,Sumatera Utara,Batang Toru - Aek Maraitgadang,Mandailing Natal,329
+concession,164_MDA:SP13,1,1,0.0,Sumatera Utara,Aek Maraitgadang - Aek Sikapas,Mandailing Natal,329
+concession,165_DAL:G6,1,2,0.0,Sumatera Utara,Aek Maraitgadang - Batang Maraitgodang,Mandailing Natal,329
+concession,169_DRM:F3,1,82,0.0,Kalimantan Barat,Sungai Kapuas - Sungai Ketungau,Sintang,452
+concession,169_DRM:I15,1,82,0.0,Kalimantan Barat,Sungai Kapuas - Sungai Ketungau,Sintang,452
+concession,170_SKL:016,1,82,0.0,Kalimantan Barat,Sungai Kapuas - Sungai Ketungau,Sintang,452
+concession,170_SKL:O16,1,82,0.0,Kalimantan Barat,Sungai Kapuas - Sungai Ketungau,Sintang,452
+concession,170_SKL:Q2,1,82,0.0,Kalimantan Barat,Sungai Kapuas - Sungai Ketungau,Sintang,452
+concession,170_SKL:T32,1,82,0.0,Kalimantan Barat,Sungai Kapuas - Sungai Ketungau,Sintang,452
+concession,171_TN:TNG_01,1,163,0.0,Riau,Sungai Siak - Sungai Kampar,Pelalawan,397
+concession,171_TN:TNG_06,1,163,0.0,Riau,Sungai Siak - Sungai Kampar,Pelalawan,397
+concession,172_BPM:BPM_002,1,163,0.0,Riau,Sungai Siak - Sungai Kampar,Pelalawan,397
+concession,172_BPM:BPM_007,1,163,0.0,Riau,Sungai Siak - Sungai Kampar,Pelalawan,397
+concession,173_MLI:MLI_02,1,163,0.0,Riau,Sungai Siak - Sungai Kampar,Pelalawan,397
+concession,174_MTS:MTS-004,1,94,0.0,Riau,Sungai Kiyap - Sungai Kerumutan,Pelalawan,397
+concession,174_MTS:MTS-011,1,94,0.0,Riau,Sungai Kiyap - Sungai Kerumutan,Pelalawan,397
+concession,174_MTS:MTS-020,1,94,0.0,Riau,Sungai Kiyap - Sungai Kerumutan,Pelalawan,397
+concession,175_BDB:BDB_003,1,147,0.0,Riau,Sungai Rokan Kiri - Sungai Mandau,Siak,442
+concession,175_BDB:BDB_012,1,147,0.0,Riau,Sungai Rokan Kiri - Sungai Mandau,Siak,442
+concession,175_BDB:BDB_015,1,147,0.0,Riau,Sungai Rokan Kiri - Sungai Mandau,Siak,442
+concession,175_BDB:BDB_020,1,147,0.0,Riau,Sungai Rokan Kiri - Sungai Mandau,Siak,442
+concession,176_RMP:RMP_007,1,94,0.0,Riau,Sungai Kiyap - Sungai Kerumutan,Pelalawan,397
+concession,176_RMP:RMP_011,1,94,0.0,Riau,Sungai Kiyap - Sungai Kerumutan,Pelalawan,397
+concession,176_RMP:RMP_016,1,94,0.0,Riau,Sungai Kiyap - Sungai Kerumutan,Pelalawan,397
+concession,176_RMP:RMP_019,1,94,0.0,Riau,Sungai Kiyap - Sungai Kerumutan,Pelalawan,397
+concession,176_RMP:RMP_024,1,94,0.0,Riau,Sungai Kiyap - Sungai Kerumutan,Pelalawan,397
+concession,177_MSK:TP-GKRA0014,1,71,0.0,Riau,Sungai Kampar - Sungai Gaung,Indragiri Hilir,124
+concession,177_MSK:TP-GKRA0056,1,71,0.0,Riau,Sungai Kampar - Sungai Gaung,Indragiri Hilir,124
+concession,177_MSK:TP-GKRA0107,1,71,0.0,Riau,Sungai Kampar - Sungai Gaung,Indragiri Hilir,124
+concession,177_MSK:TP-GKRA0170,1,71,0.0,Riau,Sungai Kampar - Sungai Gaung,Indragiri Hilir,124
+concession,177_MSK:TP-GKRA0219,1,71,0.0,Riau,Sungai Kampar - Sungai Gaung,Indragiri Hilir,124
+concession,177_MSK:TP-GKRA0458,1,71,0.0,Riau,Sungai Kampar - Sungai Gaung,Indragiri Hilir,124
+concession,177_MSK:TP-GKRA0509,1,71,0.0,Riau,Sungai Kampar - Sungai Gaung,Indragiri Hilir,124
+concession,177_MSK:TP-GKRA0600,1,71,0.0,Riau,Sungai Kampar - Sungai Gaung,Indragiri Hilir,124
+concession,177_MSK:TP-GKRA0754,1,71,0.0,Riau,Sungai Kampar - Sungai Gaung,Indragiri Hilir,124
+concession,17_SPA:TP-BKPM0046,1,146,0.0,Riau,Sungai Rokan - Sungai Siak Kecil,Bengkalis,48
+concession,17_SPA:TP-BKPM0154,1,146,0.0,Riau,Sungai Rokan - Sungai Siak Kecil,Bengkalis,48
+concession,17_SPA:TP-BKPM0300,1,146,0.0,Riau,Sungai Rokan - Sungai Siak Kecil,Bengkalis,48
+concession,17_SPA:TP-BKPM0341,1,146,0.0,Riau,Sungai Rokan - Sungai Siak Kecil,Bengkalis,48
+concession,17_SPA:TP-SKNB0166,1,71,0.0,Riau,Sungai Kampar - Sungai Gaung,Pelalawan,397
+concession,17_SPA:TP-SKNB0340,1,71,0.0,Riau,Sungai Kampar - Sungai Gaung,Indragiri Hilir,124
+concession,17_SPA:TP-SKNB0350,1,71,0.0,Riau,Sungai Kampar - Sungai Gaung,Indragiri Hilir,124
+concession,17_SPA:TP-SKNB0365,1,71,0.0,Riau,Sungai Kampar - Sungai Gaung,Indragiri Hilir,124
+concession,17_SPA:TP-SKNB0621,1,71,0.0,Riau,Sungai Kampar - Sungai Gaung,Indragiri Hilir,124
+concession,17_SPA:TP-SKNB0725,1,71,0.0,Riau,Sungai Kampar - Sungai Gaung,Indragiri Hulu,125
+concession,17_SPA:TP-SKNB0822,1,71,0.0,Riau,Sungai Kampar - Sungai Gaung,Pelalawan,397
+concession,17_SPA:TP-SKNB1018,1,71,0.0,Riau,Sungai Kampar - Sungai Gaung,Indragiri Hilir,124
+concession,17_SPA:TP-SKNB1026,1,71,0.0,Riau,Sungai Kampar - Sungai Gaung,Indragiri Hilir,124
+concession,184_NPM:NPM-003,1,62,0.0,Riau,Sungai Gongan - Sungai Nilo,Pelalawan,397
+concession,186_AIL:TP- A15c,1,99,0.0,Sumatera Utara,Sungai Kuo - Sungai Kualuh Bilah,Labuhan Batu Utara,285
+concession,188_DAS:TP - T039,1,134,0.0,Kalimantan Barat,Sungai Pawan - Sungai Tolak,Ketapang,163
+concession,188_DAS:tP - T039,1,134,0.0,Kalimantan Barat,Sungai Pawan - Sungai Tolak,Ketapang,163
+concession,18_SBA:TDA1530,1,167,0.0,Sumatera Selatan,Sungai Sugihan - Sungai Lumpur,Ogan Komering Ilir,374
+concession,18_SBA:TDA4620,1,167,0.0,Sumatera Selatan,Sungai Sugihan - Sungai Lumpur,Ogan Komering Ilir,374
+concession,18_SBA:TDC7050,1,167,0.0,Sumatera Selatan,Sungai Sugihan - Sungai Lumpur,Ogan Komering Ilir,374
+concession,18_SBA:TDE3620,1,167,0.0,Sumatera Selatan,Sungai Sugihan - Sungai Lumpur,Ogan Komering Ilir,374
+concession,18_SBA:TDE5220,1,167,0.0,Sumatera Selatan,Sungai Sugihan - Sungai Lumpur,Ogan Komering Ilir,374
+concession,18_SBA:TDF5180,1,167,0.0,Sumatera Selatan,Sungai Sugihan - Sungai Lumpur,Ogan Komering Ilir,374
+concession,18_SBA:TDF8160,1,167,0.0,Sumatera Selatan,Sungai Sugihan - Sungai Lumpur,Ogan Komering Ilir,374
+concession,18_SBA:TDG2550,1,167,0.0,Sumatera Selatan,Sungai Sugihan - Sungai Lumpur,Ogan Komering Ilir,374
+concession,191_PBMN:TP- B94f,1,93,0.0,Riau,Sungai Kiyap - Sungai Kerinci,Pelalawan,397
+concession,191_PBMN:TP- E98k,1,93,0.0,Riau,Sungai Kiyap - Sungai Kerinci,Pelalawan,397
+concession,196_JV:0L50,1,57,0.0,Kalimantan Barat,Sungai Durian - Sungai Kualan,Kayong Utara,146
+concession,196_JV:0L79,1,112,0.0,Kalimantan Barat,Sungai Matan -Sungai Semandang,Kayong Utara,146
+concession,196_JV:0O63,1,112,0.0,Kalimantan Barat,Sungai Matan -Sungai Semandang,Kayong Utara,146
+concession,196_JV:0P91,1,112,0.0,Kalimantan Barat,Sungai Matan -Sungai Semandang,Kayong Utara,146
+concession,196_JV:0Q42,1,57,0.0,Kalimantan Barat,Sungai Durian - Sungai Kualan,Kayong Utara,146
+concession,196_JV:0R72,1,112,0.0,Kalimantan Barat,Sungai Matan -Sungai Semandang,Kayong Utara,146
+concession,196_JV:O66,1,112,0.0,Kalimantan Barat,Sungai Matan -Sungai Semandang,Kayong Utara,146
+concession,196_JV:SINL-01,1,99,0.0,Sumatera Utara,Sungai Kuo - Sungai Kualuh Bilah,Labuhan Batu,283
+concession,197_CUS:CA4,1,112,0.0,Kalimantan Barat,Sungai Matan -Sungai Semandang,Kayong Utara,146
+concession,198_KIU:L28,1,119,0.0,Kalimantan Tengah,Sungai Mentaya - Sungai Tualan,Kotawaringin Timur,273
+concession,198_KIU:N7,1,119,0.0,Kalimantan Tengah,Sungai Mentaya - Sungai Tualan,Kotawaringin Timur,273
+concession,198_KIU:O16,1,119,0.0,Kalimantan Tengah,Sungai Mentaya - Sungai Tualan,Kotawaringin Timur,273
+concession,199_GAL:TP-J44,1,79,0.0,Kalimantan Tengah,Sungai Kapuas - Sungai Barito,Kapuas,137
+concession,199_GAL:TP-L56,1,79,0.0,Kalimantan Tengah,Sungai Kapuas - Sungai Barito,Kapuas,137
+concession,199_GAL:TP-M68,1,79,0.0,Kalimantan Tengah,Sungai Kapuas - Sungai Barito,Kapuas,137
+concession,199_GAL:TP-U47,1,79,0.0,Kalimantan Tengah,Sungai Kapuas - Sungai Barito,Barito Selatan,36
+concession,199_GAL:TP-V33,1,79,0.0,Kalimantan Tengah,Sungai Kapuas - Sungai Barito,Kapuas,137
+concession,199_GAL:TP-V57,1,79,0.0,Kalimantan Tengah,Sungai Kapuas - Sungai Barito,Barito Selatan,36
+concession,199_GAL:TP-j44,1,79,0.0,Kalimantan Tengah,Sungai Kapuas - Sungai Barito,Kapuas,137
+concession,199_GAL:TP-l56,1,79,0.0,Kalimantan Tengah,Sungai Kapuas - Sungai Barito,Kapuas,137
+concession,199_GAL:TP-m68,1,79,0.0,Kalimantan Tengah,Sungai Kapuas - Sungai Barito,Kapuas,137
+concession,199_GAL:TP-u47,1,79,0.0,Kalimantan Tengah,Sungai Kapuas - Sungai Barito,Barito Selatan,36
+concession,199_GAL:TP-v33,1,79,0.0,Kalimantan Tengah,Sungai Kapuas - Sungai Barito,Kapuas,137
+concession,199_GAL:TP-v57,1,79,0.0,Kalimantan Tengah,Sungai Kapuas - Sungai Barito,Barito Selatan,36
+concession,19_SRL:SRL5_003,1,27,0.0,Riau,Pulau Rangsang,Kepulauan Meranti,155
+concession,19_SRL:SRL5_004,1,27,0.0,Riau,Pulau Rangsang,Kepulauan Meranti,155
+concession,19_SRL:SRL5_011,1,27,0.0,Riau,Pulau Rangsang,Kepulauan Meranti,155
+concession,19_SRL:SRL5_019,1,27,0.0,Riau,Pulau Rangsang,Kepulauan Meranti,155
+concession,19_SRL:SRL5_033,1,27,0.0,Riau,Pulau Rangsang,Kepulauan Meranti,155
+concession,200_DJL:TP-A11,1,146,0.0,Riau,Sungai Rokan - Sungai Siak Kecil,Bengkalis,48
+concession,201_WYKI:TP-I14,1,117,0.0,Kalimantan Tengah,Sungai Mentaya - Sungai Cempaga,Kotawaringin Timur,273
+concession,202_RJP:TP- M35,1,143,0.0,Kalimantan Barat,Sungai Pungurbesar -  Sungai Kapuas,Kubu Raya,275
+concession,203_SKU:TP -P-14,1,37,0.0,Kalimantan Tengah,Sungai Arut,Kotawaringin Barat,272
+concession,203_SKU:tp -p-14,1,37,0.0,Kalimantan Tengah,Sungai Arut,Kotawaringin Barat,272
+concession,205_BLP:H35,1,98,0.0,Kalimantan Tengah,Sungai Kumai - Sungai Sekonyer,Kotawaringin Barat,272
+concession,205_BLP:K27 B,1,98,0.0,Kalimantan Tengah,Sungai Kumai - Sungai Sekonyer,Kotawaringin Barat,272
+concession,206_AGNR:C05A,1,158,0.0,Bengkulu,Sungai Selangkanan - Aek Bakal Kecil,Mukomuko,353
+concession,207_FBB:TP- D-39,1,17,0.0,Aceh,Krueng Teumiyee - Krueng Tadu,Nagan Raya,361
+concession,207_FBB:TP- F-14B,1,16,0.0,Aceh,Krueng Tadu - Krueng Tripa,Nagan Raya,361
+concession,207_FBB:TP- F-14b,1,16,0.0,Aceh,Krueng Tadu - Krueng Tripa,Nagan Raya,361
+concession,207_FBB:TP- G-48B,1,17,0.0,Aceh,Krueng Teumiyee - Krueng Tadu,Nagan Raya,361
+concession,207_FBB:tp- D-39,1,17,0.0,Aceh,Krueng Teumiyee - Krueng Tadu,Nagan Raya,361
+concession,207_FBB:tp- F-14B,1,16,0.0,Aceh,Krueng Tadu - Krueng Tripa,Nagan Raya,361
+concession,207_FBB:tp- G-48B,1,17,0.0,Aceh,Krueng Teumiyee - Krueng Tadu,Nagan Raya,361
+concession,208_AAN:KDO-G31,1,143,0.0,Kalimantan Barat,Sungai Pungurbesar -  Sungai Kapuas,Kubu Raya,275
+concession,209_BNCW:02,1,121,0.0,Lampung,Sungai Mesuji - Sungai Kebumangah,Mesuji,342
+concession,20_SPW:B18,1,141,0.0,Kalimantan Tengah,Sungai Pukun - Sungai Seruyan,Seruyan,441
+concession,20_SPW:D33,1,141,0.0,Kalimantan Tengah,Sungai Pukun - Sungai Seruyan,Seruyan,441
+concession,20_SPW:G23,1,141,0.0,Kalimantan Tengah,Sungai Pukun - Sungai Seruyan,Seruyan,441
+concession,20_SPW:G29,1,141,0.0,Kalimantan Tengah,Sungai Pukun - Sungai Seruyan,Seruyan,441
+concession,210_BDPA:12,1,122,0.0,Lampung,Sungai Mesuji - Sungai Tulangbawang,Mesuji,342
+concession,210_BDPA:20,1,122,0.0,Lampung,Sungai Mesuji - Sungai Tulangbawang,Mesuji,342
+concession,213_MMG:MMG_TP_E005,1,132,0.0,Sulawesi Barat,Sungai Pasang Kayu - Sungai Bambalamotu,Mamuju Utara,328
+concession,214_ANA:TMAT_D06,1,100,0.0,Sulawesi Tengah,Sungai Laa - Sungai Petasia,Morowali Utara,350
+concession,214_ANA:TMAT_F07,1,100,0.0,Sulawesi Tengah,Sungai Laa - Sungai Petasia,Morowali Utara,350
+concession,215_PSK:PSK_TP_E011,1,132,0.0,Sulawesi Barat,Sungai Pasang Kayu - Sungai Bambalamotu,Mamuju Utara,328
+concession,215_PSK:PSK_TP_H0218,1,132,0.0,Sulawesi Barat,Sungai Pasang Kayu - Sungai Bambalamotu,Mamuju Utara,328
+concession,217_LTW:F016,1,150,0.0,Sulawesi Barat,Sungai Salo Lariang - Sungai Pasang Kayu,Mamuju Utara,328
+concession,217_LTW:J007,1,150,0.0,Sulawesi Barat,Sungai Salo Lariang - Sungai Pasang Kayu,Mamuju Utara,328
+concession,218_SAP:AB11,1,84,0.0,Kalimantan Barat,Sungai Kapuas - Sungai Mendawak,Sanggau,431
+concession,218_SAP:D05,1,84,0.0,Kalimantan Barat,Sungai Kapuas - Sungai Mendawak,Sanggau,431
+concession,219_SAM:KSN-06,1,152,0.0,Kalimantan Barat,Sungai Sambas Besar - Sungai Sijang,Sambas,428
+concession,21_SGP:TP-STRA0007,1,146,0.0,Riau,Sungai Rokan - Sungai Siak Kecil,Kota Dumai,199
+concession,21_SGP:TP-STRA0041,1,146,0.0,Riau,Sungai Rokan - Sungai Siak Kecil,Kota Dumai,199
+concession,21_SGP:TP-STRA0103,1,146,0.0,Riau,Sungai Rokan - Sungai Siak Kecil,Kota Dumai,199
+concession,21_SGP:TP-STRA0148,1,146,0.0,Riau,Sungai Rokan - Sungai Siak Kecil,Kota Dumai,199
+concession,21_SGP:TP-STRA0160,1,146,0.0,Riau,Sungai Rokan - Sungai Siak Kecil,Kota Dumai,199
+concession,21_SGP:TP-STRA0203,1,146,0.0,Riau,Sungai Rokan - Sungai Siak Kecil,Kota Dumai,199
+concession,21_SGP:TP-STRA0249,1,146,0.0,Riau,Sungai Rokan - Sungai Siak Kecil,Kota Dumai,199
+concession,21_SGP:TP-STRA0262,1,146,0.0,Riau,Sungai Rokan - Sungai Siak Kecil,Kota Dumai,199
+concession,21_SGP:TP-STRA0370,1,146,0.0,Riau,Sungai Rokan - Sungai Siak Kecil,Kota Dumai,199
+concession,21_SGP:TP-STRA0404,1,146,0.0,Riau,Sungai Rokan - Sungai Siak Kecil,Kota Dumai,199
+concession,21_SGP:TP-STRA0612,1,146,0.0,Riau,Sungai Rokan - Sungai Siak Kecil,Kota Dumai,199
+concession,21_SGP:TP-STRA0646,1,146,0.0,Riau,Sungai Rokan - Sungai Siak Kecil,Kota Dumai,199
+concession,21_SGP:TP-STRA1065,1,146,0.0,Riau,Sungai Rokan - Sungai Siak Kecil,Kota Dumai,199
+concession,21_SGP:TP-STRA474B,1,146,0.0,Riau,Sungai Rokan - Sungai Siak Kecil,Kota Dumai,199
+concession,220_SAMK:KNP-21,1,143,0.0,Kalimantan Barat,Sungai Pungurbesar -  Sungai Kapuas,Kubu Raya,275
+concession,221_PTWR:C10,1,144,0.0,Kalimantan Barat,Sungai Raya - Sungai Pangnilang,Bengkayang,49
+concession,221_PTWR:H28,1,56,0.0,Kalimantan Barat,Sungai Duri - Sungai Raya,Bengkayang,49
+concession,221_PTWR:H52,1,56,0.0,Kalimantan Barat,Sungai Duri - Sungai Raya,Bengkayang,49
+concession,221_PTWR:H66a,1,56,0.0,Kalimantan Barat,Sungai Duri - Sungai Raya,Bengkayang,49
+concession,222_TMP:C009,1,39,0.0,Riau,Sungai Bangko - Sungai Rokan Kanan,Rokan Hilir,424
+concession,222_TMP:H005,1,39,0.0,Riau,Sungai Bangko - Sungai Rokan Kanan,Rokan Hilir,424
+concession,222_TMP:L003,1,39,0.0,Riau,Sungai Bangko - Sungai Rokan Kanan,Rokan Hilir,424
+concession,222_TMP:TMPH005,1,39,0.0,Riau,Sungai Bangko - Sungai Rokan Kanan,Rokan Hilir,424
+concession,222_TMP:TMPL003,1,39,0.0,Riau,Sungai Bangko - Sungai Rokan Kanan,Rokan Hilir,424
+concession,223_AGL:B 54,1,149,0.0,Kalimantan Tengah,Sungai Rungan - Sungai Kahayan,Pulang Pisau,413
+concession,223_AGL:B54,1,149,0.0,Kalimantan Tengah,Sungai Rungan - Sungai Kahayan,Pulang Pisau,413
+concession,223_AGL:C 86,1,149,0.0,Kalimantan Tengah,Sungai Rungan - Sungai Kahayan,Pulang Pisau,413
+concession,223_AGL:C86,1,149,0.0,Kalimantan Tengah,Sungai Rungan - Sungai Kahayan,Pulang Pisau,413
+concession,224_CTAA:B 034,1,149,0.0,Kalimantan Tengah,Sungai Rungan - Sungai Kahayan,Pulang Pisau,413
+concession,224_CTAA:B034,1,149,0.0,Kalimantan Tengah,Sungai Rungan - Sungai Kahayan,Pulang Pisau,413
+concession,225_AGB:B20,1,140,0.0,Kalimantan Tengah,Sungai Pukun - Sungai Mentaya,Kotawaringin Timur,273
+concession,225_AGB:B40,1,140,0.0,Kalimantan Tengah,Sungai Pukun - Sungai Mentaya,Kotawaringin Timur,273
+concession,225_AGB:E31,1,140,0.0,Kalimantan Tengah,Sungai Pukun - Sungai Mentaya,Kotawaringin Timur,273
+concession,225_AGB:F13,1,140,0.0,Kalimantan Tengah,Sungai Pukun - Sungai Mentaya,Kotawaringin Timur,273
+concession,225_AGB:I22,1,140,0.0,Kalimantan Tengah,Sungai Pukun - Sungai Mentaya,Kotawaringin Timur,273
+concession,225_AGB:L08,1,140,0.0,Kalimantan Tengah,Sungai Pukun - Sungai Mentaya,Kotawaringin Timur,273
+concession,225_AGB:M20,1,140,0.0,Kalimantan Tengah,Sungai Pukun - Sungai Mentaya,Kotawaringin Timur,273
+concession,226_ASM:KHLEC52a,1,98,0.0,Kalimantan Tengah,Sungai Kumai - Sungai Sekonyer,Kotawaringin Barat,272
+concession,226_ASM:KHLEM33b,1,52,0.0,Kalimantan Tengah,Sungai Buluh Besar - Sungai Seruyan,Kotawaringin Barat,272
+concession,227_CSR:SP_C23,1,96,0.0,Sumatera Utara,Sungai Kualuh Bilah - Sungai Barumun,Labuhan Batu,283
+concession,227_CSR:SP_I24,1,96,0.0,Sumatera Utara,Sungai Kualuh Bilah - Sungai Barumun,Labuhan Batu,283
+concession,227_CSR:SP_S7,1,96,0.0,Sumatera Utara,Sungai Kualuh Bilah - Sungai Barumun,Labuhan Batu,283
+concession,227_CSR:SP_U10,1,96,0.0,Sumatera Utara,Sungai Kualuh Bilah - Sungai Barumun,Labuhan Batu,283
+concession,227_CSR:SP_c23,1,96,0.0,Sumatera Utara,Sungai Kualuh Bilah - Sungai Barumun,Labuhan Batu,283
+concession,227_CSR:SP_i24,1,96,0.0,Sumatera Utara,Sungai Kualuh Bilah - Sungai Barumun,Labuhan Batu,283
+concession,227_CSR:SP_s7,1,96,0.0,Sumatera Utara,Sungai Kualuh Bilah - Sungai Barumun,Labuhan Batu,283
+concession,227_CSR:SP_u10,1,96,0.0,Sumatera Utara,Sungai Kualuh Bilah - Sungai Barumun,Labuhan Batu,283
+concession,227_CSR:Sp_I24,1,96,0.0,Sumatera Utara,Sungai Kualuh Bilah - Sungai Barumun,Labuhan Batu,283
+concession,227_CSR:sp_c23,1,96,0.0,Sumatera Utara,Sungai Kualuh Bilah - Sungai Barumun,Labuhan Batu,283
+concession,227_CSR:sp_i24,1,96,0.0,Sumatera Utara,Sungai Kualuh Bilah - Sungai Barumun,Labuhan Batu,283
+concession,227_CSR:sp_s7,1,96,0.0,Sumatera Utara,Sungai Kualuh Bilah - Sungai Barumun,Labuhan Batu,283
+concession,227_CSR:sp_u10,1,96,0.0,Sumatera Utara,Sungai Kualuh Bilah - Sungai Barumun,Labuhan Batu,283
+concession,229_GBSM:10A,1,137,0.0,Sumatera Selatan,Sungai Penu - Sungai Abah,Penukal Abab Lematang Ilir,400
+concession,229_GBSM:30C,1,124,0.0,Sumatera Selatan,Sungai Musi - Sungai Aek Lematang,Penukal Abab Lematang Ilir,400
+concession,229_GBSM:42A,1,124,0.0,Sumatera Selatan,Sungai Musi - Sungai Aek Lematang,Penukal Abab Lematang Ilir,400
+concession,229_GBSM:54A,1,124,0.0,Sumatera Selatan,Sungai Musi - Sungai Aek Lematang,Penukal Abab Lematang Ilir,400
+concession,229_GBSM:66A,1,124,0.0,Sumatera Selatan,Sungai Musi - Sungai Aek Lematang,Penukal Abab Lematang Ilir,400
+concession,229_GBSM:67A,1,124,0.0,Sumatera Selatan,Sungai Musi - Sungai Aek Lematang,Penukal Abab Lematang Ilir,400
+concession,229_GBSM:82C,1,124,0.0,Sumatera Selatan,Sungai Musi - Sungai Aek Lematang,Penukal Abab Lematang Ilir,400
+concession,22_SCK:B17,1,48,0.0,Sumatera Selatan,Sungai Bentayan - Sungai Penimpahan,Musi Banyuasin,357
+concession,22_SCK:B23,1,48,0.0,Sumatera Selatan,Sungai Bentayan - Sungai Penimpahan,Musi Banyuasin,357
+concession,22_SCK:D29,1,48,0.0,Sumatera Selatan,Sungai Bentayan - Sungai Penimpahan,Musi Banyuasin,357
+concession,22_SCK:G31,1,48,0.0,Sumatera Selatan,Sungai Bentayan - Sungai Penimpahan,Musi Banyuasin,357
+concession,22_SCK:P04,1,48,0.21,Sumatera Selatan,Sungai Bentayan - Sungai Penimpahan,Musi Banyuasin,357
+concession,230_ISJ:C14i,1,96,0.0,Sumatera Utara,Sungai Kualuh Bilah - Sungai Barumun,Labuhan Batu,283
+concession,230_ISJ:D13c,1,96,0.0,Sumatera Utara,Sungai Kualuh Bilah - Sungai Barumun,Labuhan Batu,283
+concession,232_LSM:C012,1,134,0.0,Kalimantan Barat,Sungai Pawan - Sungai Tolak,Ketapang,163
+concession,232_LSM:c012,1,134,0.0,Kalimantan Barat,Sungai Pawan - Sungai Tolak,Ketapang,163
+concession,234_MISP:BB.6,1,156,0.0,Kalimantan Barat,Sungai Sedawar - Sungai Sambas Besar,Sambas,428
+concession,235_MKA:TP 02,1,52,0.66,Kalimantan Tengah,Sungai Buluh Besar - Sungai Seruyan,Seruyan,441
+concession,236_MIB:TP-4,1,40,0.0,Kalimantan Selatan,Sungai Barito - Sungai Alalak,Banjar,28
+concession,238_PPM:SP 09,1,69,0.0,Papua Barat,Sungai Kais - Sungai Metamani,Sorong Selatan,459
+concession,238_PPM:SP 18,1,69,0.0,Papua Barat,Sungai Kais - Sungai Metamani,Sorong Selatan,459
+concession,23_WSL:WSL_A045_P3,1,173,0.0,Kalimantan Barat,Sungai Terentang - Sungai Kapuas,Kubu Raya,275
+concession,23_WSL:WSL_C076_P3,1,173,0.0,Kalimantan Barat,Sungai Terentang - Sungai Kapuas,Kubu Raya,275
+concession,23_WSL:WSL_C090_P3,1,173,0.0,Kalimantan Barat,Sungai Terentang - Sungai Kapuas,Kubu Raya,275
+concession,23_WSL:WSL_C112_P3,1,173,0.0,Kalimantan Barat,Sungai Terentang - Sungai Kapuas,Kubu Raya,275
+concession,23_WSL:WSL_C147_P3,1,173,0.0,Kalimantan Barat,Sungai Terentang - Sungai Kapuas,Kubu Raya,275
+concession,23_WSL:WSL_D003_P3,1,173,0.0,Kalimantan Barat,Sungai Terentang - Sungai Kapuas,Kubu Raya,275
+concession,23_WSL:WSL_D044_P3,1,173,0.0,Kalimantan Barat,Sungai Terentang - Sungai Kapuas,Kubu Raya,275
+concession,23_WSL:WSL_D049_P3,1,173,0.0,Kalimantan Barat,Sungai Terentang - Sungai Kapuas,Kubu Raya,275
+concession,23_WSL:WSL_D119_P3,1,173,0.0,Kalimantan Barat,Sungai Terentang - Sungai Kapuas,Kubu Raya,275
+concession,23_WSL:WSL_E001_P2,1,173,0.0,Kalimantan Barat,Sungai Terentang - Sungai Kapuas,Kubu Raya,275
+concession,23_WSL:WSL_E011_P3,1,173,0.0,Kalimantan Barat,Sungai Terentang - Sungai Kapuas,Kubu Raya,275
+concession,23_WSL:WSL_E071_P3,1,173,0.0,Kalimantan Barat,Sungai Terentang - Sungai Kapuas,Kubu Raya,275
+concession,240_PTPNVAMO:TP-6,1,63,0.0,Riau,Sungai Indragiri - Sungai Belilas,Indragiri Hulu,125
+concession,244_SIS:01,1,99,0.0,Sumatera Utara,Sungai Kuo - Sungai Kualuh Bilah,Labuhan Batu,283
+concession,245_SR:II0119,1,104,0.0,Kalimantan Tengah,Sungai Lamandau - Sungai Jelai,Sukamara,463
+concession,24_WKS:WKD1001,1,46,0.0,Jambi,Sungai Baung - Sungai Betara,Tanjung Jabung Barat,485
+concession,24_WKS:WKD1002,1,46,0.0,Jambi,Sungai Baung - Sungai Betara,Tanjung Jabung Barat,485
+concession,24_WKS:WKD1011,1,46,0.0,Jambi,Sungai Baung - Sungai Betara,Tanjung Jabung Barat,485
+concession,24_WKS:WKD1014,1,46,0.0,Jambi,Sungai Baung - Sungai Betara,Tanjung Jabung Barat,485
+concession,24_WKS:WKD2005,1,49,0.0,Jambi,Sungai Betara - Sungai Mendahara,Tanjung Jabung Barat,485
+concession,24_WKS:WKD2010,1,49,0.0,Jambi,Sungai Betara - Sungai Mendahara,Tanjung Jabung Barat,485
+concession,24_WKS:WKD2023,1,49,0.0,Jambi,Sungai Betara - Sungai Mendahara,Tanjung Jabung Barat,485
+concession,24_WKS:WKD2034,1,49,0.0,Jambi,Sungai Betara - Sungai Mendahara,Tanjung Jabung Timur,486
+concession,24_WKS:WKD2038,1,49,0.0,Jambi,Sungai Betara - Sungai Mendahara,Tanjung Jabung Timur,486
+concession,24_WKS:WKD2043,1,49,0.0,Jambi,Sungai Betara - Sungai Mendahara,Tanjung Jabung Timur,486
+concession,24_WKS:WKD2050,1,49,0.0,Jambi,Sungai Betara - Sungai Mendahara,Tanjung Jabung Timur,486
+concession,24_WKS:WKD5001,1,43,0.0,Jambi,Sungai Batang - Sungai Tungkal,Tanjung Jabung Barat,485
+concession,24_WKS:WKD5004,1,43,0.0,Jambi,Sungai Batang - Sungai Tungkal,Tanjung Jabung Barat,485
+concession,24_WKS:WKD5011,1,43,0.0,Jambi,Sungai Batang - Sungai Tungkal,Tanjung Jabung Barat,485
+concession,24_WKS:WKD6004,1,136,0.0,Jambi,Sungai Pengabuan - Sungai Baung,Tanjung Jabung Barat,485
+concession,24_WKS:WKD6015,1,136,0.0,Jambi,Sungai Pengabuan - Sungai Baung,Tanjung Jabung Barat,485
+concession,24_WKS:WKD6016,1,136,0.0,Jambi,Sungai Pengabuan - Sungai Baung,Tanjung Jabung Barat,485
+concession,24_WKS:WKD6021,1,136,0.0,Jambi,Sungai Pengabuan - Sungai Baung,Tanjung Jabung Barat,485
+concession,24_WKS:WKD6037,1,136,0.0,Jambi,Sungai Pengabuan - Sungai Baung,Tanjung Jabung Barat,485
+concession,24_WKS:WKD7006,1,114,0.0,Jambi,Sungai Mendahara - Sungai Batanghari,Tanjung Jabung Timur,486
+concession,24_WKS:WKD7028,1,114,0.0,Jambi,Sungai Mendahara - Sungai Batanghari,Tanjung Jabung Timur,486
+concession,24_WKS:WKD7077,1,114,0.0,Jambi,Sungai Mendahara - Sungai Batanghari,Muaro Jambi,352
+concession,24_WKS:WKD7094,1,114,0.0,Jambi,Sungai Mendahara - Sungai Batanghari,Muaro Jambi,352
+concession,24_WKS:WKD7095,1,114,0.0,Jambi,Sungai Mendahara - Sungai Batanghari,Tanjung Jabung Timur,486
+concession,24_WKS:WKD7117,1,114,0.0,Jambi,Sungai Mendahara - Sungai Batanghari,Tanjung Jabung Timur,486
+concession,24_WKS:WKD7118,1,114,0.0,Jambi,Sungai Mendahara - Sungai Batanghari,Tanjung Jabung Timur,486
+concession,250_PRT:PTR_02,1,28,0.0,Riau,Pulau Rupat,Bengkalis,48
+concession,250_PRT:PTR_14,1,28,0.0,Riau,Pulau Rupat,Bengkalis,48
+concession,251_AUS:U 23,1,87,0.0,Kalimantan Tengah,Sungai Katingan - Sungai Klaru,Katingan,144
+concession,252_BAS:A07,1,77,0.0,Kalimantan Barat,Sungai Kapuas - Sungai Ambawang,Kubu Raya,275
+concession,254_EWFKT:C12,1,114,0.0,Jambi,Sungai Mendahara - Sungai Batanghari,Muaro Jambi,352
+concession,255_MKS:D34,1,57,0.0,Kalimantan Barat,Sungai Durian - Sungai Kualan,Kayong Utara,146
+concession,256_MWII:H49,1,146,0.0,Riau,Sungai Rokan - Sungai Siak Kecil,Bengkalis,48
+concession,256_MWII:J60,1,146,0.0,Riau,Sungai Rokan - Sungai Siak Kecil,Bengkalis,48
+concession,256_MWII:K68,1,146,0.0,Riau,Sungai Rokan - Sungai Siak Kecil,Bengkalis,48
+concession,257_MA:OF011,1,8,0.0,Sumatera Barat,Batang Masangkiri - Bah Antokan,Agam,11
+concession,257_MA:OH009,1,168,0.0,Sumatera Barat,Sungai Tabat - Batang Masangkiri,Agam,11
+concession,258_PALM:E02B,1,77,0.0,Kalimantan Barat,Sungai Kapuas - Sungai Ambawang,Kubu Raya,275
+concession,258_PALM:H10C,1,77,0.0,Kalimantan Barat,Sungai Kapuas - Sungai Ambawang,Kubu Raya,275
+concession,258_PALM:I04A,1,77,0.0,Kalimantan Barat,Sungai Kapuas - Sungai Ambawang,Kubu Raya,275
+concession,258_PALM:J14D,1,77,0.0,Kalimantan Barat,Sungai Kapuas - Sungai Ambawang,Kubu Raya,275
+concession,258_PALM:L02A,1,77,0.0,Kalimantan Barat,Sungai Kapuas - Sungai Ambawang,Kubu Raya,275
+concession,259_PTLJ:Q50,1,76,0.0,Kalimantan Barat,Sungai Kapuas -  Sungai Menukung,Sanggau,431
+concession,25_AAI:TP-BBRD0020,1,163,0.0,Riau,Sungai Siak - Sungai Kampar,Siak,442
+concession,25_AAI:TP-BBRD0143,1,163,0.0,Riau,Sungai Siak - Sungai Kampar,Siak,442
+concession,25_AAI:TP-BBRD0247,1,163,0.0,Riau,Sungai Siak - Sungai Kampar,Siak,442
+concession,25_AAI:TP-BBRD0356,1,163,0.0,Riau,Sungai Siak - Sungai Kampar,Siak,442
+concession,25_AAI:TP-BBRD0416,1,163,0.0,Riau,Sungai Siak - Sungai Kampar,Siak,442
+concession,25_AAI:TP-BBRE0219,1,163,0.0,Riau,Sungai Siak - Sungai Kampar,Siak,442
+concession,25_AAI:TP-BBRE0244,1,163,0.0,Riau,Sungai Siak - Sungai Kampar,Siak,442
+concession,25_AAI:TP-BBRE0321,1,163,0.0,Riau,Sungai Siak - Sungai Kampar,Siak,442
+concession,25_AAI:TP-BBRE0356,1,163,0.0,Riau,Sungai Siak - Sungai Kampar,Siak,442
+concession,25_AAI:TP-BKPG049A,1,146,0.0,Riau,Sungai Rokan - Sungai Siak Kecil,Kota Dumai,199
+concession,25_AAI:TP-BKPG137A,1,146,0.0,Riau,Sungai Rokan - Sungai Siak Kecil,Bengkalis,48
+concession,25_AAI:TP-BKPG272B,1,146,0.0,Riau,Sungai Rokan - Sungai Siak Kecil,Rokan Hilir,424
+concession,25_AAI:TP-BKPG294B,1,146,0.0,Riau,Sungai Rokan - Sungai Siak Kecil,Rokan Hilir,424
+concession,25_AAI:TP-BKPG412A,1,146,0.0,Riau,Sungai Rokan - Sungai Siak Kecil,Rokan Hilir,424
+concession,25_AAI:TP-BKPG447B,1,146,0.0,Riau,Sungai Rokan - Sungai Siak Kecil,Rokan Hilir,424
+concession,25_AAI:TP-GLBC0473,1,107,0.0,Riau,Sungai Leko - Sungai Minas,Siak,442
+concession,25_AAI:TP-GLBC0560,1,123,0.0,Riau,Sungai Minas - Sungai Mandiangin,Siak,442
+concession,25_AAI:TP-GLBC0596,1,107,0.0,Riau,Sungai Leko - Sungai Minas,Siak,442
+concession,25_AAI:TP-MBRA0034,1,164,0.0,Riau,Sungai Siak Kecil - Sungai Siak,Siak,442
+concession,25_AAI:TP-MBRA0062,1,164,0.0,Riau,Sungai Siak Kecil - Sungai Siak,Siak,442
+concession,25_AAI:TP-MBRA273B,1,164,0.0,Riau,Sungai Siak Kecil - Sungai Siak,Siak,442
+concession,25_AAI:TP-MBRB521B,1,53,0.0,Riau,Sungai Bunut - Sungai Umban,Siak,442
+concession,25_AAI:TP-MBRB585B,1,53,0.0,Riau,Sungai Bunut - Sungai Umban,Bengkalis,48
+concession,25_AAI:TP-MRWA0081,1,71,0.0,Riau,Sungai Kampar - Sungai Gaung,Pelalawan,397
+concession,25_AAI:TP-MRWA0137,1,71,0.0,Riau,Sungai Kampar - Sungai Gaung,Pelalawan,397
+concession,25_AAI:TP-MRWA0182,1,71,0.0,Riau,Sungai Kampar - Sungai Gaung,Pelalawan,397
+concession,25_AAI:TP-MRWA029A,1,71,0.0,Riau,Sungai Kampar - Sungai Gaung,Pelalawan,397
+concession,25_AAI:TP-MRWA0360,1,71,0.0,Riau,Sungai Kampar - Sungai Gaung,Pelalawan,397
+concession,25_AAI:TP-MRWA0422,1,71,0.0,Riau,Sungai Kampar - Sungai Gaung,Pelalawan,397
+concession,25_AAI:TP-MRWA0699,1,71,0.0,Riau,Sungai Kampar - Sungai Gaung,Pelalawan,397
+concession,25_AAI:TP-MRWA0785,1,71,0.0,Riau,Sungai Kampar - Sungai Gaung,Pelalawan,397
+concession,25_AAI:TP-PSKA0015,1,163,0.0,Riau,Sungai Siak - Sungai Kampar,Siak,442
+concession,25_AAI:TP-PSKA0165,1,163,0.0,Riau,Sungai Siak - Sungai Kampar,Siak,442
+concession,25_AAI:TP-PSKB0009,1,163,0.0,Riau,Sungai Siak - Sungai Kampar,Siak,442
+concession,25_AAI:TP-PSKB0143,1,163,0.0,Riau,Sungai Siak - Sungai Kampar,Siak,442
+concession,25_AAI:TP-RSKA0328,1,108,0.0,Riau,Sungai Mandiangin - Sungai Siak,Siak,442
+concession,25_AAI:TP-RSKA0452,1,108,0.0,Riau,Sungai Mandiangin - Sungai Siak,Siak,442
+concession,25_AAI:TP-RSKA0565,1,108,0.0,Riau,Sungai Mandiangin - Sungai Siak,Siak,442
+concession,25_AAI:TP-RSKA271A,1,108,0.0,Riau,Sungai Mandiangin - Sungai Siak,Siak,442
+concession,25_AAI:TP-RSKA469C,1,108,0.0,Riau,Sungai Mandiangin - Sungai Siak,Siak,442
+concession,25_AAI:TP-RSKA502A,1,108,0.0,Riau,Sungai Mandiangin - Sungai Siak,Siak,442
+concession,25_AAI:TP-SBAE0626,1,53,0.0,Riau,Sungai Bunut - Sungai Umban,Bengkalis,48
+concession,25_AAI:TP-SBAE598B,1,53,0.0,Riau,Sungai Bunut - Sungai Umban,Bengkalis,48
+concession,25_AAI:TP-SNLD0456,1,62,0.0,Riau,Sungai Gongan - Sungai Nilo,Pelalawan,397
+concession,25_AAI:TP-SNLD175A,1,62,0.0,Riau,Sungai Gongan - Sungai Nilo,Pelalawan,397
+concession,25_AAI:TP-SNLD223A,1,62,0.0,Riau,Sungai Gongan - Sungai Nilo,Pelalawan,397
+concession,25_AAI:TP-SNLD9219,1,62,0.0,Riau,Sungai Gongan - Sungai Nilo,Pelalawan,397
+concession,260_PLD:PLD_D28,1,143,0.0,Kalimantan Barat,Sungai Pungurbesar -  Sungai Kapuas,Kubu Raya,275
+concession,262_SAMI:SAM_04,1,147,0.0,Riau,Sungai Rokan Kiri - Sungai Mandau,Kampar,136
+concession,263_SDA:C06,1,146,0.0,Riau,Sungai Rokan - Sungai Siak Kecil,Bengkalis,48
+concession,263_SDA:D14,1,146,0.0,Riau,Sungai Rokan - Sungai Siak Kecil,Bengkalis,48
+concession,263_SDA:G25,1,146,0.0,Riau,Sungai Rokan - Sungai Siak Kecil,Bengkalis,48
+concession,263_SDA:J30,1,146,0.0,Riau,Sungai Rokan - Sungai Siak Kecil,Bengkalis,48
+concession,265_AJM:TP-01,1,177,0.0,Papua Barat,Sungai Warsih - Sungai Sindu,,
+concession,266_BAPP:TP-1,1,36,0.0,Papua Barat,Sungai Api - Sungai Asiti,Tambrauw,477
+concession,267_FSL:TP-1,1,138,0.0,Kalimantan Barat,Sungai Penyangkat - Sungai Selat Maya,Kubu Raya,275
+concession,267_FSL:TP-13,1,138,0.0,Kalimantan Barat,Sungai Penyangkat - Sungai Selat Maya,Kubu Raya,275
+concession,267_FSL:TP-3,1,138,0.0,Kalimantan Barat,Sungai Penyangkat - Sungai Selat Maya,Kubu Raya,275
+concession,269_KSYB:B3,1,114,0.0,Jambi,Sungai Mendahara - Sungai Batanghari,Muaro Jambi,352
+concession,26_ATP:TPL 0040,1,101,0.0,Kalimantan Barat,Sungai Labai - Sungai Kualan,Ketapang,163
+concession,26_ATP:TPL 0100,1,101,0.0,Kalimantan Barat,Sungai Labai - Sungai Kualan,Ketapang,163
+concession,270_PTPNIIIBTR:TP-1,1,3,0.0,Sumatera Utara,Aek Na Birong - Aek Batang Toru,Tapanuli Selatan,487
+concession,271_RSP:H19,1,131,0.0,Papua Barat,Sungai Otoweri - Sungai Saengga,Fakfak,102
+concession,271_RSP:H42,1,50,0.0,Papua Barat,Sungai Budidi - Sungai Bomberai,Fakfak,102
+concession,271_RSP:J42,1,131,0.0,Papua Barat,Sungai Otoweri - Sungai Saengga,Fakfak,102
+concession,271_RSP:L 43,1,131,0.0,Papua Barat,Sungai Otoweri - Sungai Saengga,Fakfak,102
+concession,272_APL:A10,1,143,0.0,Kalimantan Barat,Sungai Pungurbesar -  Sungai Kapuas,Kubu Raya,275
+concession,273_BCP:L1,1,110,0.0,Kalimantan Barat,Sungai Mange - Sungai Dadau,Sambas,428
+concession,274_MAR:H21B,1,142,0.0,Kalimantan Barat,Sungai Punggurbesar - Sungai Ambawang,Kubu Raya,275
+concession,274_MAR:H21b,1,142,0.0,Kalimantan Barat,Sungai Punggurbesar - Sungai Ambawang,Kubu Raya,275
+concession,274_MAR:M15A,1,142,0.0,Kalimantan Barat,Sungai Punggurbesar - Sungai Ambawang,Kubu Raya,275
+concession,274_MAR:MN15A,1,142,0.0,Kalimantan Barat,Sungai Punggurbesar - Sungai Ambawang,Kubu Raya,275
+concession,274_MAR:MN15a,1,142,0.0,Kalimantan Barat,Sungai Punggurbesar - Sungai Ambawang,Kubu Raya,275
+concession,274_MAR:Q034,1,142,0.0,Kalimantan Barat,Sungai Punggurbesar - Sungai Ambawang,Kubu Raya,275
+concession,274_MAR:Q34,1,142,0.0,Kalimantan Barat,Sungai Punggurbesar - Sungai Ambawang,Kubu Raya,275
+concession,274_MAR:S42B,1,142,0.0,Kalimantan Barat,Sungai Punggurbesar - Sungai Ambawang,Kubu Raya,275
+concession,274_MAR:ST42b,1,142,0.0,Kalimantan Barat,Sungai Punggurbesar - Sungai Ambawang,Kubu Raya,275
+concession,276_SUJ:20 C2,1,167,0.0,Sumatera Selatan,Sungai Sugihan - Sungai Lumpur,Ogan Komering Ilir,374
+concession,276_SUJ:36a D2,1,167,0.0,Sumatera Selatan,Sungai Sugihan - Sungai Lumpur,Ogan Komering Ilir,374
+concession,276_SUJ:37 C1,1,169,0.0,Sumatera Selatan,Sungai Talang - Sungai Ulakkedondong,Ogan Komering Ilir,374
+concession,278_SHJ:Blok C 13,1,111,0.0,Sumatera Utara,Sungai Marbau - Sungai Kualuh Bilah,Labuhan Batu,283
+concession,278_SHJ:Blok C 3,1,111,0.0,Sumatera Utara,Sungai Marbau - Sungai Kualuh Bilah,Labuhan Batu,283
+concession,279_SJP:Blok 7 F,1,173,0.0,Kalimantan Barat,Sungai Terentang - Sungai Kapuas,Kubu Raya,275
+concession,279_SJP:Blok 7 f,1,173,0.0,Kalimantan Barat,Sungai Terentang - Sungai Kapuas,Kubu Raya,275
+concession,279_SJP:blok 7 F,1,173,0.0,Kalimantan Barat,Sungai Terentang - Sungai Kapuas,Kubu Raya,275
+concession,279_SJP:blok 7 f,1,173,0.0,Kalimantan Barat,Sungai Terentang - Sungai Kapuas,Kubu Raya,275
+concession,27_BKM:TP-MBRC0002,1,164,0.0,Riau,Sungai Siak Kecil - Sungai Siak,Siak,442
+concession,27_BKM:TP-MBRC0007,1,164,0.0,Riau,Sungai Siak Kecil - Sungai Siak,Siak,442
+concession,27_BKM:TP-MBRC0113,1,164,0.0,Riau,Sungai Siak Kecil - Sungai Siak,Bengkalis,48
+concession,27_BKM:TP-MBRC0121,1,164,0.0,Riau,Sungai Siak Kecil - Sungai Siak,Bengkalis,48
+concession,27_BKM:TP-MBRC0127,1,164,0.0,Riau,Sungai Siak Kecil - Sungai Siak,Bengkalis,48
+concession,27_BKM:TP-MBRC9013,1,164,0.0,Riau,Sungai Siak Kecil - Sungai Siak,Bengkalis,48
+concession,281_GDLP:E25,1,38,0.0,Sumatera Utara,Sungai Asahan - Sungai Leidong,Labuhan Batu Utara,285
+concession,281_GDLP:J19,1,38,0.0,Sumatera Utara,Sungai Asahan - Sungai Leidong,Labuhan Batu Utara,285
+concession,281_GDLP:L8,1,38,0.0,Sumatera Utara,Sungai Asahan - Sungai Leidong,Asahan,13
+concession,281_GDLP:M4b,1,106,0.0,Sumatera Utara,Sungai Leidong - Sungai Kuala,Labuhan Batu Utara,285
+concession,282_KPC:TP 02,1,81,0.0,Kalimantan Barat,Sungai Kapuas - Sungai Embau,Kapuas Hulu,138
+concession,283_PIP:PIP-TP-10,0,,,,,,
+concession,283_PIP:PIP-TP-6,0,,,,,,
+concession,284_PGM:K-21,1,91,0.0,Kalimantan Barat,Sungai Ketungau - Sungai Berau,Kapuas Hulu,138
+concession,285_SGP:K49,1,47,0.0,Kalimantan Timur,Sungai Belayan - Sungai Kelinjau,Kutai Timur,282
+concession,286_SJM:d 8 a,1,77,0.0,Kalimantan Barat,Sungai Kapuas - Sungai Ambawang,Kubu Raya,275
+concession,286_SJM:q 15,1,86,0.0,Kalimantan Barat,Sungai Kapuas - Sungai Separoh,Kubu Raya,275
+concession,286_SJM:y 22 a,1,75,0.0,Kalimantan Barat,Sungai Kapuas,Kubu Raya,275
+concession,287_SSSJ:E 27,1,37,0.0,Kalimantan Tengah,Sungai Arut,Kotawaringin Barat,272
+concession,287_SSSJ:E27,1,37,0.0,Kalimantan Tengah,Sungai Arut,Kotawaringin Barat,272
+concession,288_UMWS:D16,1,41,0.0,Sumatera Utara,Sungai Barumun - Sungai Kubu,Labuhan Batu,283
+concession,288_UMWS:D27,1,41,0.0,Riau,Sungai Barumun - Sungai Kubu,Labuhan Batu,283
+concession,288_UMWS:H17,1,41,0.0,Riau,Sungai Barumun - Sungai Kubu,Labuhan Batu,283
+concession,288_UMWS:J18,1,41,0.0,Riau,Sungai Barumun - Sungai Kubu,Labuhan Batu,283
+concession,292_GBNR:J6,1,58,0.0,Kalimantan Barat,Sungai Durian - Sungai Labai,Kubu Raya,275
+concession,292_GBNR:K13,1,58,0.0,Kalimantan Barat,Sungai Durian - Sungai Labai,Kubu Raya,275
+concession,292_GBNR:K3,1,58,0.0,Kalimantan Barat,Sungai Durian - Sungai Labai,Kubu Raya,275
+concession,292_GBNR:MTI-L81I088SXGBH,1,58,0.0,Kalimantan Barat,Sungai Durian - Sungai Labai,Kubu Raya,275
+concession,292_GBNR:MTI-RMWLKZMPS1LG,1,58,0.0,Kalimantan Barat,Sungai Durian - Sungai Labai,Kubu Raya,275
+concession,292_GBNR:k3,1,58,0.0,Kalimantan Barat,Sungai Durian - Sungai Labai,Kubu Raya,275
+concession,293_KUL:TP-126,1,114,0.0,Jambi,Sungai Mendahara - Sungai Batanghari,Tanjung Jabung Timur,486
+concession,293_KUL:TP-58,1,114,0.0,Jambi,Sungai Mendahara - Sungai Batanghari,Tanjung Jabung Timur,486
+concession,295_TAP:TAP-D22,1,158,0.0,Bengkulu,Sungai Selangkanan - Aek Bakal Kecil,Mukomuko,353
+concession,296_PSJ:PSJ-Y45,1,,0.0,Jambi,,Tanjung Jabung Barat,485
+concession,297_IAL:B15-4,1,173,0.0,Kalimantan Barat,Sungai Terentang - Sungai Kapuas,Kubu Raya,275
+concession,297_IAL:C13-6,1,173,0.0,Kalimantan Barat,Sungai Terentang - Sungai Kapuas,Kubu Raya,275
+concession,297_IAL:C6-1,1,173,0.0,Kalimantan Barat,Sungai Terentang - Sungai Kapuas,Kubu Raya,275
+concession,297_IAL:IAL-B.15-4,1,173,0.0,Kalimantan Barat,Sungai Terentang - Sungai Kapuas,Kubu Raya,275
+concession,297_IAL:IAL-C.13-6,1,173,0.0,Kalimantan Barat,Sungai Terentang - Sungai Kapuas,Kubu Raya,275
+concession,297_IAL:IAL-C.6-1,1,173,0.0,Kalimantan Barat,Sungai Terentang - Sungai Kapuas,Kubu Raya,275
+concession,298_PMG:PMG-GG4,1,44,0.0,Jambi,Sungai Batanghari - Sungai Air Hitam Laut,Muaro Jambi,352
+concession,298_PMG:TP-1,1,114,0.0,Jambi,Sungai Mendahara - Sungai Batanghari,Muaro Jambi,352
+concession,298_PMG:pmg-gg4,1,44,0.0,Jambi,Sungai Batanghari - Sungai Air Hitam Laut,Muaro Jambi,352
+concession,299_PKM:PKM-B-01,1,12,0.0,Jambi,Batang Tembei - Sungai Merak,Sarolangun,433
+concession,299_PKM:PKM-D-23,1,12,0.0,Jambi,Batang Tembei - Sungai Merak,Sarolangun,433
+concession,299_PKM:PKM-E-40,1,12,0.0,Jambi,Batang Tembei - Sungai Merak,Sarolangun,433
+concession,29_BDL:TP-ASKB0009,1,61,0.0,Riau,Sungai Gaung - Sungai Batangtuaka,Indragiri Hilir,124
+concession,29_BDL:TP-ASKB0078,1,61,0.0,Riau,Sungai Gaung - Sungai Batangtuaka,Indragiri Hilir,124
+concession,29_BDL:TP-ASKB0145,1,61,0.0,Riau,Sungai Gaung - Sungai Batangtuaka,Indragiri Hilir,124
+concession,29_BDL:TP-ASKB0196,1,61,0.0,Riau,Sungai Gaung - Sungai Batangtuaka,Indragiri Hilir,124
+concession,29_BDL:TP-ASKB0218,1,61,0.0,Riau,Sungai Gaung - Sungai Batangtuaka,Indragiri Hilir,124
+concession,29_BDL:TP-ASKB0297,1,61,0.0,Riau,Sungai Gaung - Sungai Batangtuaka,Indragiri Hilir,124
+concession,29_BDL:TP-ASKB0382,1,61,0.0,Riau,Sungai Gaung - Sungai Batangtuaka,Indragiri Hilir,124
+concession,29_BDL:TP-ASKB0431,1,61,0.0,Riau,Sungai Gaung - Sungai Batangtuaka,Indragiri Hilir,124
+concession,29_BDL:TP-ASKB0518,1,61,0.0,Riau,Sungai Gaung - Sungai Batangtuaka,Indragiri Hilir,124
+concession,303_BGR:BGR-B016,1,44,0.0,Jambi,Sungai Batanghari - Sungai Air Hitam Laut,Muaro Jambi,352
+concession,304_PLK:PLK-B9,1,77,0.0,Kalimantan Barat,Sungai Kapuas - Sungai Ambawang,Kubu Raya,275
+concession,305_PWA:PWA-F 49,1,77,0.0,Kalimantan Barat,Sungai Kapuas - Sungai Ambawang,Kubu Raya,275
+concession,308_LAIK:TP-10,1,166,0.0,Kalimantan Barat,Sungai Sijang - Sungai Bantanan,Sambas,428
+concession,309_PNS:KDS071002,1,55,0.0,Sumatera Selatan,Sungai Burung - Sungai Way Mesuji,Ogan Komering Ilir,374
+concession,309_PNS:PNS092903,1,55,0.0,Sumatera Selatan,Sungai Burung - Sungai Way Mesuji,Ogan Komering Ilir,374
+concession,310_PAM:TP-12,1,78,0.0,Kalimantan Barat,Sungai Kapuas - Sungai Ayak,Sekadau,434
+concession,311_STNP:TP_TMAT 012,1,44,0.0,Jambi,Sungai Batanghari - Sungai Air Hitam Laut,Muaro Jambi,352
+concession,311_STNP:TP_TMAT 015,1,44,0.0,Jambi,Sungai Batanghari - Sungai Air Hitam Laut,Muaro Jambi,352
+concession,311_STNP:TP_TMAT 025,1,44,0.0,Jambi,Sungai Batanghari - Sungai Air Hitam Laut,Muaro Jambi,352
+concession,311_STNP:TP_TMAT 044,1,44,0.0,Jambi,Sungai Batanghari - Sungai Air Hitam Laut,Muaro Jambi,352
+concession,312_NJP:F42,1,77,0.0,Kalimantan Barat,Sungai Kapuas - Sungai Ambawang,Kubu Raya,275
+concession,314_BBS:TP7,1,44,0.0,Jambi,Sungai Batanghari - Sungai Air Hitam Laut,Muaro Jambi,352
+concession,315_TUM:TUM TMAT 03,1,41,0.0,Riau,Sungai Barumun - Sungai Kubu,Labuhan Batu,283
+concession,316_NAS:MDS 11,1,22,0.0,Sumatera Utara,Lae Sibungkuang - Aek Tarutungol,Tapanuli Tengah,488
+concession,316_NAS:MDS45,1,,0.0,Sumatera Utara,,Tapanuli Utara,489
+concession,318_PHS:PHS-J9,1,85,0.0,Kalimantan Barat,Sungai Kapuas - Sungai Sebidau,Sekadau,434
+concession,31_BBHA:TP-MKRA0033,1,146,0.0,Riau,Sungai Rokan - Sungai Siak Kecil,Bengkalis,48
+concession,31_BBHA:TP-MKRA0259,1,146,0.0,Riau,Sungai Rokan - Sungai Siak Kecil,Bengkalis,48
+concession,31_BBHA:TP-MKRA0727,1,146,0.0,Riau,Sungai Rokan - Sungai Siak Kecil,Bengkalis,48
+concession,31_BBHA:TP-MKRA0796,1,146,0.0,Riau,Sungai Rokan - Sungai Siak Kecil,Bengkalis,48
+concession,31_BBHA:TP-MKRA0861,1,146,0.0,Riau,Sungai Rokan - Sungai Siak Kecil,Bengkalis,48
+concession,31_BBHA:TP-MKRA0894,1,146,0.0,Riau,Sungai Rokan - Sungai Siak Kecil,Bengkalis,48
+concession,31_BBHA:TP-MKRA0929,1,146,0.0,Riau,Sungai Rokan - Sungai Siak Kecil,Bengkalis,48
+concession,320_BPP:TP.5,1,66,0.0,Kalimantan Barat,Sungai Jerora - Sungai Majau,Sintang,452
+concession,321_PDIW:TP_PIW_16,1,31,0.0,Jambi,Sungai Air Hitam Laut - Sungai Buntu Kecil,Muaro Jambi,352
+concession,321_PDIW:TP_PIW_27,1,31,0.0,Jambi,Sungai Air Hitam Laut - Sungai Buntu Kecil,Muaro Jambi,352
+concession,321_PDIW:TP_PIW_28,1,44,0.0,Jambi,Sungai Batanghari - Sungai Air Hitam Laut,Muaro Jambi,352
+concession,321_PDIW:TP_PIW_4,1,31,0.0,Jambi,Sungai Air Hitam Laut - Sungai Buntu Kecil,Muaro Jambi,352
+concession,321_PDIW:TP_PIW_43,1,44,0.0,Jambi,Sungai Batanghari - Sungai Air Hitam Laut,Muaro Jambi,352
+concession,321_PDIW:TP_PIW_56,1,44,0.0,Jambi,Sungai Batanghari - Sungai Air Hitam Laut,Muaro Jambi,352
+concession,321_PDIW:TP_PIW_61,1,44,0.0,Jambi,Sungai Batanghari - Sungai Air Hitam Laut,Muaro Jambi,352
+concession,321_PDIW:TP_PIW_72,1,44,0.0,Jambi,Sungai Batanghari - Sungai Air Hitam Laut,Muaro Jambi,352
+concession,322_PBP:TP-1,1,31,0.0,Jambi,Sungai Air Hitam Laut - Sungai Buntu Kecil,Muaro Jambi,352
+concession,322_PBP:TP-10,1,44,0.0,Jambi,Sungai Batanghari - Sungai Air Hitam Laut,Muaro Jambi,352
+concession,322_PBP:TP-42,1,31,0.0,Jambi,Sungai Air Hitam Laut - Sungai Buntu Kecil,Muaro Jambi,352
+concession,322_PBP:TP-43,1,44,0.0,Jambi,Sungai Batanghari - Sungai Air Hitam Laut,Muaro Jambi,352
+concession,322_PBP:TP-44,1,44,0.0,Jambi,Sungai Batanghari - Sungai Air Hitam Laut,Muaro Jambi,352
+concession,322_PBP:TP-51,1,44,0.0,Jambi,Sungai Batanghari - Sungai Air Hitam Laut,Muaro Jambi,352
+concession,322_PBP:TP-52,1,31,0.0,Jambi,Sungai Air Hitam Laut - Sungai Buntu Kecil,Muaro Jambi,352
+concession,322_PBP:TP-53,1,44,0.0,Jambi,Sungai Batanghari - Sungai Air Hitam Laut,Muaro Jambi,352
+concession,322_PBP:TP-56,1,31,0.0,Jambi,Sungai Air Hitam Laut - Sungai Buntu Kecil,Muaro Jambi,352
+concession,322_PBP:TP-57,1,44,0.0,Jambi,Sungai Batanghari - Sungai Air Hitam Laut,Muaro Jambi,352
+concession,323_BHP:TP-C10a,1,167,0.0,Sumatera Selatan,Sungai Sugihan - Sungai Lumpur,Ogan Komering Ilir,374
+concession,324_SAL:TP-X41,1,71,0.0,Riau,Sungai Kampar - Sungai Gaung,Indragiri Hilir,124
+concession,327_JBP:TP-C37,1,44,0.0,Jambi,Sungai Batanghari - Sungai Air Hitam Laut,Muaro Jambi,352
+concession,328_LKK:LKK-E07,1,126,0.0,Sumatera Selatan,Sungai Musi - Sungai Penu,Penukal Abab Lematang Ilir,400
+concession,32_BAP:ASD1180,1,167,0.0,Sumatera Selatan,Sungai Sugihan - Sungai Lumpur,Ogan Komering Ilir,374
+concession,32_BAP:ASE1080,1,167,0.0,Sumatera Selatan,Sungai Sugihan - Sungai Lumpur,Ogan Komering Ilir,374
+concession,32_BAP:ASE3030,1,167,0.0,Sumatera Selatan,Sungai Sugihan - Sungai Lumpur,Ogan Komering Ilir,374
+concession,32_BAP:ASF1110,1,167,0.0,Sumatera Selatan,Sungai Sugihan - Sungai Lumpur,Ogan Komering Ilir,374
+concession,32_BAP:ASH1260,1,167,0.0,Sumatera Selatan,Sungai Sugihan - Sungai Lumpur,Ogan Komering Ilir,374
+concession,32_BAP:ASI3030,1,167,0.0,Sumatera Selatan,Sungai Sugihan - Sungai Lumpur,Ogan Komering Ilir,374
+concession,32_BAP:BRE3780,1,167,0.0,Sumatera Selatan,Sungai Sugihan - Sungai Lumpur,Ogan Komering Ilir,374
+concession,32_BAP:BRF2790,1,167,0.0,Sumatera Selatan,Sungai Sugihan - Sungai Lumpur,Ogan Komering Ilir,374
+concession,32_BAP:BRF4700,1,167,0.0,Sumatera Selatan,Sungai Sugihan - Sungai Lumpur,Ogan Komering Ilir,374
+concession,32_BAP:BRG3610,1,167,0.0,Sumatera Selatan,Sungai Sugihan - Sungai Lumpur,Ogan Komering Ilir,374
+concession,32_BAP:BRL2620,1,167,0.0,Sumatera Selatan,Sungai Sugihan - Sungai Lumpur,Ogan Komering Ilir,374
+concession,32_BAP:BRL4840,1,167,0.0,Sumatera Selatan,Sungai Sugihan - Sungai Lumpur,Ogan Komering Ilir,374
+concession,32_BAP:BRM2760,1,167,0.0,Sumatera Selatan,Sungai Sugihan - Sungai Lumpur,Ogan Komering Ilir,374
+concession,32_BAP:BTC3030,1,167,0.0,Sumatera Selatan,Sungai Sugihan - Sungai Lumpur,Ogan Komering Ilir,374
+concession,32_BAP:BTD3030,1,167,0.0,Sumatera Selatan,Sungai Sugihan - Sungai Lumpur,Ogan Komering Ilir,374
+concession,32_BAP:BTF2200,1,167,0.0,Sumatera Selatan,Sungai Sugihan - Sungai Lumpur,Ogan Komering Ilir,374
+concession,32_BAP:BTK2250,1,167,0.0,Sumatera Selatan,Sungai Sugihan - Sungai Lumpur,Ogan Komering Ilir,374
+concession,32_BAP:BTL1100,1,167,0.0,Sumatera Selatan,Sungai Sugihan - Sungai Lumpur,Ogan Komering Ilir,374
+concession,32_BAP:BTL3280,1,167,0.0,Sumatera Selatan,Sungai Sugihan - Sungai Lumpur,Ogan Komering Ilir,374
+concession,32_BAP:SJB1220,1,167,0.0,Sumatera Selatan,Sungai Sugihan - Sungai Lumpur,Ogan Komering Ilir,374
+concession,32_BAP:SJC2180,1,167,0.0,Sumatera Selatan,Sungai Sugihan - Sungai Lumpur,Ogan Komering Ilir,374
+concession,32_BAP:SJC4220,1,167,0.0,Sumatera Selatan,Sungai Sugihan - Sungai Lumpur,Ogan Komering Ilir,374
+concession,32_BAP:SJD4220,1,167,0.0,Sumatera Selatan,Sungai Sugihan - Sungai Lumpur,Ogan Komering Ilir,374
+concession,32_BAP:SJJ3190,1,167,0.0,Sumatera Selatan,Sungai Sugihan - Sungai Lumpur,Ogan Komering Ilir,374
+concession,330_PCP:PCP  TMAT A,1,115,0.0,Kalimantan Utara,Sungai Mentarang- Sungai Sembakung,Tana Tidung,478
+concession,330_PCP:PCP  TMAT B,1,115,0.0,Kalimantan Utara,Sungai Mentarang- Sungai Sembakung,Tana Tidung,478
+concession,330_PCP:PCP  TMAT C,1,115,0.0,Kalimantan Utara,Sungai Mentarang- Sungai Sembakung,Nunukan,372
+concession,331_SCC:G-27,1,117,0.0,Kalimantan Tengah,Sungai Mentaya - Sungai Cempaga,Kotawaringin Timur,273
+concession,331_SCC:H-32,1,117,0.0,Kalimantan Tengah,Sungai Mentaya - Sungai Cempaga,Kotawaringin Timur,273
+concession,334_SMP:TP12,1,44,0.0,Jambi,Sungai Batanghari - Sungai Air Hitam Laut,Muaro Jambi,352
+concession,334_SMP:TP4,1,44,0.0,Jambi,Sungai Batanghari - Sungai Air Hitam Laut,Muaro Jambi,352
+concession,335_BEP:TP-11,1,44,0.0,Jambi,Sungai Batanghari - Sungai Air Hitam Laut,Muaro Jambi,352
+concession,335_BEP:TP-5,1,44,0.0,Jambi,Sungai Batanghari - Sungai Air Hitam Laut,Muaro Jambi,352
+concession,335_EWFSM:TMAT-02,1,114,0.0,Jambi,Sungai Mendahara - Sungai Batanghari,Tanjung Jabung Timur,486
+concession,336_RMJS:TP-B11,1,45,0.0,Jambi,Sungai Batanghari - Sungai Kampeh,Muaro Jambi,352
+concession,339_SAE:F15,1,178,0.0,Kalimantan Barat,Sungai Yebour - Sungai Landak,Landak,294
+concession,33_BMH:PSE1130,1,167,0.0,Sumatera Selatan,Sungai Sugihan - Sungai Lumpur,Ogan Komering Ilir,374
+concession,33_BMH:PSE3150,1,167,0.0,Sumatera Selatan,Sungai Sugihan - Sungai Lumpur,Ogan Komering Ilir,374
+concession,33_BMH:PSE4170,1,167,0.0,Sumatera Selatan,Sungai Sugihan - Sungai Lumpur,Ogan Komering Ilir,374
+concession,33_BMH:PSL1170,1,167,0.0,Sumatera Selatan,Sungai Sugihan - Sungai Lumpur,Ogan Komering Ilir,374
+concession,33_BMH:SBD3280,1,167,0.0,Sumatera Selatan,Sungai Sugihan - Sungai Lumpur,Ogan Komering Ilir,374
+concession,33_BMH:SBD5160,1,167,0.0,Sumatera Selatan,Sungai Sugihan - Sungai Lumpur,Ogan Komering Ilir,374
+concession,33_BMH:SBM1620,1,167,0.0,Sumatera Selatan,Sungai Sugihan - Sungai Lumpur,Ogan Komering Ilir,374
+concession,33_BMH:SBN1190,1,167,0.0,Sumatera Selatan,Sungai Sugihan - Sungai Lumpur,Ogan Komering Ilir,374
+concession,33_BMH:SBN2240,1,167,0.0,Sumatera Selatan,Sungai Sugihan - Sungai Lumpur,Ogan Komering Ilir,374
+concession,33_BMH:SBO3140,1,167,0.0,Sumatera Selatan,Sungai Sugihan - Sungai Lumpur,Ogan Komering Ilir,374
+concession,33_BMH:SKU2010,1,175,0.0,Sumatera Selatan,Sungai Ulakkedondong - Sungai Lumpur,Ogan Komering Ilir,374
+concession,33_BMH:SKV2090,1,175,0.0,Sumatera Selatan,Sungai Ulakkedondong - Sungai Lumpur,Ogan Komering Ilir,374
+concession,33_BMH:SPA1210,1,167,0.0,Sumatera Selatan,Sungai Sugihan - Sungai Lumpur,Ogan Komering Ilir,374
+concession,33_BMH:SPA2070,1,167,0.0,Sumatera Selatan,Sungai Sugihan - Sungai Lumpur,Ogan Komering Ilir,374
+concession,33_BMH:SPE1050,1,167,0.0,Sumatera Selatan,Sungai Sugihan - Sungai Lumpur,Ogan Komering Ilir,374
+concession,33_BMH:SPF2070,1,167,0.0,Sumatera Selatan,Sungai Sugihan - Sungai Lumpur,Ogan Komering Ilir,374
+concession,33_BMH:SPG2090,1,167,0.0,Sumatera Selatan,Sungai Sugihan - Sungai Lumpur,Ogan Komering Ilir,374
+concession,33_BMH:SPG4250,1,167,0.0,Sumatera Selatan,Sungai Sugihan - Sungai Lumpur,Ogan Komering Ilir,374
+concession,33_BMH:SPG7190,1,167,0.0,Sumatera Selatan,Sungai Sugihan - Sungai Lumpur,Ogan Komering Ilir,374
+concession,33_BMH:SPI5140,1,167,0.0,Sumatera Selatan,Sungai Sugihan - Sungai Lumpur,Ogan Komering Ilir,374
+concession,33_BMH:SPM7150,1,167,0.0,Sumatera Selatan,Sungai Sugihan - Sungai Lumpur,Ogan Komering Ilir,374
+concession,340_SKL:D26,1,3,0.0,Sumatera Utara,Aek Na Birong - Aek Batang Toru,Tapanuli Selatan,487
+concession,340_SKL:H10,1,3,0.0,Sumatera Utara,Aek Na Birong - Aek Batang Toru,Tapanuli Selatan,487
+concession,340_SKL:K18,1,3,0.0,Sumatera Utara,Aek Na Birong - Aek Batang Toru,Tapanuli Selatan,487
+concession,341_GMU:GMU-2,1,170,0.0,Kalimantan Barat,Sungai Talungai - Sungai Emparayau,Sintang,452
+concession,342_CDS:CDS-4,1,93,0.0,Riau,Sungai Kiyap - Sungai Kerinci,Kampar,136
+concession,342_CDS:CDS-6,1,93,0.0,Riau,Sungai Kiyap - Sungai Kerinci,Pelalawan,397
+concession,343_HPP:HPP-04,1,41,0.0,Sumatera Utara,Sungai Barumun - Sungai Kubu,Labuhan Batu,283
+concession,343_HPP:HPP-09,1,41,0.0,Sumatera Utara,Sungai Barumun - Sungai Kubu,Labuhan Batu,283
+concession,343_HPP:HPP-4,1,41,0.0,Sumatera Utara,Sungai Barumun - Sungai Kubu,Labuhan Batu,283
+concession,343_HPP:HPP-9,1,41,0.0,Sumatera Utara,Sungai Barumun - Sungai Kubu,Labuhan Batu,283
+concession,347_DM:DM-8,1,23,0.0,Aceh,Lae Silabuhan - Lae Tambiski,Aceh Singkil,5
+concession,348_KMF:KMF-10,1,173,0.0,Kalimantan Barat,Sungai Terentang - Sungai Kapuas,Kubu Raya,275
+concession,348_KMF:KMF-15,1,173,0.0,Kalimantan Barat,Sungai Terentang - Sungai Kapuas,Kubu Raya,275
+concession,348_KMF:KMF-29,1,173,0.0,Kalimantan Barat,Sungai Terentang - Sungai Kapuas,Kubu Raya,275
+concession,348_KMF:TP-28,1,173,0.0,Kalimantan Barat,Sungai Terentang - Sungai Kapuas,Kubu Raya,275
+concession,351_TCP:TP-SPJ00089,1,102,0.0,Sumatera Selatan,Sungai Lalan - Sungai Merang,Musi Banyuasin,357
+concession,352_DGS:DGS TMAT 08,1,165,0.0,Sumatera Selatan,Sungai Sibumbung - Sungai Talangrimba,Ogan Komering Ilir,374
+concession,356_ESS:ESS-01,1,95,0.0,Sumatera Utara,Sungai Kuala - Sungai Kuo,Labuhan Batu Utara,285
+concession,356_ESS:F4,1,95,0.0,Sumatera Utara,Sungai Kuala - Sungai Kuo,Labuhan Batu Utara,285
+concession,359_SAM2:TP_TMAT_C37,1,147,0.0,Riau,Sungai Rokan Kiri - Sungai Mandau,Rokan Hulu,425
+concession,359_SAM2:TP_TMAT_CC5,1,147,0.0,Riau,Sungai Rokan Kiri - Sungai Mandau,Rokan Hulu,425
+concession,359_SAM2:TP_TMAT_E22,1,147,0.0,Riau,Sungai Rokan Kiri - Sungai Mandau,Rokan Hulu,425
+concession,359_SAM2:TP_TMAT_E52,1,147,0.0,Riau,Sungai Rokan Kiri - Sungai Mandau,Rokan Hulu,425
+concession,359_SAM2:TP_TMAT_L56,1,147,0.0,Riau,Sungai Rokan Kiri - Sungai Mandau,Rokan Hulu,425
+concession,360_AMP:AMP-15,1,7,0.0,Sumatera Barat,Batang Ampu - Bah Mandiangin,Pasaman Barat,390
+concession,360_AMP:AMP-7,1,168,0.0,Sumatera Barat,Sungai Tabat - Batang Masangkiri,Agam,11
+concession,360_AMP:AMP-8,1,168,0.0,Sumatera Barat,Sungai Tabat - Batang Masangkiri,Agam,11
+concession,362_DLI:DLI-20,1,96,0.0,Sumatera Utara,Sungai Kualuh Bilah - Sungai Barumun,Labuhan Batu,283
+concession,362_DLI:DLI-6,1,96,0.0,Sumatera Utara,Sungai Kualuh Bilah - Sungai Barumun,Labuhan Batu,283
+concession,363_SSL:BlokH34,1,127,0.0,Sumatera Selatan,Sungai Musi - Sungai Rawas,Musi Rawas Utara,359
+concession,363_SSL:TP-TMAT-E03-04,1,127,0.0,Sumatera Selatan,Sungai Musi - Sungai Rawas,Musi Rawas Utara,359
+concession,366_BPK:L1,1,,0.0,,,,
+concession,366_BPK:L2,1,,0.0,,,,
+concession,366_BPK:l1,1,,0.0,,,,
+concession,366_BPK:l2,1,,0.0,,,,
+concession,367_PMJ:L1,1,7,0.0,Sumatera Barat,Batang Ampu - Bah Mandiangin,Pasaman Barat,390
+concession,368_FPIL:TMAT-B20,1,45,0.0,Jambi,Sungai Batanghari - Sungai Kampeh,Muaro Jambi,352
+concession,369_CKSL:TP_CKSL_01,1,115,0.0,Kalimantan Utara,Sungai Mentarang- Sungai Sembakung,Tana Tidung,478
+concession,370_MJIR:TP-TMAT10,1,99,0.0,Sumatera Utara,Sungai Kuo - Sungai Kualuh Bilah,Labuhan Batu Utara,285
+concession,370_MJIR:TP-TMAT17,1,99,0.0,Sumatera Utara,Sungai Kuo - Sungai Kualuh Bilah,Labuhan Batu Utara,285
+concession,370_MJIR:TP-TMAT19,1,99,0.0,Sumatera Utara,Sungai Kuo - Sungai Kualuh Bilah,Labuhan Batu Utara,285
+concession,371_WAI:5C,1,54,0.0,Sumatera Selatan,Sungai Burnai - Sungai Sibumbung,Ogan Komering Ilir,374
+concession,371_WAI:JU13,1,54,0.0,Sumatera Selatan,Sungai Burnai - Sungai Sibumbung,Ogan Komering Ilir,374
+concession,371_WAI:TMAT-06,1,54,0.0,Sumatera Selatan,Sungai Burnai - Sungai Sibumbung,Ogan Komering Ilir,374
+concession,371_WAI:TMAT-12,1,54,0.0,Sumatera Selatan,Sungai Burnai - Sungai Sibumbung,Ogan Komering Ilir,374
+concession,374_DSSP:TMAT-OF20,1,178,0.0,Kalimantan Barat,Sungai Yebour - Sungai Landak,Landak,294
+concession,374_DSSP:TMAT-PE35,1,178,0.0,Kalimantan Barat,Sungai Yebour - Sungai Landak,Landak,294
+concession,379_HSJ:HSJ-B15f,1,99,0.0,Sumatera Utara,Sungai Kuo - Sungai Kualuh Bilah,Labuhan Batu Utara,285
+concession,379_HSJ:HSJ-C14i,1,99,0.0,Sumatera Utara,Sungai Kuo - Sungai Kualuh Bilah,Labuhan Batu Utara,285
+concession,379_HSJ:HSJ-D10i,1,99,0.0,Sumatera Utara,Sungai Kuo - Sungai Kualuh Bilah,Labuhan Batu,283
+concession,379_HSJ:HSJ-F12v,1,99,0.0,Sumatera Utara,Sungai Kuo - Sungai Kualuh Bilah,Labuhan Batu,283
+concession,379_HSJ:HSJ-G10q,1,99,0.0,Sumatera Utara,Sungai Kuo - Sungai Kualuh Bilah,Labuhan Batu,283
+concession,379_HSJ:HSJ-J13f,1,99,0.0,Sumatera Utara,Sungai Kuo - Sungai Kualuh Bilah,Labuhan Batu,283
+concession,37_KSP:TPTYN003,1,35,0.0,Kalimantan Barat,Sungai Ambawang - Sungai Landak,Kubu Raya,275
+concession,37_KSP:TPTYN014,1,178,0.0,Kalimantan Barat,Sungai Yebour - Sungai Landak,Landak,294
+concession,37_KSP:TPTYN025,1,178,0.0,Kalimantan Barat,Sungai Yebour - Sungai Landak,Landak,294
+concession,37_KSP:TPTYN035,1,178,0.0,Kalimantan Barat,Sungai Yebour - Sungai Landak,Landak,294
+concession,382_MSAL:TMAT 14,1,94,0.0,Riau,Sungai Kiyap - Sungai Kerumutan,Pelalawan,397
+concession,382_MSAL:TMAT 4,1,94,0.0,Riau,Sungai Kiyap - Sungai Kerumutan,Pelalawan,397
+concession,386_FWT:FWT-71,1,72,0.0,Riau,Sungai Kampar Kiri - Sungai Lipai,Kampar,136
+concession,388_IHL:IHL_TP_1,1,160,0.0,Kalimantan Utara,Sungai Seputuk - Sungai Rian,Tana Tidung,478
+concession,38_MHJ:TP-SRPE0121,1,163,0.0,Riau,Sungai Siak - Sungai Kampar,Pelalawan,397
+concession,38_MHJ:TP-SRPE0231,1,163,0.0,Riau,Sungai Siak - Sungai Kampar,Pelalawan,397
+concession,393_MKM:MKE-I07,1,68,0.0,Kalimantan Tengah,Sungai Kahayan - Sungai Sebangau,Pulang Pisau,413
+concession,393_MKM:mke-i07,1,68,0.0,Kalimantan Tengah,Sungai Kahayan - Sungai Sebangau,Pulang Pisau,413
+concession,394_MJP:MJP_A02,1,157,0.0,Kalimantan Barat,Sungai Sekadau - Sungai Kenawan,Sekadau,434
+concession,398_ANI:ANIP_L 01,1,154,0.0,Kalimantan Barat,Sungai Sambih - Sungai Landak,Landak,294
+concession,398_ANI:ANIS_L 02,1,153,0.0,Kalimantan Barat,Sungai Sambas Kecil - Sungai Sambas Besar,Sambas,428
+concession,398_ANI:ANIS_L 03,1,151,0.0,Kalimantan Barat,Sungai Sambas Besar - Sungai Kumba,Sambas,428
+concession,399_STP:STP-145-SP6,1,139,0.0,Kalimantan Tengah,Sungai Pukun - Sungai Kelua Besar,Seruyan,441
+concession,39_RAL:TP-GLBB0204,1,123,0.0,Riau,Sungai Minas - Sungai Mandiangin,Siak,442
+concession,402_RIC:C15,1,162,0.0,Kalimantan Tengah,Sungai Seruyan - Sungai Sembuluh,Seruyan,441
+concession,403_IRP:LA14,1,0,0.0,Sumatera Barat,Aek Lunang - Aek Sidang,Pesisir Selatan,403
+concession,403_IRP:LG06,1,0,0.0,Sumatera Barat,Aek Lunang - Aek Sidang,Pesisir Selatan,403
+concession,403_IRP:SD02,1,6,0.0,Sumatera Barat,Aek Tapan - Aek Silaut,Pesisir Selatan,403
+concession,403_IRP:SG15,1,6,0.0,Sumatera Barat,Aek Tapan - Aek Silaut,Pesisir Selatan,403
+concession,403_IRP:SK03,1,6,0.0,Sumatera Barat,Aek Tapan - Aek Silaut,Pesisir Selatan,403
+concession,403_IRP:SK11,1,6,0.0,Sumatera Barat,Aek Tapan - Aek Silaut,Pesisir Selatan,403
+concession,407_RMUEK:RMJ2_56,1,88,0.0,Kalimantan Tengah,Sungai Katingan - Sungai Mentaya,Kotawaringin Timur,273
+concession,407_RMUEK:RMU1_12,1,88,0.0,Kalimantan Tengah,Sungai Katingan - Sungai Mentaya,Katingan,144
+concession,407_RMUEK:RMU1_20,1,88,0.0,Kalimantan Tengah,Sungai Katingan - Sungai Mentaya,Kotawaringin Timur,273
+concession,407_RMUEK:RMU1_27,1,88,0.0,Kalimantan Tengah,Sungai Katingan - Sungai Mentaya,Katingan,144
+concession,407_RMUEK:RMU1_28,1,88,0.0,Kalimantan Tengah,Sungai Katingan - Sungai Mentaya,Katingan,144
+concession,407_RMUEK:RMU1_29,1,88,0.0,Kalimantan Tengah,Sungai Katingan - Sungai Mentaya,Katingan,144
+concession,407_RMUEK:RMU1_30,1,88,0.0,Kalimantan Tengah,Sungai Katingan - Sungai Mentaya,Katingan,144
+concession,407_RMUEK:RMU1_34,1,88,0.0,Kalimantan Tengah,Sungai Katingan - Sungai Mentaya,Katingan,144
+concession,407_RMUEK:RMU1_35,1,88,0.0,Kalimantan Tengah,Sungai Katingan - Sungai Mentaya,Katingan,144
+concession,407_RMUEK:RMU1_40,1,88,0.0,Kalimantan Tengah,Sungai Katingan - Sungai Mentaya,Katingan,144
+concession,407_RMUEK:RMU1_41,1,88,0.0,Kalimantan Tengah,Sungai Katingan - Sungai Mentaya,Katingan,144
+concession,407_RMUEK:RMU1_44,1,88,0.0,Kalimantan Tengah,Sungai Katingan - Sungai Mentaya,Katingan,144
+concession,407_RMUEK:RMU1_45,1,88,0.0,Kalimantan Tengah,Sungai Katingan - Sungai Mentaya,Katingan,144
+concession,407_RMUEK:RMU1_46,1,88,0.0,Kalimantan Tengah,Sungai Katingan - Sungai Mentaya,Katingan,144
+concession,407_RMUEK:RMU1_47,1,88,0.0,Kalimantan Tengah,Sungai Katingan - Sungai Mentaya,Katingan,144
+concession,407_RMUEK:RMU1_48,1,88,0.0,Kalimantan Tengah,Sungai Katingan - Sungai Mentaya,Katingan,144
+concession,407_RMUEK:RMU1_49,1,88,0.0,Kalimantan Tengah,Sungai Katingan - Sungai Mentaya,Katingan,144
+concession,407_RMUEK:RMU1_50,1,88,0.0,Kalimantan Tengah,Sungai Katingan - Sungai Mentaya,Katingan,144
+concession,407_RMUEK:RMU1_53,1,88,0.0,Kalimantan Tengah,Sungai Katingan - Sungai Mentaya,Katingan,144
+concession,407_RMUEK:RMU1_58,1,88,0.0,Kalimantan Tengah,Sungai Katingan - Sungai Mentaya,Katingan,144
+concession,407_RMUEK:RMU1_59,1,88,0.0,Kalimantan Tengah,Sungai Katingan - Sungai Mentaya,Katingan,144
+concession,407_RMUEK:RMU1_60,1,88,0.0,Kalimantan Tengah,Sungai Katingan - Sungai Mentaya,Katingan,144
+concession,407_RMUEK:RMU1_61,1,88,0.0,Kalimantan Tengah,Sungai Katingan - Sungai Mentaya,Katingan,144
+concession,407_RMUEK:RMU1_62,1,88,0.0,Kalimantan Tengah,Sungai Katingan - Sungai Mentaya,Katingan,144
+concession,407_RMUEK:RMU1_7,1,88,0.0,Kalimantan Tengah,Sungai Katingan - Sungai Mentaya,Katingan,144
+concession,407_RMUEK:RMU2_19,1,88,0.0,Kalimantan Tengah,Sungai Katingan - Sungai Mentaya,Kotawaringin Timur,273
+concession,407_RMUEK:RMU2_24,1,88,0.0,Kalimantan Tengah,Sungai Katingan - Sungai Mentaya,Kotawaringin Timur,273
+concession,407_RMUEK:RMU2_25,1,88,0.0,Kalimantan Tengah,Sungai Katingan - Sungai Mentaya,Kotawaringin Timur,273
+concession,407_RMUEK:RMU2_54,1,88,0.0,Kalimantan Tengah,Sungai Katingan - Sungai Mentaya,Kotawaringin Timur,273
+concession,407_RMUEK:RMU2_55,1,88,0.0,Kalimantan Tengah,Sungai Katingan - Sungai Mentaya,Kotawaringin Timur,273
+concession,407_RMUEK:RMU2_57,1,88,0.0,Kalimantan Tengah,Sungai Katingan - Sungai Mentaya,Kotawaringin Timur,273
+concession,407_RMUEK:RMU2_58,1,88,0.0,Kalimantan Tengah,Sungai Katingan - Sungai Mentaya,Kotawaringin Timur,273
+concession,407_RMUEK:RMU2_59,1,88,0.0,Kalimantan Tengah,Sungai Katingan - Sungai Mentaya,Kotawaringin Timur,273
+concession,407_RMUEK:RMU2_66,1,88,0.0,Kalimantan Tengah,Sungai Katingan - Sungai Mentaya,Kotawaringin Timur,273
+concession,407_RMUEK:RMU2_71,1,88,0.0,Kalimantan Tengah,Sungai Katingan - Sungai Mentaya,Kotawaringin Timur,273
+concession,407_RMUEK:RMU2_72,1,88,0.0,Kalimantan Tengah,Sungai Katingan - Sungai Mentaya,Kotawaringin Timur,273
+concession,407_RMUEK:RMU2_77,1,88,0.0,Kalimantan Tengah,Sungai Katingan - Sungai Mentaya,Kotawaringin Timur,273
+concession,409_RAPP_LGM:LGBI-001a,1,73,0.0,Riau,Sungai Kampar Kiri - Sungai Segati,Kampar,136
+concession,409_RAPP_LGM:LGBII-010a,1,73,0.0,Riau,Sungai Kampar Kiri - Sungai Segati,Kampar,136
+concession,40_RIA:TP-RIAE0058,1,71,0.0,Riau,Sungai Kampar - Sungai Gaung,Indragiri Hilir,124
+concession,40_RIA:TP-RIAE0130,1,71,0.0,Riau,Sungai Kampar - Sungai Gaung,Indragiri Hilir,124
+concession,40_RIA:TP-RIAE0175,1,71,0.0,Riau,Sungai Kampar - Sungai Gaung,Indragiri Hilir,124
+concession,40_RIA:TP-RIAE0187,1,71,0.0,Riau,Sungai Kampar - Sungai Gaung,Indragiri Hilir,124
+concession,411_RAPP_MND:MDUIV-02,1,164,0.0,Riau,Sungai Siak Kecil - Sungai Siak,Siak,442
+concession,412_PIPSR:TP-TMAT-04,1,10,0.0,Riau,Batang Rokan Kiri - Batang Sosa,Rokan Hulu,425
+concession,412_PIPSR:TP-TMAT-11,1,10,0.0,Riau,Batang Rokan Kiri - Batang Sosa,Rokan Hulu,425
+concession,412_PIPSR:TP-TMAT-21,1,10,0.0,Riau,Batang Rokan Kiri - Batang Sosa,Rokan Hulu,425
+concession,412_RAPP_SKPR:SKM/VI-04,1,163,0.0,Riau,Sungai Siak - Sungai Kampar,Pelalawan,397
+concession,412_RAPP_SKPR:SKM/VII-01,1,163,0.0,Riau,Sungai Siak - Sungai Kampar,Pelalawan,397
+concession,412_RAPP_SKPR:SKM/XII-01a,1,163,0.0,Riau,Sungai Siak - Sungai Kampar,Pelalawan,397
+concession,413_RAPP_TSKB:TP-I-07,1,163,0.0,Riau,Sungai Siak - Sungai Kampar,Siak,442
+concession,414_RAPP_PP:PPDII-08,1,26,0.0,Riau,Pulau Padang,Kepulauan Meranti,155
+concession,414_RAPP_PP:PPDVII-18a,1,26,0.0,Riau,Pulau Padang,Kepulauan Meranti,155
+concession,414_RAPP_PP:PPDX-16,1,26,0.0,Riau,Pulau Padang,Kepulauan Meranti,155
+concession,415_BSS:F25,1,70,0.0,Sumatera Selatan,Sungai Kalumpang,Musi Rawas Utara,359
+concession,415_BSS:I21,1,70,0.0,Sumatera Selatan,Sungai Kalumpang,Musi Rawas Utara,359
+concession,417_EKL:EKL_TMAT_1,1,173,0.0,Kalimantan Barat,Sungai Terentang - Sungai Kapuas,Kubu Raya,275
+concession,417_EKL:EKL_TMAT_2,1,173,0.0,Kalimantan Barat,Sungai Terentang - Sungai Kapuas,Kubu Raya,275
+concession,417_EKL:EKL_TMAT_3,1,173,0.0,Kalimantan Barat,Sungai Terentang - Sungai Kapuas,Kubu Raya,275
+concession,417_EKL:EKL_TMAT_4,1,58,0.0,Kalimantan Barat,Sungai Durian - Sungai Labai,Kubu Raya,275
+concession,428_KUS:TMAT_14,1,51,0.0,Kalimantan Tengah,Sungai Buluh Besar,Kotawaringin Barat,272
+concession,428_KUS:TMAT_42,1,51,0.0,Kalimantan Tengah,Sungai Buluh Besar,Kotawaringin Barat,272
+concession,428_KUS:TMAT_68,1,51,0.0,Kalimantan Tengah,Sungai Buluh Besar,Kotawaringin Barat,272
+concession,42_RHMS:RH-TP-TMAT-105,1,102,0.0,Sumatera Selatan,Sungai Lalan - Sungai Merang,Musi Banyuasin,357
+concession,42_RHMS:RH-TP-TMAT-11,1,120,0.0,Sumatera Selatan,Sungai Merang - Sungai Ngirawan,Musi Banyuasin,357
+concession,42_RHMS:RH-TP-TMAT-121,1,102,0.0,Sumatera Selatan,Sungai Lalan - Sungai Merang,Musi Banyuasin,357
+concession,42_RHMS:RH-TP-TMAT-123,1,102,0.0,Sumatera Selatan,Sungai Lalan - Sungai Merang,Musi Banyuasin,357
+concession,42_RHMS:RH-TP-TMAT-125,1,102,0.0,Sumatera Selatan,Sungai Lalan - Sungai Merang,Musi Banyuasin,357
+concession,42_RHMS:RH-TP-TMAT-140,1,102,0.0,Sumatera Selatan,Sungai Lalan - Sungai Merang,Musi Banyuasin,357
+concession,42_RHMS:RH-TP-TMAT-22,1,120,0.0,Sumatera Selatan,Sungai Merang - Sungai Ngirawan,Musi Banyuasin,357
+concession,42_RHMS:RH-TP-TMAT-3,1,120,0.0,Sumatera Selatan,Sungai Merang - Sungai Ngirawan,Musi Banyuasin,357
+concession,42_RHMS:RH-TP-TMAT-36,1,120,0.0,Sumatera Selatan,Sungai Merang - Sungai Ngirawan,Musi Banyuasin,357
+concession,42_RHMS:RH-TP-TMAT-59,1,120,0.0,Sumatera Selatan,Sungai Merang - Sungai Ngirawan,Musi Banyuasin,357
+concession,42_RHMS:RH-TP-TMAT-6,1,120,0.0,Sumatera Selatan,Sungai Merang - Sungai Ngirawan,Musi Banyuasin,357
+concession,42_RHMS:RH-TP-TMAT-66,1,120,0.0,Sumatera Selatan,Sungai Merang - Sungai Ngirawan,Musi Banyuasin,357
+concession,433_PMKCD:SP5,1,41,0.0,Sumatera Utara,Sungai Barumun - Sungai Kubu,Labuhan Batu,283
+concession,437_RAJ:RAJ_14,1,54,0.0,Sumatera Selatan,Sungai Burnai - Sungai Sibumbung,Ogan Komering Ilir,374
+concession,437_RAJ:RAJ_22,1,54,0.0,Sumatera Selatan,Sungai Burnai - Sungai Sibumbung,Ogan Komering Ilir,374
+concession,437_RAJ:RAJ_32,1,54,0.0,Sumatera Selatan,Sungai Burnai - Sungai Sibumbung,Ogan Komering Ilir,374
+concession,437_RAJ:RAJ_5,1,54,0.0,Sumatera Selatan,Sungai Burnai - Sungai Sibumbung,Ogan Komering Ilir,374
+concession,43_RML:TP-BBRG0035,1,164,0.0,Riau,Sungai Siak Kecil - Sungai Siak,Siak,442
+concession,43_RML:TP-BBRG0074,1,164,0.0,Riau,Sungai Siak Kecil - Sungai Siak,Siak,442
+concession,43_RML:TP-BBRG0140,1,164,0.0,Riau,Sungai Siak Kecil - Sungai Siak,Siak,442
+concession,43_RML:TP-BBRG0175,1,164,0.0,Riau,Sungai Siak Kecil - Sungai Siak,Siak,442
+concession,44_RUJ:TP-RUAB0020,1,146,0.0,Riau,Sungai Rokan - Sungai Siak Kecil,Rokan Hilir,424
+concession,44_RUJ:TP-RUAB0066,1,146,0.0,Riau,Sungai Rokan - Sungai Siak Kecil,Rokan Hilir,424
+concession,44_RUJ:TP-RUAB0130,1,146,0.0,Riau,Sungai Rokan - Sungai Siak Kecil,Rokan Hilir,424
+concession,44_RUJ:TP-RUAB0169,1,146,0.0,Riau,Sungai Rokan - Sungai Siak Kecil,Kota Dumai,199
+concession,44_RUJ:TP-RUAB0302,1,146,0.0,Riau,Sungai Rokan - Sungai Siak Kecil,Rokan Hilir,424
+concession,44_RUJ:TP-RUAB0411,1,146,0.0,Riau,Sungai Rokan - Sungai Siak Kecil,Rokan Hilir,424
+concession,44_RUJ:TP-RUAB0528,1,146,0.0,Riau,Sungai Rokan - Sungai Siak Kecil,Rokan Hilir,424
+concession,44_RUJ:TP-RUAB0670,1,146,0.0,Riau,Sungai Rokan - Sungai Siak Kecil,Kota Dumai,199
+concession,451_SRLBVI:SRL6_148,1,61,0.0,Riau,Sungai Gaung - Sungai Batangtuaka,Indragiri Hilir,124
+concession,451_SRLBVI:SRL6_46,1,61,0.0,Riau,Sungai Gaung - Sungai Batangtuaka,Indragiri Hilir,124
+concession,451_SRLBVI:SRL6_59,1,61,0.0,Riau,Sungai Gaung - Sungai Batangtuaka,Indragiri Hilir,124
+concession,452_SRLBIV:SRL4_020,1,28,0.0,Riau,Pulau Rupat,Bengkalis,48
+concession,454_MSP:TP-TMAT-13,1,77,0.0,Kalimantan Barat,Sungai Kapuas - Sungai Ambawang,Sanggau,431
+concession,454_MSP:TP-TMAT-25,1,80,0.0,Kalimantan Barat,Sungai Kapuas - Sungai Campedik,Sanggau,431
+concession,454_MSP:TP-TMAT-6,1,77,0.0,Kalimantan Barat,Sungai Kapuas - Sungai Ambawang,Sanggau,431
+concession,455_SD:TP-TMAT-1,1,64,0.0,Kalimantan Barat,Sungai Inggis - Sungai Kapuas,Sekadau,434
+concession,457_PANP:PANP_D16,1,152,0.0,Kalimantan Barat,Sungai Sambas Besar - Sungai Sijang,Sambas,428
+concession,45_SPAM:TP-SKNC0021,1,71,0.0,Riau,Sungai Kampar - Sungai Gaung,Indragiri Hilir,124
+concession,45_SPAM:TP-SKNC0085,1,71,0.0,Riau,Sungai Kampar - Sungai Gaung,Indragiri Hilir,124
+concession,45_SPAM:TP-SKNC0153,1,71,0.0,Riau,Sungai Kampar - Sungai Gaung,Pelalawan,397
+concession,461_AGS:AGS-01-B26,1,165,0.0,Sumatera Selatan,Sungai Sibumbung - Sungai Talangrimba,Ogan Komering Ilir,374
+concession,461_AGS:AGS-05,1,165,0.0,Sumatera Selatan,Sungai Sibumbung - Sungai Talangrimba,Ogan Komering Ilir,374
+concession,462_SA:TP_SA_3,1,54,0.0,Sumatera Selatan,Sungai Burnai - Sungai Sibumbung,Ogan Komering Ilir,374
+concession,465_PMGMS:TP-1,1,114,0.0,Jambi,Sungai Mendahara - Sungai Batanghari,Muaro Jambi,352
+concession,467_RS:P_16,1,141,3.43,Kalimantan Tengah,Sungai Pukun - Sungai Seruyan,Seruyan,441
+concession,467_RS:P_25,1,141,0.0,Kalimantan Tengah,Sungai Pukun - Sungai Seruyan,Seruyan,441
+concession,467_RS:P_38,1,141,0.9,Kalimantan Tengah,Sungai Pukun - Sungai Seruyan,Seruyan,441
+concession,467_RS:P_47,1,141,0.01,Kalimantan Tengah,Sungai Pukun - Sungai Seruyan,Seruyan,441
+concession,467_RS:P_58,1,141,0.0,Kalimantan Tengah,Sungai Pukun - Sungai Seruyan,Seruyan,441
+concession,467_RS:P_65,1,141,0.0,Kalimantan Tengah,Sungai Pukun - Sungai Seruyan,Seruyan,441
+concession,469_ASL:TP-TMAT-E-4,1,176,0.0,Kalimantan Tengah,Sungai Utar - Sungai Serapat,Barito Timur,37
+concession,469_ASL:TP-TMAT-F-6,1,176,0.0,Kalimantan Tengah,Sungai Utar - Sungai Serapat,Barito Timur,37
+concession,469_ASL:TP-TMAT-G-12,1,176,0.0,Kalimantan Tengah,Sungai Utar - Sungai Serapat,Barito Timur,37
+concession,469_ASL:TP-TMAT-G-9,1,176,0.0,Kalimantan Tengah,Sungai Utar - Sungai Serapat,Barito Timur,37
+concession,46_SPAS:TP-SRPD0010,1,163,0.0,Riau,Sungai Siak - Sungai Kampar,Pelalawan,397
+concession,46_SPAS:TP-SRPD0112,1,163,0.0,Riau,Sungai Siak - Sungai Kampar,Pelalawan,397
+concession,46_SPAS:TP-SRPD0223,1,163,0.0,Riau,Sungai Siak - Sungai Kampar,Pelalawan,397
+concession,46_SPAS:TP-SRPD0300,1,163,0.0,Riau,Sungai Siak - Sungai Kampar,Pelalawan,397
+concession,47_SPM:TP-HMSC0028,1,146,0.0,Riau,Sungai Rokan - Sungai Siak Kecil,Bengkalis,48
+concession,47_SPM:TP-HMSC0385,1,146,0.0,Riau,Sungai Rokan - Sungai Siak Kecil,Bengkalis,48
+concession,47_SPM:TP-HMSC0605,1,146,0.0,Riau,Sungai Rokan - Sungai Siak Kecil,Bengkalis,48
+concession,47_SPM:TP-HMSC230A,1,146,0.0,Riau,Sungai Rokan - Sungai Siak Kecil,Bengkalis,48
+concession,47_SPM:TP-HMSC786A,1,146,0.0,Riau,Sungai Rokan - Sungai Siak Kecil,Bengkalis,48
+concession,47_SPM:TP-MKRB0012,1,146,0.0,Riau,Sungai Rokan - Sungai Siak Kecil,Bengkalis,48
+concession,47_SPM:TP-MKRB0053,1,146,0.0,Riau,Sungai Rokan - Sungai Siak Kecil,Bengkalis,48
+concession,47_SPM:TP-MKRB0197,1,146,0.0,Riau,Sungai Rokan - Sungai Siak Kecil,Bengkalis,48
+concession,47_SPM:TP-MKRB0343,1,146,0.0,Riau,Sungai Rokan - Sungai Siak Kecil,Bengkalis,48
+concession,47_SPM:TP-MKRB0396,1,146,0.0,Riau,Sungai Rokan - Sungai Siak Kecil,Bengkalis,48
+concession,47_SPM:TP-MKRB9009,1,146,0.0,Riau,Sungai Rokan - Sungai Siak Kecil,Bengkalis,48
+concession,48_SHP:SH-TP-TMAT-108,1,129,0.0,Sumatera Selatan,Sungai Ngirawan - Sungai Sembilang,Banyu Asin,32
+concession,48_SHP:SH-TP-TMAT-63,1,129,0.0,Sumatera Selatan,Sungai Ngirawan - Sungai Sembilang,Banyu Asin,32
+concession,48_SHP:SH-TP-TMAT-67,1,129,0.0,Sumatera Selatan,Sungai Ngirawan - Sungai Sembilang,Banyu Asin,32
+concession,48_SHP:SH-TP-TMAT-72,1,129,0.0,Sumatera Selatan,Sungai Ngirawan - Sungai Sembilang,Banyu Asin,32
+concession,48_SHP:SH-TP-TMAT-82,1,129,0.0,Sumatera Selatan,Sungai Ngirawan - Sungai Sembilang,Musi Banyuasin,357
+concession,48_SHP:SH-TP-TMAT-91,1,129,0.0,Sumatera Selatan,Sungai Ngirawan - Sungai Sembilang,Musi Banyuasin,357
+concession,48_SHP:SH-TP-TMAT-92,1,129,0.0,Sumatera Selatan,Sungai Ngirawan - Sungai Sembilang,Banyu Asin,32
+concession,50_TPJ:TP-TP-TMAT-1,1,129,0.0,Sumatera Selatan,Sungai Ngirawan - Sungai Sembilang,Banyu Asin,32
+concession,50_TPJ:TP-TP-TMAT-2,1,129,0.0,Sumatera Selatan,Sungai Ngirawan - Sungai Sembilang,Banyu Asin,32
+concession,50_TPJ:TP-TP-TMAT-3,1,31,0.0,Sumatera Selatan,Sungai Air Hitam Laut - Sungai Buntu Kecil,Banyu Asin,32
+concession,50_TPJ:TP-TP-TMAT-4,1,31,0.0,Jambi,Sungai Air Hitam Laut - Sungai Buntu Kecil,Banyu Asin,32
+concession,52_EIT:EIR_002,1,163,0.0,Riau,Sungai Siak - Sungai Kampar,Pelalawan,397
+concession,52_EIT:EIR_008,1,163,0.0,Riau,Sungai Siak - Sungai Kampar,Pelalawan,397
+concession,52_EIT:EIR_018,1,163,0.0,Riau,Sungai Siak - Sungai Kampar,Pelalawan,397
+concession,52_EIT:EIR_026,1,163,0.0,Riau,Sungai Siak - Sungai Kampar,Pelalawan,397
+concession,52_EIT:EIR_031,1,163,0.0,Riau,Sungai Siak - Sungai Kampar,Pelalawan,397
+concession,53_MKS:I-42,1,71,0.0,Riau,Sungai Kampar - Sungai Gaung,Indragiri Hulu,125
+concession,53_MKS:II-08,1,71,0.0,Riau,Sungai Kampar - Sungai Gaung,Indragiri Hulu,125
+concession,53_MKS:III-15,1,71,0.0,Riau,Sungai Kampar - Sungai Gaung,Pelalawan,397
+concession,54_PTR:PRT_001,1,163,0.0,Riau,Sungai Siak - Sungai Kampar,Pelalawan,397
+concession,54_PTR:PRT_020,1,163,0.0,Riau,Sungai Siak - Sungai Kampar,Pelalawan,397
+concession,54_PTR:PRT_032,1,163,0.0,Riau,Sungai Siak - Sungai Kampar,Pelalawan,397
+concession,54_PTR:PRT_039,1,163,0.0,Riau,Sungai Siak - Sungai Kampar,Pelalawan,397
+concession,54_PTR:PRT_052,1,163,0.0,Riau,Sungai Siak - Sungai Kampar,Pelalawan,397
+concession,54_PTR:PRT_058,1,163,0.0,Riau,Sungai Siak - Sungai Kampar,Pelalawan,397
+concession,55_SSL:SSI_002,1,164,0.0,Riau,Sungai Siak Kecil - Sungai Siak,Siak,442
+concession,55_SSL:SSI_014,1,164,0.0,Riau,Sungai Siak Kecil - Sungai Siak,Siak,442
+concession,55_SSL:SSI_033,1,164,0.0,Riau,Sungai Siak Kecil - Sungai Siak,Siak,442
+concession,55_SSL:SSI_036,1,164,0.0,Riau,Sungai Siak Kecil - Sungai Siak,Siak,442
+concession,56_SRU:B19,1,94,0.0,Riau,Sungai Kiyap - Sungai Kerumutan,Pelalawan,397
+concession,56_SRU:C8,1,94,0.0,Riau,Sungai Kiyap - Sungai Kerumutan,Pelalawan,397
+concession,57_ADEI:PZ10,1,94,0.0,Riau,Sungai Kiyap - Sungai Kerumutan,Pelalawan,397
+concession,57_ADEI:PZ101,1,94,0.0,Riau,Sungai Kiyap - Sungai Kerumutan,Pelalawan,397
+concession,57_ADEI:PZ118,1,94,0.0,Riau,Sungai Kiyap - Sungai Kerumutan,Pelalawan,397
+concession,57_ADEI:PZ128,1,94,0.0,Riau,Sungai Kiyap - Sungai Kerumutan,Pelalawan,397
+concession,57_ADEI:PZ130,1,94,0.0,Riau,Sungai Kiyap - Sungai Kerumutan,Pelalawan,397
+concession,57_ADEI:PZ39,1,94,0.0,Riau,Sungai Kiyap - Sungai Kerumutan,Pelalawan,397
+concession,57_ADEI:PZ47,1,94,0.0,Riau,Sungai Kiyap - Sungai Kerumutan,Pelalawan,397
+concession,57_ADEI:PZ60,1,94,0.0,Riau,Sungai Kiyap - Sungai Kerumutan,Pelalawan,397
+concession,57_ADEI:PZ63,1,94,0.0,Riau,Sungai Kiyap - Sungai Kerumutan,Pelalawan,397
+concession,57_ADEI:PZ94,1,94,0.0,Riau,Sungai Kiyap - Sungai Kerumutan,Pelalawan,397
+concession,58_BKI:B43,1,30,0.0,Sumatera Selatan,Sei Lalan - Sungai Bentayan,Musi Banyuasin,357
+concession,58_BKI:G55,1,48,0.0,Sumatera Selatan,Sungai Bentayan - Sungai Penimpahan,Musi Banyuasin,357
+concession,58_BKI:I37,1,30,0.0,Sumatera Selatan,Sei Lalan - Sungai Bentayan,Musi Banyuasin,357
+concession,58_BKI:N62,1,48,0.0,Sumatera Selatan,Sungai Bentayan - Sungai Penimpahan,Musi Banyuasin,357
+concession,58_BKI:P20,1,159,0.0,Sumatera Selatan,Sungai Sembilang - Sungai Lalan,Musi Banyuasin,357
+concession,59_SIR:S33,1,164,0.0,Riau,Sungai Siak Kecil - Sungai Siak,Siak,442
+concession,60_KIU:G.25,1,40,0.0,Kalimantan Selatan,Sungai Barito - Sungai Alalak,Tapin,490
+concession,60_KIU:L.43,1,40,0.0,Kalimantan Selatan,Sungai Barito - Sungai Alalak,Tapin,490
+concession,61_GSI:C11,1,10,0.0,Riau,Batang Rokan Kiri - Batang Sosa,Rokan Hulu,425
+concession,61_GSI:E22,1,10,0.0,Riau,Batang Rokan Kiri - Batang Sosa,Rokan Hulu,425
+concession,62_LSA:E20,1,133,0.0,Kalimantan Barat,Sungai Pawan - Sungai Kepulu,Ketapang,163
+concession,62_LSA:G10,1,133,0.0,Kalimantan Barat,Sungai Pawan - Sungai Kepulu,Ketapang,163
+concession,62_LSA:H24,1,133,0.0,Kalimantan Barat,Sungai Pawan - Sungai Kepulu,Ketapang,163
+concession,62_LSA:I32,1,133,0.0,Kalimantan Barat,Sungai Pawan - Sungai Kepulu,Ketapang,163
+concession,62_LSA:K26,1,133,0.0,Kalimantan Barat,Sungai Pawan - Sungai Kepulu,Ketapang,163
+concession,62_LSA:K36,1,133,0.0,Kalimantan Barat,Sungai Pawan - Sungai Kepulu,Ketapang,163
+concession,62_LSA:N46,1,133,0.0,Kalimantan Barat,Sungai Pawan - Sungai Kepulu,Ketapang,163
+concession,63_MAP:C17,1,140,0.0,Kalimantan Tengah,Sungai Pukun - Sungai Mentaya,Kotawaringin Timur,273
+concession,63_MAP:H22,1,140,0.0,Kalimantan Tengah,Sungai Pukun - Sungai Mentaya,Kotawaringin Timur,273
+concession,63_MAP:I39,1,140,0.0,Kalimantan Tengah,Sungai Pukun - Sungai Mentaya,Kotawaringin Timur,273
+concession,63_MAP:J45,1,140,0.0,Kalimantan Tengah,Sungai Pukun - Sungai Mentaya,Kotawaringin Timur,273
+concession,63_MAP:L17,1,140,0.0,Kalimantan Tengah,Sungai Pukun - Sungai Mentaya,Kotawaringin Timur,273
+concession,64_MBJ:10,1,54,0.0,Sumatera Selatan,Sungai Burnai - Sungai Sibumbung,Ogan Komering Ilir,374
+concession,65_MSA:B46,1,102,0.0,Sumatera Selatan,Sungai Lalan - Sungai Merang,Musi Banyuasin,357
+concession,65_MSA:C13A,1,159,0.0,Sumatera Selatan,Sungai Sembilang - Sungai Lalan,Musi Banyuasin,357
+concession,65_MSA:C15,1,159,0.0,Sumatera Selatan,Sungai Sembilang - Sungai Lalan,Musi Banyuasin,357
+concession,65_MSA:D22,1,102,0.0,Sumatera Selatan,Sungai Lalan - Sungai Merang,Musi Banyuasin,357
+concession,65_MSA:D51,1,129,0.0,Sumatera Selatan,Sungai Ngirawan - Sungai Sembilang,Musi Banyuasin,357
+concession,65_MSA:G30,1,120,0.0,Sumatera Selatan,Sungai Merang - Sungai Ngirawan,Musi Banyuasin,357
+concession,65_MSA:H06,1,159,0.0,Sumatera Selatan,Sungai Sembilang - Sungai Lalan,Musi Banyuasin,357
+concession,65_MSA:b46,1,102,0.0,Sumatera Selatan,Sungai Lalan - Sungai Merang,Musi Banyuasin,357
+concession,66_SIP:F43,1,145,0.0,Riau,Sungai Rokan - Sungai Kubu,Rokan Hilir,424
+concession,66_SIP:TP.2,1,145,0.0,Riau,Sungai Rokan - Sungai Kubu,Rokan Hilir,424
+concession,67_GMR:F53,1,145,0.0,Riau,Sungai Rokan - Sungai Kubu,Rokan Hilir,424
+concession,67_GMR:L42,1,145,0.0,Riau,Sungai Rokan - Sungai Kubu,Rokan Hilir,424
+concession,69_SKD:85,1,140,0.0,Kalimantan Tengah,Sungai Pukun - Sungai Mentaya,Kotawaringin Timur,273
+concession,69_SKD:L26,1,140,0.0,Kalimantan Tengah,Sungai Pukun - Sungai Mentaya,Kotawaringin Timur,273
+concession,70_SLM:C006,1,161,0.0,Kalimantan Tengah,Sungai Seruyan - Sungai Kelua Besar,Seruyan,441
+concession,70_SLM:E019,1,161,0.0,Kalimantan Tengah,Sungai Seruyan - Sungai Kelua Besar,Seruyan,441
+concession,70_SLM:c006,1,161,0.0,Kalimantan Tengah,Sungai Seruyan - Sungai Kelua Besar,Seruyan,441
+concession,70_SLM:e019,1,161,0.0,Kalimantan Tengah,Sungai Seruyan - Sungai Kelua Besar,Seruyan,441
+concession,72_RJP:RJP_TP_03,1,147,3.69,Riau,Sungai Rokan Kiri - Sungai Mandau,Kampar,136
+concession,73_SIP:SIP_TP_06,1,122,0.0,Lampung,Sungai Mesuji - Sungai Tulangbawang,Mesuji,342
+concession,73_SIP:SIP_TP_13,1,122,0.44,Lampung,Sungai Mesuji - Sungai Tulangbawang,Mesuji,342
+concession,74_BPLP:BPL_TP_11,1,59,0.0,Riau,Sungai Enok - Sungai Batang,Indragiri Hilir,124
+concession,74_BPLP:BPL_TP_21,1,59,0.0,Riau,Sungai Enok - Sungai Batang,Indragiri Hilir,124
+concession,74_BPLP:BPL_TP_27,1,59,0.0,Riau,Sungai Enok - Sungai Batang,Indragiri Hilir,124
+concession,74_BPLP:BPL_TP_32,1,59,0.0,Riau,Sungai Enok - Sungai Batang,Indragiri Hilir,124
+concession,74_BPLP:BPL_TP_38,1,59,0.0,Riau,Sungai Enok - Sungai Batang,Indragiri Hilir,124
+concession,75_SMART:SMA_TP_15,1,99,0.0,Sumatera Utara,Sungai Kuo - Sungai Kualuh Bilah,Labuhan Batu Utara,285
+concession,75_SMART:SMA_TP_18,1,99,0.0,Sumatera Utara,Sungai Kuo - Sungai Kualuh Bilah,Labuhan Batu,283
+concession,76_INCD:AFDIV/I.18,1,63,0.0,Riau,Sungai Indragiri - Sungai Belilas,Indragiri Hulu,125
+concession,76_INCD:AFDX/N.17,1,63,1.89,Riau,Sungai Indragiri - Sungai Belilas,Indragiri Hulu,125
+concession,76_INCD:I18,1,63,0.0,Riau,Sungai Indragiri - Sungai Belilas,Indragiri Hulu,125
+concession,76_INCD:N17,1,63,0.0,Riau,Sungai Indragiri - Sungai Belilas,Indragiri Hulu,125
+concession,77_KDA:C-03,1,9,0.0,Jambi,Batang Merangin - Batang Tembesi,Sarolangun,433
+concession,77_KDA:D57,1,9,0.0,Jambi,Batang Merangin - Batang Tembesi,Sarolangun,433
+concession,77_KDA:F13,1,9,0.0,Jambi,Batang Merangin - Batang Tembesi,Sarolangun,433
+concession,77_KDA:G-21,1,9,0.0,Jambi,Batang Merangin - Batang Tembesi,Sarolangun,433
+concession,77_KDA:H-11,1,9,0.0,Jambi,Batang Merangin - Batang Tembesi,Sarolangun,433
+concession,77_KDA:f13,1,9,0.0,Jambi,Batang Merangin - Batang Tembesi,Sarolangun,433
+concession,78_BKS:BKS_TP_13,1,12,0.0,Jambi,Batang Tembei - Sungai Merak,Sarolangun,433
+concession,78_BKS:BKS_TP_15,1,12,0.0,Jambi,Batang Tembei - Sungai Merak,Sarolangun,433
+concession,78_BKS:BKS_TP_21,1,12,0.0,Jambi,Batang Tembei - Sungai Merak,Sarolangun,433
+concession,79_TND:S-36,1,52,0.0,Kalimantan Tengah,Sungai Buluh Besar - Sungai Seruyan,Seruyan,441
+concession,79_TND:T-37,1,52,0.0,Kalimantan Tengah,Sungai Buluh Besar - Sungai Seruyan,Seruyan,441
+concession,80_MPLW:LWI_TP_08,1,74,0.0,Sumatera Utara,Sungai Kanopan - Sungai Kuala,Labuhan Batu Utara,285
+concession,81_GDH:F29,1,,0.0,Riau,,Pelalawan,397
+concession,81_GDH:H15,1,,0.0,Riau,,Pelalawan,397
+concession,81_GDH:TP10,1,,0.0,Riau,,Pelalawan,397
+concession,81_GDH:TP14,1,,0.0,Riau,,Pelalawan,397
+concession,82_MAS:P33,1,118,0.0,Kalimantan Tengah,Sungai Mentaya - Sungai Seranau Kiri,Kotawaringin Timur,273
+concession,82_MAS:Z116,1,118,0.0,Kalimantan Tengah,Sungai Mentaya - Sungai Seranau Kiri,Kotawaringin Timur,273
+concession,82_MAS:p33,1,118,0.0,Kalimantan Tengah,Sungai Mentaya - Sungai Seranau Kiri,Kotawaringin Timur,273
+concession,82_MAS:z116,1,118,0.0,Kalimantan Tengah,Sungai Mentaya - Sungai Seranau Kiri,Kotawaringin Timur,273
+concession,83_SSM:DL10,1,118,0.0,Kalimantan Tengah,Sungai Mentaya - Sungai Seranau Kiri,Kotawaringin Timur,273
+concession,85_WSI:TP-C12,1,44,0.0,Jambi,Sungai Batanghari - Sungai Air Hitam Laut,Muaro Jambi,352
+concession,87_LONSUM2:050,1,65,0.0,Kalimantan Timur,Sungai Jempang - Sungai Kedangpahu,Kutai Barat,280
+concession,87_LONSUM2:173,1,65,0.0,Kalimantan Timur,Sungai Jempang - Sungai Kedangpahu,Kutai Barat,280
+concession,89_GAP:TP-TMAT-I13,1,140,0.0,Kalimantan Tengah,Sungai Pukun - Sungai Mentaya,Kotawaringin Timur,273
+concession,89_GAP:TP-TMAT-i13,1,140,0.0,Kalimantan Tengah,Sungai Pukun - Sungai Mentaya,Kotawaringin Timur,273
+concession,90_PTPNVSG:M 12,1,171,0.0,Riau,Sungai Tapung Kiri - Sungai Kiyap,Kampar,136
+concession,92_RSTM:TP-01,1,71,0.0,Riau,Sungai Kampar - Sungai Gaung,Indragiri Hilir,124
+concession,92_RSTM:TP-04,1,71,0.0,Riau,Sungai Kampar - Sungai Gaung,Indragiri Hilir,124
+concession,92_RSTM:TP-24,1,71,0.0,Riau,Sungai Kampar - Sungai Gaung,Indragiri Hilir,124
+concession,93_KSA:E09,1,105,0.0,Kalimantan Tengah,Sungai Lamandau - Sungai Sematu,Kotawaringin Barat,272
+concession,94_SSMS:SGEOI019,1,103,0.0,Kalimantan Tengah,Sungai Lamandau - Sungai Arut,Kotawaringin Barat,272
+concession,94_SSMS:sgEOI019,1,103,0.0,Kalimantan Tengah,Sungai Lamandau - Sungai Arut,Kotawaringin Barat,272
+concession,95_GHM:TP-02,1,71,0.0,Riau,Sungai Kampar - Sungai Gaung,Indragiri Hilir,124
+concession,95_GHM:TP-22,1,71,0.0,Riau,Sungai Kampar - Sungai Gaung,Indragiri Hilir,124
+concession,95_GHM:TP-26,1,71,0.0,Riau,Sungai Kampar - Sungai Gaung,Indragiri Hilir,124
+concession,96_WPG:F2,1,125,0.0,Sumatera Selatan,Sungai Musi - Sungai Empasan,Musi Banyuasin,357
+concession,96_WPG:G6,1,125,0.0,Sumatera Selatan,Sungai Musi - Sungai Empasan,Musi Banyuasin,357
+concession,96_WPG:K12,1,125,0.0,Sumatera Selatan,Sungai Musi - Sungai Empasan,Musi Banyuasin,357
+concession,96_WPG:S15,1,125,0.0,Sumatera Selatan,Sungai Musi - Sungai Empasan,Musi Banyuasin,357
+concession,97_MMJ:TP.1,1,28,0.0,Riau,Pulau Rupat,Bengkalis,48
+concession,97_MMJ:TP.18,1,28,0.0,Riau,Pulau Rupat,Bengkalis,48
+concession,98_SAP:G11,1,33,0.0,Sumatera Selatan,Sungai Alur - Sungai Lintang,Musi Rawas Utara,359

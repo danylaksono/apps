@@ -1,0 +1,46 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Jalan Proyek Ketahanan Pangan",
+        "length_km": 135.5,
+        "districts": "Ilwayab, Ngguti, Kaptel, Muting"
+      },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            140.05,
+            -7.25
+          ],
+          [
+            140.15,
+            -7.2
+          ],
+          [
+            140.25,
+            -7.15
+          ],
+          [
+            140.35,
+            -7.1
+          ],
+          [
+            140.45,
+            -7.05
+          ],
+          [
+            140.55,
+            -7.0
+          ],
+          [
+            140.7,
+            -6.85
+          ]
+        ]
+      }
+    }
+  ]
+}

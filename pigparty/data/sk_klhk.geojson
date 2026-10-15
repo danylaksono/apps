@@ -1,0 +1,41 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "SK KLHK 835/2024",
+        "area_ha": 13540,
+        "note": "13.540 ha Hutan Lindung & Produksi untuk infrastruktur ketahanan pangan Kemhan",
+        "districts": "Ilwayab, Ngguti, Kaptel, Muting"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              140.0,
+              -7.3
+            ],
+            [
+              140.4,
+              -7.3
+            ],
+            [
+              140.4,
+              -6.9
+            ],
+            [
+              140.0,
+              -6.9
+            ],
+            [
+              140.0,
+              -7.3
+            ]
+          ]
+        ]
+      }
+    }
+  ]
+}

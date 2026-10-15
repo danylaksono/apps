@@ -1,0 +1,10 @@
+Range 2026-04-01 .. 2026-10-15  (198 days)
+Rows: 133521
+
+[community] stations with data: 124 (coverage measured from 2026-07-17, 91 days)
+  mean coverage: 26%; stations under 50% coverage: 87
+  flags: {'range': 141, 'spike': 58}
+
+[concession] stations with data: 1157 (coverage measured from 2026-04-01, 198 days)
+  mean coverage: 57%; stations under 50% coverage: 435
+  flags: {'spike': 104, 'range': 18}
